@@ -19,7 +19,7 @@
 //   --analytics-only            refresh analytics/* only
 //   --brawl                     refresh the Street Brawl snapshot only
 //   --validation-only           re-select players and refetch validation/* for every hero
-//   --heroes 1,31               (with --validation-only) only these hero ids; their entries are merged into manifest.validation_sets
+//   --heroes 1,31               (with --validation-only or --analytics-only) only these hero ids; with --validation-only their entries are merged into manifest.validation_sets
 //   --select-only               (with --validation-only) run the selection, print the table per hero, write nothing
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -214,9 +214,10 @@ async function fetchStyles(hero, topQ, top, shopIds) {
 }
 
 async function fetchAnalytics(heroes, manifest) {
-  console.log(`4/5 per-hero analytics (${heroes.length} heroes, all ranks + badge>=${TOP_BADGE}, plus build styles)`);
+  const targets = HEROES_ARG ? heroes.filter((h) => HEROES_ARG.includes(h.id)) : heroes;
+  console.log(`4/5 per-hero analytics (${targets.length} heroes, all ranks + badge>=${TOP_BADGE}, plus build styles)`);
   const shopIds = new Set(JSON.parse(await readFile(path.join(OUT, 'items.json'), 'utf8')).filter((i) => i.shopable && !i.disabled && i.cost > 0).map((i) => i.id));
-  for (const h of heroes) {
+  for (const h of targets) {
     const all = await fetchPopulation(h.id);
     const topQ = `hero_id=${h.id}&min_unix_timestamp=${MIN_TS}&min_average_badge=${TOP_BADGE}`;
     const top = await fetchPopulation(h.id, `&min_average_badge=${TOP_BADGE}`);

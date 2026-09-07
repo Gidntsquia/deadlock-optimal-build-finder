@@ -6,7 +6,7 @@
 export const STYLE = {
   candidateShare: [0.04, 0.7], // anchors are items bought in 4%..70% of the hero's high-rank games
   minShare: 0.05,              // a style needs >=5% of games behind it to count as established
-  minDisplacement: 0.3,        // >=30% (usage-weighted) of the staples (>=50% usage) fall below half their usage
+  minDisplacement: 0.2,        // >=20% (usage-weighted) of the staples (>=50% usage) fall below half their usage
   minNewCore: 2,               // >=2 items reach >=50% usage with >=1.8x lift vs the population
   newCoreLift: 1.8,
   sameStyleShare: 0.5,         // two anchors are one style when either is bought in >=50% of the other's games
