@@ -2,7 +2,7 @@
 // analytics snapshot for the hero (item-stats, ability-order-stats, item-permutation-stats).
 // It never reads any per-player data.
 import type { Ability, AnalyticsPopulation, Build, BuildItem, BuildPopulation, Hero, HeroAnalytics, Item, ItemStat, Phase, SlotType } from '../types';
-import { ARCHETYPES, MIN_STYLE_MATCHES, MIN_TOP_ITEM_MATCHES, MIN_TOP_SEQ_MATCHES, PARAMS, UNIT_VALUE, type Archetype } from './stats';
+import { ARCHETYPES, MIN_TOP_ITEM_MATCHES, MIN_TOP_SEQ_MATCHES, PARAMS, UNIT_VALUE, type Archetype } from './stats';
 import { kitProfile } from './kit';
 import { pickAbilityOrder } from './abilities';
 
@@ -62,7 +62,7 @@ export function stylePopulations(input: GeneratorInput): Population[] {
   const styles = input.analytics.top?.styles ?? [];
   const base = choosePopulation(input.analytics);
   if (styles.length < 2 || base.info.kind !== 'top') return [];
-  if (styles.some((s) => s.matches < MIN_STYLE_MATCHES)) return [];
+  if (styles.some((s) => s.matches < PARAMS.minStyleMatches)) return [];
   const catalog = new Map(input.items.map((i) => [i.id, i]));
   const usage = styles.map((s) => { const n = Math.max(1, ...s.item_stats.map((x) => x.matches)); return new Map(s.item_stats.map((x) => [x.item_id, x.matches / n])); });
   const named = styles.map((s, k) => {

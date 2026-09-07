@@ -43,6 +43,7 @@ const dims: Getter[] = [
   { name: 'maxActives', get: () => PARAMS.maxActives, set: (v) => (PARAMS.maxActives = v), grid: [1, 2, 3, 4, 5] },
   { name: 'tierMin[1]', get: () => PARAMS.tierMin[1], set: (v) => (PARAMS.tierMin[1] = v), grid: [0, 1, 2, 3, 4] },
   { name: 'tierMin[2]', get: () => PARAMS.tierMin[2], set: (v) => (PARAMS.tierMin[2] = v), grid: [0, 1, 2, 3, 4] },
+  { name: 'minStyleMatches', get: () => PARAMS.minStyleMatches, set: (v) => (PARAMS.minStyleMatches = v), grid: [100, 200, 300, 500, 800, 1200, 2000] },
   { name: 'pairMinMatches', get: () => PARAMS.pairMinMatches, set: (v) => (PARAMS.pairMinMatches = v), grid: [5, 10, 20, 50, 100, 200] },
 ];
 

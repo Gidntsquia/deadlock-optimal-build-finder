@@ -27,10 +27,10 @@ export const ARCHETYPES: Archetype[] = [
 
 // Scoring weights and selection limits (see the wiki "How the Build Generator Works"). One mutable
 // object so scripts/tune.ts can sweep them; the app never changes it at runtime. Current values were
-// chosen by scripts/tune.ts to maximise mean panel agreement over all 38 heroes (2026-09-06), so they
+// chosen by scripts/tune.ts to maximise mean panel agreement over all 38 heroes (2026-09-07, after the per-style builds landed), so they
 // are in-sample for that panel.
 export const PARAMS = {
-  weights: { popularity: 2.0, winLift: 0.25, efficiency: 0, kit: 0, synergy: 0.25, active: 0.3 },
+  weights: { popularity: 3.0, winLift: 0.25, efficiency: 0, kit: 0, synergy: 0, active: -0.2 },
   winShrinkFrac: 0.2,       // Bayesian shrinkage: prior weight = 20% of the hero's most-bought item's matches
   minUsage: 0.12,           // ignore items bought in <12% (relative) of games: their win rates are selection-biased noise
   maxItems: 16,             // the game has 16 slots
@@ -41,12 +41,12 @@ export const PARAMS = {
   phaseTimeS: { early: 600, mid: 1320 }, // <10 min early, <22 min mid, else late
   tierMin: { 1: 4, 2: 3 } as Record<number, number>, // minimum items of tier 1 / tier 2
   pairMinMatches: 200,      // item pairs with fewer matches carry no synergy signal
+  // Build styles (detected at fetch time, scripts/styles.mjs): a style population is only used when its
+  // most-bought item has this many matches; otherwise the hero falls back to one build.
+  minStyleMatches: 300,
 };
 export const WEIGHTS = PARAMS.weights;
 // Population choice: generate from the high-rank population (lobby average badge >= the snapshot's
 // top_min_average_badge, currently 90 = Phantom+) when it has enough data, else fall back to all ranks.
 export const MIN_TOP_ITEM_MATCHES = 500;    // the hero's most-bought item needs >=500 high-rank matches
 export const MIN_TOP_SEQ_MATCHES = 200;     // the best high-rank ability sequence needs >=200 matches
-// Build styles (detected at fetch time, scripts/styles.mjs): a style population is only used when its
-// most-bought item has this many matches; otherwise the hero falls back to one build.
-export const MIN_STYLE_MATCHES = 300;
