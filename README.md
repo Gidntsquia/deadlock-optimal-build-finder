@@ -57,15 +57,14 @@ npm run verify               # Runs all the checks and prints the panel agreemen
   get one build per style, each optimised from the games played that way. The app
   shows both as tabs with their share of high-rank games.
 - Items are ordered by the average time players buy them at.
-- The scoring weights were tuned against the panel below (`npx tsx scripts/tune.ts`),
-  so the agreement numbers are a fit to that panel, not an out-of-sample forecast.
+- The scoring weights were tuned against the panel (`npx tsx scripts/tune.ts`); the
+  agreement numbers are a fit to that panel rather than an out-of-sample forecast.
 - The ability order is the sequence with the best win rate in high-rank games.
 - Each build is checked against a panel of up to 5 top players per hero, chosen
   by recent Phantom+ games on the hero and weighted toward players with more
   lifetime games and more recent play. The app shows the panel's agreement
-  (the median across heroes is 74%, Infernus is at 76%; a build made from the panel's own
-  answers only reaches 76% mean, so that is close to the ceiling — see the wiki) and lists the core items the panel buys that the build
-  is missing.
+  (median 74% across heroes, 76% for Infernus) and lists the core items the
+  panel buys that the build is missing. See the wiki for the panel's ceiling.
 - Street Brawl: the cards, round number, enemy heroes, and the items you've
   already picked are all read from the screen. Nothing is sent to the game.
 - The overlay works in Chrome and Edge. Firefox can't do always-on-top windows,
