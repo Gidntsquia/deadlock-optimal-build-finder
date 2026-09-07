@@ -2,7 +2,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { generateBuilds } from '../src/generator';
-import { computeCoreSet, panelAgreementAcrossBuilds, validateAgainstPanel } from '../src/validation/heldout';
+import { computeCoreSet, consensusAgreement, panelAgreementAcrossBuilds, validateAgainstPanel } from '../src/validation/heldout';
 import { adviseDraft, baseScores } from '../src/brawl';
 
 const read = (p: string) => JSON.parse(readFileSync(`public/data/${p}`, 'utf8'));
@@ -53,7 +53,7 @@ const a = execSync('npx tsx scripts/generate-cli.ts 1 --json').toString(), b = e
 check('rerun yields identical Infernus builds', a === b);
 
 // validation report for every hero with a held-out panel
-const heroAgreement: { hero: string; agreement: number }[] = [];
+const heroAgreement: { hero: string; agreement: number; consensus: number }[] = [];
 for (const hero of heroes) {
   const sets = vsets.filter((v) => v.hero_id === hero.id);
   if (!sets.length) continue;
@@ -66,14 +66,19 @@ for (const hero of heroes) {
     if (!okB) { ok = false; why.push(bld.name); }
   }
   const across = panelAgreementAcrossBuilds(builds, panel);
-  heroAgreement.push({ hero: hero.name, agreement: across.agreement });
+  const cons = consensusAgreement(builds, panel);
+  heroAgreement.push({ hero: hero.name, agreement: across.agreement, consensus: cons.agreement });
   const styleNote = builds.length > 1 ? `; ${builds.length} builds (${builds.map((b) => `${b.name} ${across.perRep.filter((r) => r.buildKey === b.key).length} reps`).join(', ')})` : '';
-  check(`${hero.name}: panel of ${sets.length} (${sets.map((s) => s.player).join(', ')}) agreement in [0,1] + badges`, ok, ok ? `agreement ${(across.agreement * 100).toFixed(0)}%${styleNote}` : why.join('; '));
+  check(`${hero.name}: panel of ${sets.length} (${sets.map((s) => s.player).join(', ')}) agreement in [0,1] + badges`, ok, ok ? `agreement ${(across.agreement * 100).toFixed(0)}% (consensus ${(cons.agreement * 100).toFixed(0)}%)${styleNote}` : why.join('; '));
 }
 if (heroAgreement.length) {
   const sorted = [...heroAgreement].sort((x, y) => x.agreement - y.agreement);
   const med = sorted[Math.floor(sorted.length / 2)].agreement;
-  console.log(`median panel agreement across heroes: ${(med * 100).toFixed(0)}%  (lowest: ${sorted.slice(0, 5).map((h) => `${h.hero} ${(h.agreement * 100).toFixed(0)}%`).join(', ')})`);
+  const mean = heroAgreement.reduce((a, h) => a + h.agreement, 0) / heroAgreement.length;
+  console.log(`median panel agreement across heroes: ${(med * 100).toFixed(0)}%, mean ${(mean * 100).toFixed(1)}%  (lowest: ${sorted.slice(0, 5).map((h) => `${h.hero} ${(h.agreement * 100).toFixed(0)}%`).join(', ')})`);
+  const cs = [...heroAgreement].sort((x, y) => x.consensus - y.consensus);
+  const cmed = cs[Math.floor(cs.length / 2)].consensus, cmean = heroAgreement.reduce((a, h) => a + h.consensus, 0) / heroAgreement.length;
+  console.log(`median consensus agreement (items core for >=2 reps): ${(cmed * 100).toFixed(0)}%, mean ${(cmean * 100).toFixed(1)}%  (lowest: ${cs.slice(0, 5).map((h) => `${h.hero} ${(h.consensus * 100).toFixed(0)}%`).join(', ')}). Ceiling from the panel itself: npx tsx scripts/ceiling.ts`);
 }
 // Street Brawl engine (only when the brawl snapshot exists)
 if (existsSync('public/data/brawl-config.json') && existsSync('public/data/analytics/brawl/1.json')) {

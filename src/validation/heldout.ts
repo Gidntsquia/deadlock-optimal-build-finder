@@ -132,3 +132,35 @@ export function panelAgreementAcrossBuilds(builds: Build[], panel: { set: Heldou
   const totalW = w.reduce((a, b) => a + b, 0);
   return { agreement: totalW ? perRep.reduce((a, r, i) => a + r.agreement * w[i], 0) / totalW : 0, perRep };
 }
+
+// ---- consensus core ---------------------------------------------------------------------------
+
+/**
+ * The panel's consensus core: items that are core for at least `minReps` reps (default: 2, so a single
+ * player's habit does not count). Buy time is the median of the reps' median buy times. This removes the
+ * single-player noise in the per-rep metric: a rep whose core set has an item nobody else buys lowers the
+ * per-rep agreement of every build, but says nothing about the generator.
+ */
+export function consensusCoreSet(panel: { set: HeldoutSet; core: CoreSet }[], minReps = 2): CoreSet {
+  const acc = new Map<number, { item: Item; reps: number; freq: number; times: number[]; matches: number }>();
+  for (const p of panel) for (const c of p.core.core) {
+    const a = acc.get(c.item.id) ?? { item: c.item, reps: 0, freq: 0, times: [], matches: 0 };
+    a.reps++; a.freq += c.frequency; a.times.push(c.medianBuyTimeS); a.matches += c.matches;
+    acc.set(c.item.id, a);
+  }
+  const need = Math.min(minReps, panel.length);
+  const core: CoreItem[] = [...acc.values()].filter((a) => a.reps >= need).map((a) => {
+    const t = [...a.times].sort((x, y) => x - y);
+    return { item: a.item, frequency: a.freq / panel.length, medianBuyTimeS: t[Math.floor(t.length / 2)], matches: a.matches };
+  }).sort((x, y) => y.frequency - x.frequency || x.item.id - y.item.id);
+  return { player: `consensus of ${panel.length}`, hero: panel[0]?.core.hero ?? '', core, experiments: [], matches: panel.reduce((s, p) => s + p.core.matches, 0), wins: panel.reduce((s, p) => s + p.core.wins, 0) };
+}
+
+/** Agreement of the best build against the panel's consensus core (see consensusCoreSet). */
+export function consensusAgreement(builds: Build[], panel: { set: HeldoutSet; core: CoreSet }[], minReps = 2): { agreement: number; buildKey: string; validation: BuildValidation | null; core: CoreSet } {
+  const core = consensusCoreSet(panel, minReps);
+  if (!builds.length || !core.core.length) return { agreement: 0, buildKey: builds[0]?.key ?? '', validation: null, core };
+  let best = validateBuild(builds[0], core);
+  for (const b of builds.slice(1)) { const v = validateBuild(b, core); if (v.agreement > best.agreement) best = v; }
+  return { agreement: best.agreement, buildKey: best.buildKey, validation: best, core };
+}

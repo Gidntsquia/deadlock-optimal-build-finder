@@ -63,7 +63,8 @@ npm run verify               # Runs all the checks and prints the panel agreemen
 - Each build is checked against a panel of up to 5 top players per hero, chosen
   by recent Phantom+ games on the hero and weighted toward players with more
   lifetime games and more recent play. The app shows the panel's agreement
-  (the median across heroes is 74%, Infernus is at 76%) and lists the core items the panel buys that the build
+  (the median across heroes is 74%, Infernus is at 76%; a build made from the panel's own
+  answers only reaches 76% mean, so that is close to the ceiling — see the wiki) and lists the core items the panel buys that the build
   is missing.
 - Street Brawl: the cards, round number, enemy heroes, and the items you've
   already picked are all read from the screen. Nothing is sent to the game.
