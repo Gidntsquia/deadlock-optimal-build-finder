@@ -10,14 +10,8 @@ builds are based on the item and win rate stats for high-rank players from
 [deadlock-api.com](https://deadlock-api.com). Each build is also compared to
 the recent games of a top player on that hero so you can see how close it gets.
 
-It also has a Street Brawl draft advisor. It reads the draft screen while you
-play, identifies the three cards being offered, and ranks them. It also tells
-you whether re-rolling is worth it. The advice shows up in a small window on top
-of the game, or on your phone.
-
-<p align="center">
-  <img alt="The Street Brawl advisor reading a live draft: three ranked cards with the enhanced Reactive Barrier marked TAKE" src="docs/brawl-overlay.png">
-</p>
+There's also a companion project, [deadlock-street-brawl-helper](https://github.com/Gidntsquia/deadlock-street-brawl-helper),
+for Street Brawl's draft advisor.
 
 ## Quickstart 🚀
 
@@ -34,18 +28,10 @@ npm run dev          # Open http://localhost:5173
 Click a hero to see its build. After the data is downloaded the app doesn't
 make any network requests.
 
-For Street Brawl, click **Brawl** in the top right, then **Capture game screen +
-overlay** and select the Deadlock window. IMPORTANT: the game has to be in
-borderless windowed mode for the overlay to show on top of it. If you want to
-use exclusive fullscreen, click **Phone display** and scan the QR code with your
-phone instead.
-
 Other commands:
 
 ```
 npm run generate 1           # Print Infernus's build (any hero id works)
-npm run brawl -- --hero 1 --round 2 --owned "Extra Charge" --enemies "Lash,Seven" \
-    --set "Improved Spirit,Enchanter's Emblem,Swift Striker"   # Draft advice without the screen reader
 npm run verify               # Runs all the checks and prints the panel agreement per hero
 ```
 
@@ -65,10 +51,6 @@ npm run verify               # Runs all the checks and prints the panel agreemen
   lifetime games and more recent play. The app shows the panel's agreement
   (median 74% across heroes, 76% for Infernus) and lists the core items the
   panel buys that the build is missing. See the wiki for the panel's ceiling.
-- Street Brawl: the cards, round number, enemy heroes, and the items you've
-  already picked are all read from the screen. Nothing is sent to the game.
-- The overlay works in Chrome and Edge. Firefox can't do always-on-top windows,
-  so use the phone display there.
 - Builds can be shared as an image.
 - No backend, everything runs in the browser.
 
@@ -81,9 +63,6 @@ More details in the
 - [How the Build Generator Works](../../wiki/How-the-Build-Generator-Works) — the scoring formula, buy order, ability order
 - [Build Styles](../../wiki/Build-Styles) — when a hero gets two builds and how each one is scored
 - [Held-out Validation](../../wiki/Held-out-Validation) — how the panel of up to 5 top players per hero is chosen and how agreement is measured
-- [Street Brawl Advisor](../../wiki/Street-Brawl-Advisor) — card scoring, re-roll math, the CLI
-- [Screen Reader](../../wiki/Screen-Reader) — how cards, round numbers, hero portraits and picks are recognized
-- [Overlay and Phone Display](../../wiki/Overlay-and-Phone-Display) — screen capture, Picture-in-Picture, ntfy.sh
 - [Judgment Calls](../../wiki/Judgment-Calls) — the weight changes and the reasoning behind them
 - [Development](../../wiki/Development) — code layout, scripts, tests
 

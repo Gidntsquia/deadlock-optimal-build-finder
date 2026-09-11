@@ -11,13 +11,10 @@
 //                                          with per-match purchases; 5 players per hero, chosen automatically
 //                                          from the Phantom+ scoreboard (see selectValidationPlayers)   (VALIDATION ONLY)
 //   public/data/img/{items,heroes,abilities}/  webp images so the app needs no network at all
-//   public/data/brawl-config.json          Street Brawl mode constants (round budgets, draft tiers/weights)
-//   public/data/analytics/brawl/<hero_id>.json  Street Brawl item-stats, pair stats, and item-stats vs every enemy hero
 //   public/data/manifest.json              timestamps + counts + validation_sets (who was selected and why)
 //
 // Flags
 //   --analytics-only            refresh analytics/* only
-//   --brawl                     refresh the Street Brawl snapshot only
 //   --validation-only           re-select players and refetch validation/* for every hero
 //   --heroes 1,31               (with --validation-only or --analytics-only) only these hero ids; with --validation-only their entries are merged into manifest.validation_sets
 //   --select-only               (with --validation-only) run the selection, print the table per hero, write nothing
@@ -62,14 +59,9 @@ const WINDOW_DAYS = 30;
 const TOP_BADGE = 90;
 // `--analytics-only` refreshes only public/data/analytics/* from the existing heroes.json.
 const ANALYTICS_ONLY = process.argv.includes('--analytics-only');
-// `--brawl` refreshes only the Street Brawl snapshot (brawl-config.json, analytics/brawl/*).
-const BRAWL_ONLY = process.argv.includes('--brawl');
 // A 429 on match metadata can ask for an hour-long retry-after; wait at most this long, then throw so the
 // caller skips that match and moves on to the next one (there are more candidates than the target).
 const MAX_WAIT_MS = 45 * 1000;
-// Street Brawl analytics: the API has no rank filter for this mode (400 "Cannot filter by average badge"),
-// so there is one all-rank population. Enemy-filtered item-stats are fetched for every hero as the counter term.
-const BRAWL_GAME_MODE = 'street_brawl';
 let MIN_TS = Math.floor(Date.now() / 1000) - WINDOW_DAYS * 86400;
 // Rate limit is 200 req / 60 s -> ~350 ms between requests keeps us well under.
 const SLEEP_MS = 350;
@@ -335,41 +327,7 @@ async function fetchValidation(heroes, manifest) {
   delete manifest.counts.zergggy_matches_with_purchases;
 }
 
-// One row per item, slimmed to what the counter term needs.
-const slimStat = (s) => ({ item_id: s.item_id, wins: s.wins, matches: s.matches });
-
-async function fetchBrawl(heroes, manifest) {
-  console.log(`brawl 1/2 mode config`);
-  const generic = await getJson(`${ASSETS}/v2/generic-data`);
-  await save('brawl-config.json', { fetched_at: new Date().toISOString(), ...generic.street_brawl });
-  console.log(`brawl 2/2 per-hero Street Brawl analytics (${heroes.length} heroes x ${heroes.length} enemies)`);
-  for (const h of heroes) {
-    const q = `hero_id=${h.id}&game_mode=${BRAWL_GAME_MODE}&min_unix_timestamp=${MIN_TS}`;
-    const item_stats = await getJson(`${API}/v1/analytics/item-stats?${q}`);
-    const perm = await getJson(`${API}/v1/analytics/item-permutation-stats?${q}&comb_size=2`);
-    const permutation_stats = [...perm].sort((a, b) => b.matches - a.matches).slice(0, 600);
-    const vs = {};
-    for (const e of heroes) {
-      if (e.id === h.id) continue;
-      try { vs[e.id] = (await getJson(`${API}/v1/analytics/item-stats?${q}&enemy_hero_ids=${e.id}`)).map(slimStat); }
-      catch (err) { console.warn(`  vs ${e.name} failed: ${err.message}`); }
-    }
-    const maxM = Math.max(0, ...item_stats.map((s) => s.matches));
-    console.log(`   ${h.name}: max item matches ${maxM}, ${item_stats.length} items, ${Object.keys(vs).length} enemies`);
-    await save(`analytics/brawl/${h.id}.json`, { hero_id: h.id, game_mode: BRAWL_GAME_MODE, item_stats, permutation_stats, vs });
-  }
-  manifest.brawl = { fetched_at: new Date().toISOString(), game_mode: BRAWL_GAME_MODE, heroes: heroes.length };
-}
-
 async function main() {
-  if (BRAWL_ONLY) {
-    const manifest = JSON.parse(await readFile(path.join(OUT, 'manifest.json'), 'utf8'));
-    const heroes = JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8'));
-    MIN_TS = manifest.min_unix_timestamp;
-    await fetchBrawl(heroes, manifest);
-    await save('manifest.json', manifest);
-    return;
-  }
   await mkdir(OUT, { recursive: true });
   if (VALIDATION_ONLY) {
     const manifest = JSON.parse(await readFile(path.join(OUT, 'manifest.json'), 'utf8'));
@@ -426,7 +384,6 @@ async function main() {
   await fetchAnalytics(heroes, manifest);
 
   await fetchValidation(heroes, manifest);
-  await fetchBrawl(heroes, manifest);
 
   await save('manifest.json', manifest);
   console.log('done', manifest.counts);

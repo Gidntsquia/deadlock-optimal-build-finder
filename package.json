@@ -10,11 +10,8 @@
     "fetch-data": "node scripts/fetch-data.mjs",
     "generate": "npx tsx scripts/generate-cli.ts",
     "verify": "npx tsx scripts/verify.ts",
-    "brawl": "npx tsx scripts/brawl-cli.ts",
     "verify:browser": "npm run build && node scripts/browser-check.mjs",
-    "preview": "vite preview",
-    "brawl:see": "npx tsx scripts/brawl-recognise.ts",
-    "icon-index": "node scripts/build-icon-index.mjs"
+    "preview": "vite preview"
   },
   "dependencies": {
     "qrcode": "^1.5.4",
@@ -29,7 +26,6 @@
     "@vitejs/plugin-react": "^6.1.0",
     "oxlint": "^1.79.0",
     "playwright": "^1.59.1",
-    "sharp": "^0.35.4",
     "tsx": "^4.23.13",
     "typescript": "~6.0.2",
     "vite": "^8.2.2"
