@@ -154,13 +154,31 @@ export default function App() {
   };
   const selectStyle = (b: Build) => pickStyle(b.population.style?.key ?? '');
 
+  // en-GB's "short" month gives "Sept" (4 letters) for September; build the day/month/year
+  // pieces separately so the month abbreviation is always exactly 3 letters, e.g. "4 Sep 2026".
+  const fetchedDate = manifest?.fetched_at
+    ? (() => {
+        const d = new Date(manifest.fetched_at);
+        const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric' }).format(d);
+        const month = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d);
+        const year = new Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(d);
+        return `${day} ${month} ${year}`;
+      })()
+    : null;
+
+  const styleTooltip = (b: Build) => {
+    const style = b.population.style;
+    if (!style) return undefined;
+    return style.seed ? `Games where ${style.seed.name} was bought.` : `Leaves out games built around ${style.exclude.map((i) => i.name).join(', ')}.`;
+  };
+
   if (error)
     return (
       <div className="error" role="alert">
         {error}
       </div>
     );
-  if (!hero) return <div className="loading">Loading snapshots…</div>;
+  if (!hero) return <div className="loading">Loading builds…</div>;
 
   return (
     <>
@@ -169,7 +187,7 @@ export default function App() {
         <div>
           <h1>{hero.name} build</h1>
           <div className="sub">
-            Deadlock Optimal Build Finder, {manifest?.window_days}-day data fetched {manifest?.fetched_at.slice(0, 10)}
+            Last {manifest?.window_days} days{fetchedDate ? ` · data from ${fetchedDate}` : ''}
           </div>
         </div>
       </header>
@@ -196,11 +214,11 @@ export default function App() {
         >
           <TabsList className="style-tabs" aria-label="Build style">
             {builds.map((b, i) => (
-              <TabsTrigger key={b.key} value={b.key} className="style-tab">
+              <TabsTrigger key={b.key} value={b.key} className="style-tab" title={styleTooltip(b)}>
                 <span>{b.name}</span>
                 <small>
                   {b.population.style ? `${(b.population.style.share * 100).toFixed(0)}% of games` : ''}
-                  {validations[i] ? ` · ${(validations[i].agreement * 100).toFixed(0)}% panel` : ''}
+                  {validations[i] ? ` · ${(validations[i].agreement * 100).toFixed(0)}% match` : ''}
                 </small>
               </TabsTrigger>
             ))}
@@ -218,8 +236,8 @@ export default function App() {
         />
       )}
       <footer>
-        Data: deadlock-api.com (aggregate analytics, assets). Builds are generated deterministically from the local snapshot; see README for the scoring
-        function.
+        Data from <a href="https://deadlock-api.com">deadlock-api.com</a>. See the{' '}
+        <a href="https://github.com/Gidntsquia/deadlock-optimal-build-finder#readme">README</a> for how builds are put together.
       </footer>
     </>
   );

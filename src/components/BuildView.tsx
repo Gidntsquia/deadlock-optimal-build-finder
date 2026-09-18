@@ -7,6 +7,7 @@ import { ItemCard } from './ItemCard';
 import { ItemTile } from './ItemTile';
 import { renderBuildPng } from '../export/png';
 import { log } from '../log';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 
 const PHASES: { key: Phase; label: string }[] = [
   { key: 'early', label: 'Early Game' },
@@ -129,14 +130,8 @@ export function BuildView({
             </div>
             <div className="source">
               {build.population.kind === 'top'
-                ? `Built from high-rank lobbies (average badge ${build.population.minBadge}+, Phantom and above), ${build.population.matches.toLocaleString()} matches${build.population.style ? ` played this way (${(build.population.style.share * 100).toFixed(0)}% of the hero's high-rank games)` : ''}.`
-                : `Built from all ranks, ${build.population.matches.toLocaleString()} matches. Not enough high-rank games for this hero.`}
-              {build.population.style &&
-                build.population.style.seed &&
-                ` This hero has more than one established build; this one is the games where ${build.population.style.seed.name} was bought.`}
-              {build.population.style &&
-                !build.population.style.seed &&
-                ` This hero has more than one established build; this one leaves out games built around ${build.population.style.exclude.map((i) => i.name).join(', ')}.`}
+                ? `From ${build.population.matches.toLocaleString()} high-rank matches (Phantom and above).`
+                : `From ${build.population.matches.toLocaleString()} matches, all ranks (not enough high-rank games for this hero).`}
             </div>
             {hasCore && (
               <div className="legend">
@@ -193,16 +188,22 @@ export function BuildView({
           {panel && reps > 0 && (
             <div className="panel">
               <h2>Validation vs. top players</h2>
-              <div className="muted">
-                How well the generator did against {reps === 1 ? 'one' : reps} held-out top {heroName} {reps === 1 ? 'player' : 'players'}. A player's core set
-                = items in ≥30% of their sampled matchmaking games (wins weighted 1.5×); rarer items are experiments and are excluded. Panel agreement is the
-                mean over players{reps > 1 ? ', weighted by how representative each player is' : ''}. Their data never feeds the generator.
-              </div>
-              <div className="big" style={{ marginTop: 6 }}>
-                {(panel.agreement * 100).toFixed(0)}% agreement
-              </div>
-              <div className="meter">
-                <div style={{ width: `${panel.agreement * 100}%` }} />
+              <div className="panel-summary">
+                <div className="big">
+                  {(panel.agreement * 100).toFixed(0)}% match with {reps} top {heroName} {reps === 1 ? 'player' : 'players'}
+                </div>
+                <div className="meter">
+                  <div style={{ width: `${panel.agreement * 100}%` }} />
+                </div>
+                {panel.missingConsensus.length > 0 && (
+                  <div className="chips" style={{ marginTop: 8 }}>
+                    {panel.missingConsensus.map((c) => (
+                      <span className="chip" key={c.item.id} title={`in ${(c.frequency * 100).toFixed(0)}% of their games on average`}>
+                        {c.item.name} — {c.reps} of {reps} players
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
               <div style={{ overflowX: 'auto', marginTop: 8 }}>
                 <table className="panel-table">
@@ -232,20 +233,15 @@ export function BuildView({
                   </tbody>
                 </table>
               </div>
-              {panel.missingConsensus.length > 0 && (
-                <>
-                  <div className="muted" style={{ marginTop: 8 }}>
-                    Core items the panel buys that the build is missing:
-                  </div>
-                  <div className="chips">
-                    {panel.missingConsensus.map((c) => (
-                      <span className="chip" key={c.item.id} title={`in ${(c.frequency * 100).toFixed(0)}% of their games on average`}>
-                        {c.item.name} {c.reps}/{reps} reps
-                      </span>
-                    ))}
-                  </div>
-                </>
-              )}
+              <Collapsible className="disclosure">
+                <CollapsibleTrigger className="disclosure-trigger">How this is measured</CollapsibleTrigger>
+                <CollapsibleContent className="disclosure-content">
+                  A player's core set = items bought in 30% or more of their sampled matchmaking games (wins count 1.5× as much); items bought less often are
+                  one-off experiments and are left out. Match percentage is the average over players
+                  {reps > 1 ? ', weighted by how representative each player is' : ''}. None of this data is used to build the recommendation itself — it only
+                  checks the result afterward.
+                </CollapsibleContent>
+              </Collapsible>
             </div>
           )}
         </div>
