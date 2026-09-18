@@ -454,8 +454,87 @@ try {
     const subText = await page.$eval('.app-header .sub', (e) => e.textContent ?? '');
     check('item 4: header shows a plain-language date', /\d{1,2} \w{3} \d{4}/.test(subText), subText);
   }
+
+  // item 6: Share button (no stub) yields a real PNG download
+  {
+    const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
+    await page.click('.share-btn');
+    const download = await downloadPromise;
+    const stream = await download.createReadStream();
+    const bytes = await new Promise((resolve, reject) => {
+      const chunks = [];
+      stream.on('data', (c) => chunks.push(c));
+      stream.on('end', () => resolve(Buffer.concat(chunks).subarray(0, 8)));
+      stream.on('error', reject);
+    });
+    const pngSig = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    check('item 6: Share (no stub) downloads a file starting with the PNG signature', bytes.equals(pngSig), bytes.toString('hex'));
+    await page.waitForSelector('text=Downloaded build image.', { timeout: 5000 });
+    check('item 6: Share success shows a visible message (not alert())', true);
+  }
+
+  // item 6: CLS across three hero switches stays low — the old build stays mounted (dimmed), not collapsed
+  {
+    await page.evaluate(() => {
+      window.__cls = 0;
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) if (!entry.hadRecentInput) window.__cls += entry.value;
+      }).observe({ type: 'layout-shift', buffered: false });
+    });
+    for (const name of ['Seven', 'Vindicta', 'Warden']) {
+      await pickHero(name);
+      await page.waitForFunction((n) => document.querySelector('.app-header h1')?.textContent.startsWith(n), name, { timeout: 15000 });
+      await page.waitForSelector('.board-wrap:not(.stale)', { timeout: 15000 });
+    }
+    const cls = await page.evaluate(() => window.__cls);
+    check('item 6: cumulative layout shift across 3 hero switches < 0.05', cls < 0.05, `${cls.toFixed(4)}`);
+    await pickHero('Infernus');
+    await page.waitForFunction(() => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus'), null, { timeout: 15000 });
+  }
+
+  // item 6: Share failure (toBlob stubbed to throw) shows a visible failure message, never a native dialog
+  {
+    const page2 = await ctx.newPage();
+    let dialogCount = 0;
+    page2.on('dialog', (d) => {
+      dialogCount++;
+      d.dismiss();
+    });
+    await page2.addInitScript(() => {
+      HTMLCanvasElement.prototype.toBlob = () => {
+        throw new Error('stubbed failure');
+      };
+    });
+    await page2.goto('http://localhost:4173/');
+    await page2.waitForSelector('.tiles .tile', { timeout: 20000 });
+    await page2.click('.share-btn');
+    await page2.waitForSelector('text=PNG export failed', { timeout: 10000 });
+    check('item 6: Share failure (toBlob throws) raises zero native dialogs and shows a visible failure message', dialogCount === 0);
+    await page2.close();
+  }
 } catch (e) {
   check('browser flow', false, String(e));
+}
+// item 6: with reducedMotion:'reduce', no element reports a transition-duration above 0s
+try {
+  const rmCtx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  const rmPage = await rmCtx.newPage();
+  await rmPage.route('**/*', (route) => (route.request().url().startsWith('http://localhost:4173') ? route.continue() : route.abort()));
+  await rmPage.goto('http://localhost:4173/');
+  await rmPage.waitForSelector('.tiles .tile', { timeout: 20000 });
+  const worstDuration = await rmPage.evaluate(() =>
+    Math.max(
+      0,
+      ...[...document.querySelectorAll('*')].map((el) => {
+        const d = getComputedStyle(el).transitionDuration;
+        return Math.max(...d.split(',').map((s) => parseFloat(s) || 0));
+      }),
+    ),
+  );
+  check('item 6: reducedMotion leaves no element with transition-duration above 0s', worstDuration <= 0, `${worstDuration}s`);
+  await rmCtx.close();
+} catch (e) {
+  check('item 6: reducedMotion transition check', false, String(e));
 }
 check('no console errors (network disabled)', errors.length === 0, errors.slice(0, 3).join(' | '));
 console.log(`(blocked ${imgBlocked.length} external requests, e.g. images — expected offline)`);

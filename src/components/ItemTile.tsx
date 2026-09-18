@@ -29,7 +29,7 @@ export const ItemTile = forwardRef<
       data-core={isCore === undefined ? undefined : String(isCore)}
     >
       <span className="art">
-        <img src={img(item.shop_image_webp || item.image_webp)} alt="" loading="lazy" />
+        <img src={img(item.shop_image_webp || item.image_webp)} alt="" loading="lazy" width={96} height={96} />
       </span>
       <span className={`tier t${item.item_tier}`}>
         <span>{ROMAN[item.item_tier] ?? item.item_tier}</span>

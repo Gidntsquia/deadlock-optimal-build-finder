@@ -2,11 +2,21 @@ import { useEffect, useMemo, useReducer, useState } from 'react';
 import type { Ability, Build, Hero, HeroAnalytics, Item } from './types';
 import { img, loadAnalytics, loadCore, type Manifest } from './data/load';
 import { generateBuilds } from './generator';
-import { computeCoreSet, loadHeldout, validateAgainstPanel, type CoreSet, type HeldoutPurchases, type HeldoutSet } from './validation/heldout';
+import {
+  computeCoreSet,
+  loadHeldout,
+  validateAgainstPanel,
+  type CoreSet,
+  type HeldoutPurchases,
+  type HeldoutSet,
+  type PanelValidation,
+} from './validation/heldout';
 import { BuildView } from './components/BuildView';
 import { HeroPicker } from './components/HeroPicker';
 import { slugify } from './slug';
 import { Tabs, TabsList, TabsTrigger } from './components/ui/tabs';
+import { BoardSkeleton } from './components/BoardSkeleton';
+import { Toaster } from './components/ui/sonner';
 import { log } from './log';
 
 const INFERNUS = 1;
@@ -148,6 +158,29 @@ export default function App() {
     : 0;
   const build = builds[Math.min(tab, builds.length - 1)];
 
+  // Kept so a hero switch dims the previous build in place instead of collapsing to a loading
+  // line while the new one generates. This is the React-documented "adjust state during render"
+  // pattern (a plain conditional setState call in the render body, not inside an effect), so it
+  // doesn't trip the set-state-in-effect rule and never causes an extra flicker frame.
+  const [lastGood, setLastGood] = useState<{
+    build: Build;
+    panel: PanelValidation | null;
+    heroName: string;
+    heroImage?: string;
+    fetchedAt?: string;
+  } | null>(null);
+  if (build && lastGood?.build.key !== build.key) {
+    setLastGood({
+      build,
+      panel: validations[tab] ?? null,
+      heroName: hero?.name ?? '',
+      heroImage: hero ? img(hero.images.small) : undefined,
+      fetchedAt: manifest?.fetched_at.slice(0, 10),
+    });
+  }
+  const shownBuild = build ?? lastGood?.build;
+  const isStale = !build && !!lastGood;
+
   const selectHero = (h: Hero) => {
     log.info('hero_selected', { heroId: h.id });
     pickHero(slugify(h.name));
@@ -178,12 +211,12 @@ export default function App() {
         {error}
       </div>
     );
-  if (!hero) return <div className="loading">Loading builds…</div>;
+  if (!hero) return <BoardSkeleton />;
 
   return (
     <>
       <header className="app-header">
-        <img src={img(hero.images.small)} alt="" />
+        <img src={img(hero.images.small)} alt="" width={40} height={40} />
         <div>
           <h1>{hero.name} build</h1>
           <div className="sub">
@@ -192,7 +225,6 @@ export default function App() {
         </div>
       </header>
       <HeroPicker heroes={heroes} heroId={heroId} onPick={selectHero} />
-      {analyticsState.status === 'loading' && <div className="loading">Generating builds…</div>}
       {analyticsState.status === 'error' && (
         <div className="error" role="alert">
           Couldn't load analytics for {hero.name}. {analyticsState.message}
@@ -225,20 +257,24 @@ export default function App() {
           </TabsList>
         </Tabs>
       )}
-      {build && (
-        <BuildView
-          key={`${heroId}-${build.key}`}
-          build={build}
-          panel={validations[tab] ?? null}
-          heroName={hero.name}
-          heroImage={img(hero.images.small)}
-          fetchedAt={manifest?.fetched_at.slice(0, 10)}
-        />
+      {!shownBuild && analyticsState.status === 'loading' && <BoardSkeleton />}
+      {shownBuild && (
+        <div className={`board-wrap fade${isStale ? 'stale' : ''}`} aria-busy={isStale}>
+          <BuildView
+            key={shownBuild.key}
+            build={shownBuild}
+            panel={build ? (validations[tab] ?? null) : (lastGood?.panel ?? null)}
+            heroName={build ? hero.name : (lastGood?.heroName ?? hero.name)}
+            heroImage={build ? img(hero.images.small) : lastGood?.heroImage}
+            fetchedAt={build ? manifest?.fetched_at.slice(0, 10) : lastGood?.fetchedAt}
+          />
+        </div>
       )}
       <footer>
         Data from <a href="https://deadlock-api.com">deadlock-api.com</a>. See the{' '}
         <a href="https://github.com/Gidntsquia/deadlock-optimal-build-finder#readme">README</a> for how builds are put together.
       </footer>
+      <Toaster />
     </>
   );
 }

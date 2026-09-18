@@ -898,7 +898,42 @@ footer {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
   }
+}
+
+/* The one transition style used everywhere something fades in/out or dims: short and cheap
+   (opacity/transform only), so it never causes layout jank and is fully covered by the
+   reduced-motion override above. */
+.fade {
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+.board-wrap {
+  transition: opacity 150ms ease;
+}
+.board-wrap.stale {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.board-skeleton .sk-title {
+  width: 160px;
+  height: 20px;
+}
+.board-skeleton .sk-phase-label {
+  width: 90px;
+  height: 14px;
+}
+.board-skeleton .tiles {
+  grid-template-columns: repeat(4, 1fr);
+}
+.board-skeleton .sk-tile {
+  aspect-ratio: 1;
+  width: 100%;
+  border-radius: 6px;
 }
 
 /* desktop: fill the window, board on the left, ability order + reports on the right */

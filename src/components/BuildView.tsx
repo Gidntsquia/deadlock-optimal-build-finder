@@ -7,6 +7,7 @@ import { ItemCard } from './ItemCard';
 import { ItemTile } from './ItemTile';
 import { renderBuildPng } from '../export/png';
 import { log } from '../log';
+import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 
 const PHASES: { key: Phase; label: string }[] = [
@@ -48,6 +49,7 @@ export function BuildView({
     .replace(/^-|-$/g, '');
   const sharePng = async () => {
     setBusy('png');
+    const toastId = toast.loading('Rendering build image…');
     try {
       const blob = await renderBuildPng(build, { heroName, heroImage, img, fetchedAt });
       const file = new File([blob], `${slug}.png`, { type: 'image/png' });
@@ -55,6 +57,7 @@ export function BuildView({
       if (nav.share && nav.canShare?.({ files: [file] })) {
         try {
           await nav.share({ files: [file], title: `${heroName}: ${build.name}` });
+          toast.success('Shared.', { id: toastId });
           return;
         } catch {
           /* cancelled: fall through to download */
@@ -65,9 +68,10 @@ export function BuildView({
       a.download = file.name;
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      toast.success('Downloaded build image.', { id: toastId });
     } catch (e) {
       log.error('png_export_failed', { message: String(e) });
-      alert(`PNG export failed: ${e}`);
+      toast.error(`PNG export failed: ${e}`, { id: toastId });
     } finally {
       setBusy(null);
     }
@@ -169,7 +173,7 @@ export function BuildView({
               {abilities.map((a) => (
                 <div key={a.id} style={{ display: 'contents' }}>
                   <div className="ap-icon">
-                    <img src={img(a.image_webp)} alt={a.name} />
+                    <img src={img(a.image_webp)} alt={a.name} width={32} height={32} />
                   </div>
                   <div className="ap-track" style={{ gridTemplateColumns: `repeat(${steps}, 1fr)` }} aria-label={`${a.name} level-up steps`}>
                     {build.abilityOrder
@@ -191,7 +195,7 @@ export function BuildView({
             <div className="ap-names">
               {abilities.map((a) => (
                 <div key={a.id}>
-                  <img src={img(a.image_webp)} alt="" />
+                  <img src={img(a.image_webp)} alt="" width={22} height={22} />
                   <span>{a.name}</span>
                 </div>
               ))}

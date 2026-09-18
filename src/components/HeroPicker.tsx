@@ -69,7 +69,7 @@ function Grid({
             className={`hero-opt ${h.id === activeId ? 'active' : ''} ${i === focusIdx ? 'focus' : ''}`}
             onClick={() => onPick(h)}
           >
-            <img src={img(h.images.small)} alt="" loading="lazy" />
+            <img src={img(h.images.small)} alt="" loading="lazy" width={36} height={36} />
             <span>{h.name}</span>
           </button>
         ))}
@@ -96,7 +96,7 @@ export function HeroPicker({ heroes, heroId, onPick }: { heroes: Hero[]; heroId:
     <>
       {/* phone: header button opens a full-height sheet */}
       <button className="hero-picker-trigger" onClick={() => setOpen(true)} aria-haspopup="dialog">
-        {active && <img src={img(active.images.small)} alt="" />}
+        {active && <img src={img(active.images.small)} alt="" width={28} height={28} />}
         <span>{active?.name ?? 'Choose hero'}</span>
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
           <path d="M6 9l6 6 6-6" />
