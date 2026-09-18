@@ -23,12 +23,14 @@ export function BuildView({
   panel,
   heroName,
   heroImage,
+  heroAbilityOrder,
   fetchedAt,
 }: {
   build: Build;
   panel: PanelValidation | null;
   heroName: string;
   heroImage?: string;
+  heroAbilityOrder: string[];
   fetchedAt?: string;
 }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -51,7 +53,7 @@ export function BuildView({
     setBusy('png');
     const toastId = toast.loading('Rendering build image…');
     try {
-      const blob = await renderBuildPng(build, { heroName, heroImage, img, fetchedAt });
+      const blob = await renderBuildPng(build, { heroName, heroImage, heroAbilityOrder, img, fetchedAt });
       const file = new File([blob], `${slug}.png`, { type: 'image/png' });
       const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
       if (nav.share && nav.canShare?.({ files: [file] })) {
@@ -76,7 +78,9 @@ export function BuildView({
       setBusy(null);
     }
   };
-  const abilities = [...new Map(build.abilityOrder.map((s) => [s.ability.id, s.ability])).values()];
+  const abilities = [...new Map(build.abilityOrder.map((s) => [s.ability.id, s.ability])).values()].sort(
+    (a, b) => heroAbilityOrder.indexOf(a.class_name) - heroAbilityOrder.indexOf(b.class_name),
+  );
   const steps = build.abilityOrder.length;
   const reps = panel?.players.length ?? 0;
   const need = consensusThreshold(reps);

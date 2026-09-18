@@ -247,6 +247,7 @@ export default function App() {
                   panel={build ? (validations[tab] ?? null) : (lastGood?.panel ?? null)}
                   heroName={build ? hero.name : (lastGood?.heroName ?? hero.name)}
                   heroImage={build ? img(hero.images.small) : lastGood?.heroImage}
+                  heroAbilityOrder={hero.abilities}
                   fetchedAt={build ? manifest?.fetched_at.slice(0, 10) : lastGood?.fetchedAt}
                 />
               </div>
