@@ -1,9 +1,8 @@
 # UI Design Notes
 
-**User approval: not yet obtained.** This agent cannot show the after-shots to a
-human and record a yes/no — that step is blocked pending a person reviewing
-`docs/ui/after/*.png` against `docs/ui/before/*.png` and telling the worker/evaluator
-"approve" or "revise" with a date. Do not treat this document's existence as approval.
+**User approval: approved, 2026-09-18.** The user reviewed `docs/ui/after/*.png`
+against `docs/ui/before/*.png` (desktop Infernus build view shown directly) and
+approved via AskUserQuestion.
 
 ## Sources read
 
