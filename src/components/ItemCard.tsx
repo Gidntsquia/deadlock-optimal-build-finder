@@ -55,7 +55,7 @@ export function ItemCard({
       }}
     >
       <DialogContent
-        className="sheet sheet-content"
+        className="sheet sheet-content max-[899px]:translate-none"
         onCloseAutoFocus={(e) => {
           e.preventDefault();
           returnFocus(it.id);

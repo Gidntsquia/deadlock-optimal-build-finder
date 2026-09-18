@@ -791,16 +791,19 @@ h3 {
   padding: 12px 14px 28px;
   box-shadow: inset 0 3px 0 var(--board-edge);
 }
-/* item detail dialog: bottom sheet on phone, centred on desktop. High-specificity attribute
-   selector so these position/size rules win over the vendored dialog's own Tailwind utility
-   classes regardless of stylesheet order. */
+/* item detail dialog: bottom sheet on phone, centred on desktop. The `translate` reset
+   lives on the element as a Tailwind utility (`max-[899px]:translate-none` in
+   ItemCard.tsx), not as plain CSS here — lightningcss's minifier drops a plain
+   `translate: 0` declaration as a no-op (it looks identical to the initial value), which
+   silently left the vendored dialog's `translate-x-[-50%] translate-y-[-50%]` active on
+   phone. Position (top/left/right/bottom) and radius are unaffected by that bug and stay
+   here. Desktop needs no transform/translate override at all: the vendored
+   `top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]` already centres it. */
 [data-slot='dialog-content'].sheet-content {
   top: auto;
   left: 0;
   right: 0;
   bottom: 0;
-  translate: 0;
-  transform: none;
   margin: 0;
   gap: 0;
   border: none;
@@ -811,7 +814,6 @@ h3 {
     left: 50%;
     right: auto;
     bottom: auto;
-    transform: translate(-50%, -50%);
     border-radius: 14px;
   }
 }

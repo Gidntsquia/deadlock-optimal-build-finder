@@ -42,6 +42,28 @@ const check = (n, ok, d = '') => {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${n}${d ? ' — ' + d : ''}`);
   if (!ok) fails++;
 };
+// Reads getBoundingClientRect() repeatedly until two reads 300ms apart agree, so an
+// in-flight open/resize animation can't make a still-settling rect look correct.
+async function stableRect(pg, selector) {
+  let prev = null;
+  for (let i = 0; i < 20; i++) {
+    const r = await pg.$eval(selector, (el) => {
+      const b = el.getBoundingClientRect();
+      return { left: b.left, top: b.top, right: b.right, bottom: b.bottom, width: b.width, height: b.height };
+    });
+    if (prev && Object.keys(r).every((k) => Math.abs(r[k] - prev[k]) < 0.5)) return r;
+    prev = r;
+    await pg.waitForTimeout(300);
+  }
+  return prev;
+}
+function assertInsideViewport(check, label, rect, innerWidth, innerHeight) {
+  check(`${label}: left >= 0`, rect.left >= -0.5, `left=${rect.left}`);
+  check(`${label}: top >= 0`, rect.top >= -0.5, `top=${rect.top}`);
+  check(`${label}: right <= innerWidth`, rect.right <= innerWidth + 0.5, `right=${rect.right} innerWidth=${innerWidth}`);
+  check(`${label}: bottom <= innerHeight`, rect.bottom <= innerHeight + 0.5, `bottom=${rect.bottom} innerHeight=${innerHeight}`);
+  check(`${label}: width >= 300`, rect.width >= 300, `width=${rect.width}`);
+}
 // HeroPicker: on phone, the trigger opens a sheet with a filter+grid; on desktop the grid is
 // always inline. `pickHero` opens the sheet if needed, types the name, and clicks the match.
 const isPhone = () => page.viewportSize()?.width < 900;
@@ -49,6 +71,11 @@ const pickHero = async (name) => {
   if (isPhone()) {
     await page.click('.hero-picker-trigger');
     await page.waitForSelector('.hero-sheet .hero-filter');
+    {
+      const vp = page.viewportSize();
+      const r = await stableRect(page, '.hero-sheet');
+      assertInsideViewport(check, 'item 1 (phone hero sheet)', r, vp.width, vp.height);
+    }
     await page.fill('.hero-sheet .hero-filter', name);
     await page.click(`.hero-sheet .hero-opt:has-text("${name}")`);
   } else {
@@ -177,6 +204,33 @@ try {
     `${name}: ${chips.join(' | ')}, ${stats} stat lines`,
   );
   await noHScroll('item card open');
+  {
+    // item 1: phone item dialog is a full-bottom sheet, fully on screen, after the rect settles
+    const vp = page.viewportSize();
+    const r1 = await stableRect(page, '[role="dialog"]');
+    assertInsideViewport(check, 'item 1 (phone, before arrow)', r1, vp.width, vp.height);
+    check('item 1 (phone): bottom-anchored', Math.abs(r1.bottom - vp.height) <= 1, `bottom=${r1.bottom} innerHeight=${vp.height}`);
+    check('item 1 (phone): left edge flush', r1.left <= 1, `left=${r1.left}`);
+    check('item 1 (phone): right edge flush', r1.right >= vp.width - 1, `right=${r1.right} innerWidth=${vp.width}`);
+    const titleRect1 = await page.$eval('[data-slot="dialog-content"] h2', (el) => el.getBoundingClientRect());
+    check(
+      'item 1 (phone): title fully inside viewport',
+      titleRect1.left >= 0 && titleRect1.top >= 0 && titleRect1.right <= vp.width && titleRect1.bottom <= vp.height,
+      JSON.stringify(titleRect1),
+    );
+    check('item 1 (phone): title text is the opened item name', (await page.textContent('[data-slot="dialog-content"] h2')) === name, name);
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(200);
+    const r2 = await stableRect(page, '[role="dialog"]');
+    assertInsideViewport(check, 'item 1 (phone, after ArrowRight)', r2, vp.width, vp.height);
+    check('item 1 (phone, after ArrowRight): still bottom-anchored', Math.abs(r2.bottom - vp.height) <= 1, `bottom=${r2.bottom}`);
+    const titleRect2 = await page.$eval('[data-slot="dialog-content"] h2', (el) => el.getBoundingClientRect());
+    check(
+      'item 1 (phone, after ArrowRight): title still fully inside viewport',
+      titleRect2.left >= 0 && titleRect2.top >= 0 && titleRect2.right <= vp.width && titleRect2.bottom <= vp.height,
+      JSON.stringify(titleRect2),
+    );
+  }
   await page.screenshot({ path: shot('item-sheet-phone.png') });
   await page.tap('[data-slot="dialog-close"]');
   await page.waitForSelector('.sheet', { state: 'detached' });
@@ -304,6 +358,31 @@ try {
   await page.screenshot({ path: shot('hero-picker-desktop.png') });
   await (await page.$('.tiles .tile')).click();
   await page.waitForSelector('.sheet');
+  {
+    // item 1: desktop item dialog is centred, fully on screen, after the rect settles
+    const dName = await page.textContent('[data-slot="dialog-content"] h2');
+    const r1 = await stableRect(page, '[role="dialog"]');
+    assertInsideViewport(check, 'item 1 (desktop, before arrow)', r1, 1440, 900);
+    const cx1 = (r1.left + r1.right) / 2;
+    const cy1 = (r1.top + r1.bottom) / 2;
+    check('item 1 (desktop): centred horizontally', Math.abs(cx1 - 720) <= 2, `centreX=${cx1}`);
+    check('item 1 (desktop): centred vertically', Math.abs(cy1 - 450) <= 2, `centreY=${cy1}`);
+    const titleRect1 = await page.$eval('[data-slot="dialog-content"] h2', (el) => el.getBoundingClientRect());
+    check(
+      'item 1 (desktop): title fully inside viewport',
+      titleRect1.left >= 0 && titleRect1.top >= 0 && titleRect1.right <= 1440 && titleRect1.bottom <= 900,
+      JSON.stringify(titleRect1),
+    );
+    check('item 1 (desktop): title text is the opened item name', (await page.textContent('[data-slot="dialog-content"] h2')) === dName, dName);
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(200);
+    const r2 = await stableRect(page, '[role="dialog"]');
+    assertInsideViewport(check, 'item 1 (desktop, after ArrowRight)', r2, 1440, 900);
+    const cx2 = (r2.left + r2.right) / 2;
+    const cy2 = (r2.top + r2.bottom) / 2;
+    check('item 1 (desktop, after ArrowRight): still centred horizontally', Math.abs(cx2 - 720) <= 2, `centreX=${cx2}`);
+    check('item 1 (desktop, after ArrowRight): still centred vertically', Math.abs(cy2 - 450) <= 2, `centreY=${cy2}`);
+  }
   await page.screenshot({ path: shot('item-sheet-desktop.png') });
 
   // item 5: item detail dialog — focus trap, focus return, keyboard stepping, readable headings
