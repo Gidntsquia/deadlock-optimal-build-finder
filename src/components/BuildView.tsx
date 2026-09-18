@@ -151,17 +151,15 @@ export function BuildView({
             </div>
             <div className="source">
               {build.population.kind === 'top'
-                ? `From ${build.population.matches.toLocaleString()} high-rank matches (Phantom and above).`
-                : `From ${build.population.matches.toLocaleString()} matches, all ranks (not enough high-rank games for this hero).`}
-            </div>
-            {hasCore && (
-              <div className="legend">
-                <span>
+                ? `${build.population.matches.toLocaleString()} high-rank matches`
+                : `${build.population.matches.toLocaleString()} matches, all ranks`}
+              {hasCore && (
+                <>
+                  {' · '}
                   <i className="legend-dot-core" /> core for {reps === 1 ? `${panel!.players[0].set.player}` : `${need} of ${reps} top players`}
-                </span>
-                <span>numbers are buy order</span>
-              </div>
-            )}
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -207,63 +205,67 @@ export function BuildView({
           </div>
 
           {panel && reps > 0 && (
-            <div className="panel">
-              <h2>Validation vs. top players</h2>
-              <div className="panel-summary">
-                <div className="big">
-                  {(panel.agreement * 100).toFixed(0)}% match with {reps} top {heroName} {reps === 1 ? 'player' : 'players'}
-                </div>
-                <div className="meter">
-                  <div style={{ width: `${panel.agreement * 100}%` }} />
-                </div>
-                {panel.missingConsensus.length > 0 && (
-                  <div className="chips" style={{ marginTop: 8 }}>
-                    {panel.missingConsensus.map((c) => (
-                      <span className="chip" key={c.item.id} title={`in ${(c.frequency * 100).toFixed(0)}% of their games on average`}>
-                        {c.item.name} — {c.reps} of {reps} players
-                      </span>
-                    ))}
+            <Collapsible className="panel">
+              <CollapsibleTrigger className="panel-trigger">
+                <h2>Validation vs. top players</h2>
+                <span className="panel-trigger-stat">
+                  {(panel.agreement * 100).toFixed(0)}% match with {reps} {reps === 1 ? 'player' : 'players'}
+                </span>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="panel-summary">
+                  <div className="meter">
+                    <div style={{ width: `${panel.agreement * 100}%` }} />
                   </div>
-                )}
-              </div>
-              <div style={{ overflowX: 'auto', marginTop: 8 }}>
-                <table className="panel-table">
-                  <thead>
-                    <tr>
-                      <th>Player</th>
-                      <th title="matches in the sample (wins)">Games</th>
-                      <th title="lifetime matches on this hero">Lifetime</th>
-                      <th>Agree</th>
-                      <th title="core items in build / core items">Core</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {panel.players.map((p) => (
-                      <tr key={p.set.account_id}>
-                        <td>{p.set.player}</td>
-                        <td>
-                          {p.core.matches} ({p.core.wins}W)
-                        </td>
-                        <td>{p.set.selection?.total_hero_matches ?? '—'}</td>
-                        <td>{(p.validation.agreement * 100).toFixed(0)}%</td>
-                        <td>
-                          {p.validation.sharedCount}/{p.core.core.length}
-                        </td>
+                  {panel.missingConsensus.length > 0 && (
+                    <div className="chips" style={{ marginTop: 8 }}>
+                      {panel.missingConsensus.map((c) => (
+                        <span className="chip" key={c.item.id} title={`in ${(c.frequency * 100).toFixed(0)}% of their games on average`}>
+                          {c.item.name} — {c.reps} of {reps} players
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div style={{ overflowX: 'auto', marginTop: 8 }}>
+                  <table className="panel-table">
+                    <thead>
+                      <tr>
+                        <th>Player</th>
+                        <th title="matches in the sample (wins)">Games</th>
+                        <th title="lifetime matches on this hero">Lifetime</th>
+                        <th>Agree</th>
+                        <th title="core items in build / core items">Core</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <Collapsible className="disclosure">
-                <CollapsibleTrigger className="disclosure-trigger">How this is measured</CollapsibleTrigger>
-                <CollapsibleContent className="disclosure-content">
-                  A player's core set = items bought in 30% or more of their sampled matchmaking games (wins count 1.5× as much); items bought less often are
-                  one-off experiments and are left out. Match percentage is the average over players
-                  {reps > 1 ? ', weighted by how representative each player is' : ''}. None of this data is used to build the recommendation itself — it only
-                  checks the result afterward.
-                </CollapsibleContent>
-              </Collapsible>
-            </div>
+                    </thead>
+                    <tbody>
+                      {panel.players.map((p) => (
+                        <tr key={p.set.account_id}>
+                          <td>{p.set.player}</td>
+                          <td>
+                            {p.core.matches} ({p.core.wins}W)
+                          </td>
+                          <td>{p.set.selection?.total_hero_matches ?? '—'}</td>
+                          <td>{(p.validation.agreement * 100).toFixed(0)}%</td>
+                          <td>
+                            {p.validation.sharedCount}/{p.core.core.length}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <Collapsible className="disclosure">
+                  <CollapsibleTrigger className="disclosure-trigger">How this is measured</CollapsibleTrigger>
+                  <CollapsibleContent className="disclosure-content">
+                    A player's core set = items bought in 30% or more of their sampled matchmaking games (wins count 1.5× as much); items bought less often are
+                    one-off experiments and are left out. Match percentage is the average over players
+                    {reps > 1 ? ', weighted by how representative each player is' : ''}. None of this data is used to build the recommendation itself — it only
+                    checks the result afterward.
+                  </CollapsibleContent>
+                </Collapsible>
+              </CollapsibleContent>
+            </Collapsible>
           )}
         </div>
       </div>

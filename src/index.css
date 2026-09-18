@@ -574,30 +574,13 @@ h3 {
   font-size: 12px;
   color: var(--ink-soft);
 }
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--ink-soft);
-}
-.legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.legend i {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  display: inline-block;
-}
 .legend-dot-core {
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   display: inline-block;
+  vertical-align: middle;
+  margin-bottom: 2px;
   background: var(--good);
 }
 
@@ -698,6 +681,24 @@ h3 {
   font-size: 16px;
   margin-bottom: 4px;
 }
+.panel-trigger {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  min-height: 44px;
+}
+.panel-trigger h2 {
+  margin-bottom: 0;
+}
+.panel-trigger-stat {
+  font-size: 12.5px;
+  font-weight: 700;
+  opacity: 0.85;
+  white-space: nowrap;
+}
 .panel .muted {
   font-size: 12px;
   opacity: 0.7;
@@ -751,6 +752,7 @@ h3 {
   text-align: right;
 }
 .panel-summary {
+  margin-top: 8px;
   margin-bottom: 4px;
 }
 .disclosure {
@@ -1001,7 +1003,17 @@ footer {
   }
   .hero-picker-desktop .hero-grid {
     grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-    max-height: 140px;
+    max-height: 92px;
+  }
+  .app-header {
+    padding: 4px 12px;
+  }
+  .app-header img {
+    width: 32px;
+    height: 32px;
+  }
+  footer {
+    display: none;
   }
   .layout {
     display: grid;
