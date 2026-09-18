@@ -109,3 +109,31 @@ property of the game (a well-designed item's raw win-rate edge against a specifi
 may just be a few points, most of which selection bias already explains), not a further scoring bug;
 and (2) `Bullet Armor`/`Spirit Armor` need current, non-disabled equivalents in the item catalog
 before the two "obvious counter" scenarios can be evaluated at all.
+
+## Follow-up: tested the live resist items directly (not the disabled ones)
+
+To rule out "the disabled Bullet/Spirit Armor items are hiding a real signal", re-ran the lift
+calculation by hand for the current, non-disabled equivalents — `Bullet Resilience` and
+`Spirit Resilience` (tier 3 vitality items) — against the exact gun-team and spirit-team scenarios:
+
+| item | scenario | lift | expected sign | raw per-enemy win rate |
+| --- | --- | --- | --- | --- |
+| Bullet Resilience | vs all-gun (Vindicta/Grey Talon/Holliday) | **+0.043** | positive | 47.0% / 49.8% / 51.9% |
+| Spirit Resilience | vs all-spirit (Lash/Viscous/Paradox) | **-0.018** | positive | 50.4% / 52.8% / 54.3% |
+| Bullet Resist Shredder | vs all-gun | -0.013 | positive | — |
+| Bullet Resist Shredder | vs all-spirit | +0.007 | negative | — |
+
+Bullet Resilience gets the right sign (barely) against the scenario it was picked for, but it's the
+largest lift found across two full scenario sweeps and it's still under 0.05. Spirit Resilience and
+Bullet Resist Shredder get the *wrong* sign against the scenario they should counter. The raw
+per-enemy win rates for Bullet Resilience vs. three different "gun" heroes (47.0% / 49.8% / 51.9%)
+also disagree with each other more than they agree with a shared "counters guns" story.
+
+**This rules out the disabled-item gap as the explanation.** The K-scaling fix was real and
+necessary, but the residual problem is the underlying signal, not remaining plumbing: item pick vs.
+enemy-composition win-rate deltas in this data are the same size as, or smaller than, the noise from
+who buys what (skill/MMR correlation, patch drift, matchup correlation with matchmaking), even for
+the textbook case of a resist item against its matching damage type. Fixing this would need either
+much more per-hero×enemy match volume than a single 30-day snapshot provides, or an estimator that
+controls for player skill directly (not available from this API — no per-match MMR/badge field to
+condition on), not further tuning of `K`, `MIN_VS_MATCHES`, or population width.
