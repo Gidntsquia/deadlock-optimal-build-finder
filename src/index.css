@@ -18,7 +18,10 @@
   --board-edge: #a89873;
   --board-head: #b7a986;
   --ink: #2b241a;
-  --ink-soft: #6b5e46;
+  /* Darkened from the original #6b5e46 (axe: 3.4:1 on the parchment board background at 12px
+     is below WCAG's 4.5:1 for normal-weight text) — #463c26 clears 4.5:1 on both the board
+     (#cbbd9f) and the darker board-head (#b7a986) backgrounds. */
+  --ink-soft: #463c26;
   --teal: #62b6c8;
   --teal-ink: #1b3a44;
   --weapon: #e6ad5f;
@@ -30,7 +33,9 @@
   --navy: #2b3d70;
   --navy-track: #1a2a58;
   --navy-ink: #e9edf8;
-  --good: #3f9f5c;
+  /* Darkened from #3f9f5c — axe: white text on the original green is 3.32:1 at 10px bold,
+     below WCAG's 4.5:1 for normal-weight text (bold-at-10px doesn't qualify as "large text"). */
+  --good: #2a7040;
   --warn: #d98a2b;
   color-scheme: dark;
 
@@ -179,7 +184,8 @@ h3 {
 }
 .app-header .sub {
   font-size: 12px;
-  opacity: 0.8;
+  /* No opacity dimming here (axe: dimming teal-ink on teal drops contrast below 4.5:1 at this
+     font size) — the smaller font size alone is enough visual de-emphasis vs. the h1. */
 }
 
 /* hero picker: one control per viewport — a trigger opening a sheet on phone,
@@ -862,7 +868,9 @@ h3 {
 }
 .tt-section h3 {
   font-size: 13px;
-  color: #7a3f9e;
+  /* Darkened from #7a3f9e — axe: 3.73:1 on the parchment board background at 13px bold
+     is below WCAG's 4.5:1; #5f2e7d clears 5.2:1 on the same background. */
+  color: #5f2e7d;
   margin-bottom: 4px;
 }
 .tt-section p {
@@ -1020,8 +1028,9 @@ footer {
 }
 .style-tab small {
   font-weight: 600;
-  opacity: 0.8;
   font-size: 12px;
+  /* No opacity dimming (axe: the active state's teal-ink-on-teal combo drops below 4.5:1 at this
+     font size once dimmed) — font-weight/size already de-emphasize this vs. the build name. */
 }
 .btn {
   display: inline-flex;

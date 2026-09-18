@@ -14,7 +14,7 @@ import {
 import { BuildView } from './components/BuildView';
 import { HeroPicker } from './components/HeroPicker';
 import { slugify } from './slug';
-import { Tabs, TabsList, TabsTrigger } from './components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { BoardSkeleton } from './components/BoardSkeleton';
 import { Toaster } from './components/ui/sonner';
 import { log } from './log';
@@ -235,41 +235,55 @@ export default function App() {
           </div>
         </div>
       )}
-      {builds.length > 1 && (
-        <Tabs
-          value={build?.key}
-          onValueChange={(key) => {
-            const picked = builds.find((b) => b.key === key);
-            if (picked) selectStyle(picked);
-          }}
-          className="style-tabs-wrap"
-        >
-          <TabsList className="style-tabs" aria-label="Build style">
-            {builds.map((b, i) => (
-              <TabsTrigger key={b.key} value={b.key} className="style-tab" title={styleTooltip(b)}>
-                <span>{b.name}</span>
-                <small>
-                  {b.population.style ? `${(b.population.style.share * 100).toFixed(0)}% of games` : ''}
-                  {validations[i] ? ` · ${(validations[i].agreement * 100).toFixed(0)}% match` : ''}
-                </small>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      )}
-      {!shownBuild && analyticsState.status === 'loading' && <BoardSkeleton />}
-      {shownBuild && (
-        <div className={`board-wrap fade${isStale ? 'stale' : ''}`} aria-busy={isStale}>
-          <BuildView
-            key={shownBuild.key}
-            build={shownBuild}
-            panel={build ? (validations[tab] ?? null) : (lastGood?.panel ?? null)}
-            heroName={build ? hero.name : (lastGood?.heroName ?? hero.name)}
-            heroImage={build ? img(hero.images.small) : lastGood?.heroImage}
-            fetchedAt={build ? manifest?.fetched_at.slice(0, 10) : lastGood?.fetchedAt}
-          />
-        </div>
-      )}
+      {(() => {
+        const boardArea = (
+          <>
+            {!shownBuild && analyticsState.status === 'loading' && <BoardSkeleton />}
+            {shownBuild && (
+              <div className={`board-wrap fade${isStale ? 'stale' : ''}`} aria-busy={isStale}>
+                <BuildView
+                  key={shownBuild.key}
+                  build={shownBuild}
+                  panel={build ? (validations[tab] ?? null) : (lastGood?.panel ?? null)}
+                  heroName={build ? hero.name : (lastGood?.heroName ?? hero.name)}
+                  heroImage={build ? img(hero.images.small) : lastGood?.heroImage}
+                  fetchedAt={build ? manifest?.fetched_at.slice(0, 10) : lastGood?.fetchedAt}
+                />
+              </div>
+            )}
+          </>
+        );
+        if (builds.length <= 1) return boardArea;
+        return (
+          <Tabs
+            value={build?.key}
+            onValueChange={(key) => {
+              const picked = builds.find((b) => b.key === key);
+              if (picked) selectStyle(picked);
+            }}
+            className="style-tabs-wrap"
+          >
+            <TabsList className="style-tabs" aria-label="Build style">
+              {builds.map((b, i) => (
+                <TabsTrigger key={b.key} value={b.key} className="style-tab" title={styleTooltip(b)}>
+                  <span>{b.name}</span>
+                  <small>
+                    {b.population.style ? `${(b.population.style.share * 100).toFixed(0)}% of games` : ''}
+                    {validations[i] ? ` · ${(validations[i].agreement * 100).toFixed(0)}% match` : ''}
+                  </small>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {/* forceMount: the board is the real content of the active tab, not remounted on
+                switch, so the dimmed "old build while loading" state (item 6) keeps working and
+                Radix's aria-controls on each trigger points at an element that actually exists
+                (fixes an axe aria-valid-attr-value violation from an unassociated TabsList). */}
+            <TabsContent value={build?.key ?? ''} forceMount>
+              {boardArea}
+            </TabsContent>
+          </Tabs>
+        );
+      })()}
       <footer>
         Data from <a href="https://deadlock-api.com">deadlock-api.com</a>. See the{' '}
         <a href="https://github.com/Gidntsquia/deadlock-optimal-build-finder#readme">README</a> for how builds are put together.

@@ -28,3 +28,6 @@ screenshots/
 .venv/
 __pycache__/
 *.pyc
+
+# Planner/worker/evaluator scratch
+plans/

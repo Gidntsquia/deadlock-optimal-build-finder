@@ -5,6 +5,7 @@ const require = createRequire(import.meta.url);
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
+import AxeBuilder from '@axe-core/playwright';
 
 const SHOT_DIR = process.env.SHOT_DIR || 'screenshots';
 mkdirSync(SHOT_DIR, { recursive: true });
@@ -512,6 +513,30 @@ try {
     check('item 6: Share failure (toBlob throws) raises zero native dialogs and shows a visible failure message', dialogCount === 0);
     await page2.close();
   }
+
+  // item 7: axe accessibility scan at both sizes, with the item sheet closed and open
+  const runAxe = async (label) => {
+    const results = await new AxeBuilder({ page }).analyze();
+    const bad = results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
+    check(`item 7: axe scan (${label}) — 0 serious/critical violations`, bad.length === 0, bad.map((v) => `${v.id} (${v.impact})`).join(', '));
+  };
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('http://localhost:4173/');
+  await page.waitForSelector('.tiles .tile', { timeout: 20000 });
+  await runAxe('desktop, sheet closed');
+  await (await page.$('.tiles .tile')).click();
+  await page.waitForSelector('.sheet');
+  await runAxe('desktop, sheet open');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('.sheet', { state: 'detached' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForTimeout(100);
+  await runAxe('phone, sheet closed');
+  await (await page.$('.tiles .tile')).click();
+  await page.waitForSelector('.sheet');
+  await runAxe('phone, sheet open');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('.sheet', { state: 'detached' });
 } catch (e) {
   check('browser flow', false, String(e));
 }
