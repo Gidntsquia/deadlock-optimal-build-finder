@@ -4,6 +4,11 @@ const require = createRequire(import.meta.url);
 // except localhost, and verifies rendering at 390x844 with zero console errors.
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
+import { mkdirSync } from 'node:fs';
+
+const SHOT_DIR = process.env.SHOT_DIR || 'screenshots';
+mkdirSync(SHOT_DIR, { recursive: true });
+const shot = (name) => `${SHOT_DIR}/${name}`;
 
 const server = spawn('node', ['node_modules/vite/bin/vite.js', 'preview', '--port', '4173', '--strictPort'], { stdio: 'ignore' });
 await new Promise((r) => setTimeout(r, 2500));
@@ -65,9 +70,11 @@ try {
   const img = await page.$eval('.sheet-head img', (e) => e.getAttribute('src'));
   check('item detail card: image, cost, tier, slot, stats', !!img && chips.some((c) => /souls/.test(c)) && chips.some((c) => /^Tier \d/.test(c)) && chips.some((c) => /Weapon|Vitality|Spirit/.test(c)) && stats > 0, `${name}: ${chips.join(' | ')}, ${stats} stat lines`);
   await noHScroll('item card open');
-  await page.screenshot({ path: 'screenshots/infernus-item-card.png' });
+  await page.screenshot({ path: shot('item-sheet-phone.png') });
   await page.tap('.sheet-close');
-  await page.screenshot({ path: 'screenshots/infernus-build.png', fullPage: true });
+  await page.screenshot({ path: shot('infernus-build-phone.png'), fullPage: true });
+  // hero picker view (phone): the chip strip / select before choosing another hero
+  await page.screenshot({ path: shot('hero-picker-phone.png'), fullPage: true });
   // 3 other heroes via the select
   const options = await page.$$eval('.hero-select option', (els) => els.map((e) => [e.value, e.textContent]));
   const others = options.filter(([v]) => v !== '1').slice(0, 3);
@@ -80,11 +87,14 @@ try {
     await noHScroll(n);
     await tapOk(n);
   }
-  await page.screenshot({ path: 'screenshots/other-hero.png', fullPage: true });
+  // Warden (id 25): a hero with more than one build style — cover the style tabs
+  await page.selectOption('.hero-select', '25');
+  await page.waitForFunction(() => document.querySelector('.app-header h1')?.textContent.startsWith('Warden') && document.querySelectorAll('.tiles .tile').length >= 1, null, { timeout: 15000 });
+  await page.screenshot({ path: shot('warden-styles-phone.png'), fullPage: true });
   // heroes with their own held-out set show that player's validation panel
-  for (const [v, who] of [['31', "Deathy's Lash"], ['63', "Zergggy's Mina"], ['12', "Yndio's Kelvin"]]) {
+  for (const [v, who] of [['31', 'Albertt'], ['63', 'lordnm'], ['12', 'Yndio']]) {
     await page.selectOption('.hero-select', v);
-    await page.waitForFunction((w) => document.querySelector('.panel h2')?.textContent.includes(w), who, { timeout: 15000 });
+    await page.waitForFunction((w) => [...document.querySelectorAll('.panel-table')].some((t) => t.textContent.includes(w)), who, { timeout: 15000 });
     const agreement = await page.textContent('.big');
     const badges = await page.$$eval('.tiles .tile[data-core]', (els) => els.length);
     const rows = await page.$$eval('.tiles .tile', (els) => els.length);
@@ -97,7 +107,15 @@ try {
   await tapOk('Infernus desktop');
   const [bb, sb] = await Promise.all([page.$eval('.col-main', (e) => e.getBoundingClientRect().toJSON()), page.$eval('.col-side', (e) => e.getBoundingClientRect().toJSON())]);
   check('desktop: two columns filling the window', bb.right <= sb.left && sb.right > 1300 && bb.width > 700, `board ${Math.round(bb.width)}px, side ${Math.round(sb.width)}px`);
-  await page.screenshot({ path: 'screenshots/desktop.png' });
+  await page.screenshot({ path: shot('infernus-build-desktop.png') });
+  await page.screenshot({ path: shot('hero-picker-desktop.png') });
+  await (await page.$('.tiles .tile')).click();
+  await page.waitForSelector('.sheet');
+  await page.screenshot({ path: shot('item-sheet-desktop.png') });
+  await page.click('.sheet-close');
+  await page.click('.hero-chip:has-text("Warden")');
+  await page.waitForFunction(() => document.querySelector('.app-header h1')?.textContent.startsWith('Warden') && document.querySelectorAll('.tiles .tile').length >= 1, null, { timeout: 15000 });
+  await page.screenshot({ path: shot('warden-styles-desktop.png') });
 } catch (e) { check('browser flow', false, String(e)); }
 check('no console errors (network disabled)', errors.length === 0, errors.slice(0, 3).join(' | '));
 console.log(`(blocked ${imgBlocked.length} external requests, e.g. images — expected offline)`);
