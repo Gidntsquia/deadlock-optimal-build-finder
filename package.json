@@ -17,10 +17,13 @@
   },
   "lint-staged": {
     "src/**/*.{ts,tsx,css}": [
-      "prettier --write",
-      "oxlint"
+      "prettier --write"
     ],
     "src/**/*.{ts,tsx}": [
+      "oxlint",
+      "node scripts/ui-lint.mjs"
+    ],
+    "src/index.css": [
       "node scripts/ui-lint.mjs"
     ]
   },

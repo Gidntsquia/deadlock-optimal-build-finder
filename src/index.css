@@ -60,6 +60,36 @@
   --input: rgba(255, 255, 255, 0.15);
   --ring: var(--teal);
   --radius: 8px;
+  --radius-full: 9999px;
+
+  /* One shadow treatment: hard offset, zero blur (matches the in-game tooltip look). */
+  --shadow-hard: 0 2px 0 rgba(0, 0, 0, 0.25);
+  --shadow-hard-lg: 0 3px 0 rgba(0, 0, 0, 0.45);
+
+  /* Named, non-decorative colours used solid (not as overlays) outside the primary palette
+     above. rgba(0,0,0,*) and rgba(255,255,255,*)/#fff/#000 alpha overlays are exempt from
+     tokenisation — see docs/ui/DESIGN.md's "colour tokens" section for the stated rule. */
+  --avatar-bg: #0b1414;
+  --tier-2: #7f5d33;
+  --tier-3: #5a4630;
+  --tier-4: #2e2419;
+  --tooltip-bg: #2d2418;
+  --tooltip-ink: #f2e7cf;
+  --ap-icon-bg: #f3ead6;
+  --ap-track-fill: #5b6485;
+  --ap-track-unlock: #a06be0;
+  --section-heading: #5f2e7d; /* darkened from #7a3f9e, see the axe note further down */
+  --error-ink: #ff9a8a;
+
+  /* Two non-decorative overlay tints that aren't plain black/white: a phase-card border and
+     a table hairline, kept as literal values because they don't derive from a palette token. */
+  --panel-line: rgba(90, 75, 50, 0.25);
+  --hairline-grey: rgba(128, 128, 128, 0.2);
+
+  /* The one deliberate gradient kept from the shop theme: a subtle top-down vignette on the
+     page background, using only palette tokens. The meter-fill gradient was removed instead
+     (item 2) so there is exactly one gradient in the CSS. */
+  --bg-vignette: radial-gradient(120% 70% at 50% -10%, var(--room2), var(--room) 70%);
 }
 
 @theme inline {
@@ -127,7 +157,7 @@ body {
 }
 body {
   background-color: var(--room);
-  background-image: radial-gradient(120% 70% at 50% -10%, var(--room2), var(--room) 70%);
+  background-image: var(--bg-vignette);
   background-attachment: fixed;
 }
 #root {
@@ -164,18 +194,18 @@ h3 {
   z-index: 5;
   background: var(--teal);
   color: var(--teal-ink);
-  padding: 10px 14px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+  gap: 8px;
+  box-shadow: var(--shadow-hard);
 }
 .app-header img {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  background: #0b1414;
+  background: var(--avatar-bg);
   border: 2px solid rgba(255, 255, 255, 0.55);
 }
 .app-header h1 {
@@ -196,8 +226,8 @@ h3 {
   gap: 8px;
   width: calc(100% - 28px);
   min-height: 44px;
-  margin: 8px 14px 4px;
-  padding: 6px 12px;
+  margin: 8px 12px 4px;
+  padding: 4px 12px;
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -229,7 +259,7 @@ h3 {
   max-height: 90dvh;
   background: var(--room2);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-  padding: 12px 14px 20px;
+  padding: 12px 12px 20px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -243,7 +273,7 @@ h3 {
 .hero-picker-body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   min-height: 0;
   overflow: hidden;
 }
@@ -266,9 +296,9 @@ h3 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   min-height: 44px;
-  padding: 6px 4px;
+  padding: 4px 4px;
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.06);
   border: 2px solid transparent;
@@ -291,7 +321,7 @@ h3 {
 }
 .hero-opt.active {
   border-color: var(--teal);
-  background: rgba(98, 182, 200, 0.18);
+  background: color-mix(in srgb, var(--teal) 18%, transparent);
 }
 .hero-opt.focus {
   outline: 2px solid var(--teal);
@@ -304,14 +334,14 @@ h3 {
 
 /* parchment build board */
 .board {
-  margin: 0 10px 14px;
+  margin: 0 8px 12px;
   background: var(--board);
   color: var(--ink);
-  border-radius: 8px;
-  padding: 12px 10px 10px;
+  border-radius: var(--radius-md);
+  padding: 12px 8px 8px;
   box-shadow:
     inset 0 0 0 2px var(--board-edge),
-    0 6px 18px rgba(0, 0, 0, 0.45);
+    var(--shadow-hard-lg);
 }
 .board h2 {
   font-size: 18px;
@@ -321,17 +351,17 @@ h3 {
   font-size: 12.5px;
 }
 .phase {
-  margin-top: 10px;
+  margin-top: 8px;
   background: rgba(255, 255, 255, 0.18);
-  border-radius: 6px;
-  border: 1px solid rgba(90, 75, 50, 0.25);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--panel-line);
   overflow: hidden;
 }
 .phase-head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: 6px 10px;
+  padding: 4px 8px;
   background: var(--board-head);
   font-size: 15px;
   font-weight: 800;
@@ -346,7 +376,7 @@ h3 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  padding: 10px 8px;
+  padding: 8px 8px;
 }
 
 /* item tile, mirrors the shop card: slot-tinted image area, roman tier tab in the corner, name plate */
@@ -354,12 +384,12 @@ h3 {
   position: relative;
   display: flex;
   flex-direction: column;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   text-align: center;
   min-height: 40px;
   padding: 0;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-hard);
   transform: translateZ(0);
 }
 .tile:active {
@@ -386,7 +416,7 @@ h3 {
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 }
 .tile .plate {
-  padding: 4px 3px 5px;
+  padding: 4px 4px 4px;
   font-size: 11px;
   line-height: 1.15;
   font-weight: 800;
@@ -420,7 +450,7 @@ h3 {
   width: 26px;
   height: 26px;
   clip-path: polygon(0 0, 100% 0, 100% 100%);
-  background: rgba(40, 30, 20, 0.55);
+  background: color-mix(in srgb, var(--tooltip-bg) 55%, transparent);
 }
 .tile .tier span {
   position: absolute;
@@ -441,13 +471,13 @@ h3 {
   background: var(--spirit);
 }
 .tile .tier.t2 {
-  background: #7f5d33;
+  background: var(--tier-2);
 }
 .tile .tier.t3 {
-  background: #5a4630;
+  background: var(--tier-3);
 }
 .tile .tier.t4 {
-  background: #2e2419;
+  background: var(--tier-4);
 }
 .tile .order {
   position: absolute;
@@ -456,8 +486,8 @@ h3 {
   min-width: 16px;
   height: 16px;
   padding: 0 4px;
-  border-radius: 8px;
-  background: rgba(20, 15, 10, 0.7);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--tooltip-bg) 70%, transparent);
   color: #fff;
   font-size: 10px;
   font-weight: 900;
@@ -469,13 +499,13 @@ h3 {
   left: 50%;
   transform: translateX(-50%);
   bottom: 34px;
-  background: #2d2418;
-  color: #f2e7cf;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-ink);
   font-size: 8px;
   font-weight: 900;
   letter-spacing: 0.5px;
-  padding: 2px 5px;
-  border-radius: 3px;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
 }
 .tile .mark {
   position: absolute;
@@ -497,38 +527,38 @@ h3 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
-  padding: 6px 4px 0;
+  margin-top: 8px;
+  padding: 4px 4px 0;
   font-weight: 800;
 }
 .souls {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 .souls::before {
   content: '';
   width: 12px;
   height: 16px;
   background: currentColor;
-  border-radius: 6px 6px 6px 6px / 8px 8px 8px 8px;
+  border-radius: var(--radius-sm);
   clip-path: polygon(50% 0, 100% 25%, 65% 50%, 100% 75%, 50% 100%, 0 75%, 35% 50%, 0 25%);
 }
 .board-head {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 10px;
+  gap: 8px;
 }
 .share-btn {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   min-height: 44px;
   min-width: 44px;
   padding: 0 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   color: var(--ink);
   background: rgba(0, 0, 0, 0.07);
   border: 1px solid var(--board-edge);
@@ -539,7 +569,7 @@ h3 {
   opacity: 0.6;
 }
 .source {
-  margin-top: 6px;
+  margin-top: 4px;
   padding: 0 4px;
   font-size: 12px;
   color: var(--ink-soft);
@@ -547,7 +577,7 @@ h3 {
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   margin-top: 8px;
   font-size: 12px;
   color: var(--ink-soft);
@@ -573,12 +603,12 @@ h3 {
 
 /* ability point order: navy board with one track per ability, markers at each step */
 .ap {
-  margin: 0 10px 14px;
+  margin: 0 8px 12px;
   background: var(--navy);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 12px 12px 12px;
   color: var(--navy-ink);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-hard-lg);
 }
 .ap h2 {
   font-size: 17px;
@@ -592,7 +622,7 @@ h3 {
 .ap-grid {
   display: grid;
   grid-template-columns: 36px 1fr;
-  gap: 2px 6px;
+  gap: 2px 4px;
 }
 .ap-icon {
   height: 34px;
@@ -603,15 +633,15 @@ h3 {
   width: 32px;
   height: 32px;
   object-fit: contain;
-  background: #f3ead6;
-  border-radius: 3px;
+  background: var(--ap-icon-bg);
+  border-radius: var(--radius-sm);
   padding: 2px;
 }
 .ap-track {
   display: grid;
   height: 34px;
   background: var(--navy-track);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   align-items: center;
 }
 .ap-track .pt {
@@ -619,17 +649,17 @@ h3 {
   height: 20px;
   min-width: 20px;
   padding: 0 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   gap: 1px;
   font-size: 11px;
   font-weight: 900;
   color: #fff;
-  background: #5b6485;
+  background: var(--ap-track-fill);
 }
 .ap-track .pt.unlock {
-  background: #a06be0;
+  background: var(--ap-track-unlock);
 }
 .ap-track .pt::before {
   content: '◆';
@@ -639,29 +669,29 @@ h3 {
 .ap-names {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 4px 10px;
-  margin-top: 10px;
+  gap: 4px 8px;
+  margin-top: 8px;
   font-size: 12px;
 }
 .ap-names div {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 .ap-names img {
   width: 22px;
   height: 22px;
-  background: #f3ead6;
-  border-radius: 3px;
+  background: var(--ap-icon-bg);
+  border-radius: var(--radius-sm);
   padding: 1px;
 }
 
 /* secondary panels: validation, quieter parchment */
 .panel {
-  margin: 0 10px 14px;
-  background: rgba(203, 189, 159, 0.12);
-  border: 1px solid rgba(203, 189, 159, 0.25);
-  border-radius: 8px;
+  margin: 0 8px 12px;
+  background: color-mix(in srgb, var(--board) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--board) 25%, transparent);
+  border-radius: var(--radius-md);
   padding: 12px;
 }
 .panel h2 {
@@ -680,13 +710,13 @@ h3 {
 .meter {
   height: 8px;
   background: rgba(0, 0, 0, 0.35);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  margin: 6px 0 8px;
+  margin: 4px 0 8px;
 }
 .meter > div {
   height: 100%;
-  background: linear-gradient(90deg, var(--teal), var(--vitality));
+  background: var(--vitality);
 }
 .kv {
   display: grid;
@@ -709,11 +739,11 @@ h3 {
   text-align: left;
   font-weight: 600;
   opacity: 0.7;
-  padding: 2px 6px 2px 0;
+  padding: 2px 4px 2px 0;
 }
 .panel-table td {
-  padding: 2px 6px 2px 0;
-  border-top: 1px solid rgba(128, 128, 128, 0.2);
+  padding: 2px 4px 2px 0;
+  border-top: 1px solid var(--hairline-grey);
   white-space: nowrap;
 }
 .panel-table th:not(:first-child),
@@ -724,8 +754,8 @@ h3 {
   margin-bottom: 4px;
 }
 .disclosure {
-  margin-top: 10px;
-  border-top: 1px solid rgba(203, 189, 159, 0.25);
+  margin-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--board) 25%, transparent);
   padding-top: 8px;
 }
 .disclosure-trigger {
@@ -740,27 +770,27 @@ h3 {
 .disclosure-content {
   font-size: 12.5px;
   opacity: 0.75;
-  margin-top: 6px;
+  margin-top: 4px;
   line-height: 1.5;
 }
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 4px;
+  margin-top: 4px;
 }
 .chip {
   font-size: 12px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  padding: 4px 8px;
   font-weight: 700;
 }
 .badge {
   font-size: 10px;
   font-weight: 900;
-  padding: 2px 7px;
-  border-radius: 999px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
 }
 .badge.core {
   background: var(--good);
@@ -787,8 +817,8 @@ h3 {
   overflow-y: auto;
   background: var(--board);
   color: var(--ink);
-  border-radius: 14px 14px 0 0;
-  padding: 12px 14px 28px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: 12px 12px 28px;
   box-shadow: inset 0 3px 0 var(--board-edge);
 }
 /* item detail dialog: bottom sheet on phone, centred on desktop. The `translate` reset
@@ -814,22 +844,22 @@ h3 {
     left: 50%;
     right: auto;
     bottom: auto;
-    border-radius: 14px;
+    border-radius: var(--radius-md);
   }
 }
 .sheet-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(60, 45, 25, 0.18);
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
 }
 .sheet-nav .btn {
   min-height: 40px;
   min-width: 40px;
-  padding: 0 14px;
+  padding: 0 12px;
 }
 .sheet-head {
   display: flex;
@@ -852,14 +882,14 @@ h3 {
   color: var(--ink-soft);
 }
 .sheet .chip {
-  background: rgba(60, 45, 25, 0.14);
+  background: color-mix(in srgb, var(--ink) 14%, transparent);
 }
 .stat-line {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
-  padding: 5px 0;
-  border-bottom: 1px solid rgba(60, 45, 25, 0.18);
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
   font-size: 14px;
 }
 .stat-line b {
@@ -871,8 +901,8 @@ h3 {
 .tt-section h3 {
   font-size: 13px;
   /* Darkened from #7a3f9e — axe: 3.73:1 on the parchment board background at 13px bold
-     is below WCAG's 4.5:1; #5f2e7d clears 5.2:1 on the same background. */
-  color: #5f2e7d;
+     is below WCAG's 4.5:1; var(--section-heading) clears 5.2:1 on the same background. */
+  color: var(--section-heading);
   margin-bottom: 4px;
 }
 .tt-section p {
@@ -885,7 +915,7 @@ h3 {
 }
 .reasons {
   margin: 8px 0 0;
-  padding-left: 18px;
+  padding-left: 16px;
   font-size: 13px;
   color: var(--ink-soft);
 }
@@ -896,7 +926,7 @@ h3 {
   opacity: 0.7;
 }
 .error {
-  color: #ff9a8a;
+  color: var(--error-ink);
   white-space: pre-wrap;
 }
 footer {
@@ -943,7 +973,7 @@ footer {
 .board-skeleton .sk-tile {
   aspect-ratio: 1;
   width: 100%;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 /* desktop: fill the window, board on the left, ability order + reports on the right */
@@ -967,8 +997,8 @@ footer {
   .layout {
     display: grid;
     grid-template-columns: minmax(0, 1.4fr) minmax(360px, 1fr);
-    gap: 0 14px;
-    padding: 4px 10px 0 20px;
+    gap: 0 12px;
+    padding: 4px 8px 0 20px;
     align-items: start;
   }
   .col-side {
@@ -976,18 +1006,18 @@ footer {
     top: 72px;
     max-height: calc(100vh - 80px);
     overflow-y: auto;
-    padding-right: 10px;
+    padding-right: 8px;
   }
   .tiles {
     grid-template-columns: repeat(6, 1fr);
-    gap: 10px;
-    padding: 12px 10px;
+    gap: 8px;
+    padding: 12px 8px;
   }
   .sheet-backdrop {
     align-items: center;
   }
   .sheet {
-    border-radius: 14px;
+    border-radius: var(--radius-md);
     max-width: 640px;
   }
 }
@@ -1005,7 +1035,7 @@ footer {
   gap: 8px;
   flex-wrap: wrap;
   height: auto;
-  margin: 8px 14px 0;
+  margin: 8px 12px 0;
   padding: 0;
   background: none;
   border-radius: 0;
@@ -1016,7 +1046,7 @@ footer {
   align-items: flex-start;
   gap: 2px;
   min-height: 48px;
-  padding: 8px 14px;
+  padding: 8px 12px;
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -1040,8 +1070,8 @@ footer {
   min-height: 40px;
   text-decoration: none;
   color: inherit;
-  padding: 0 14px;
-  border-radius: 8px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.18);
   font-weight: 800;

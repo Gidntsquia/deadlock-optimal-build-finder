@@ -5,7 +5,12 @@ Static React app that generates Deadlock hero builds in the browser from a local
 ## Stack
 - React 19, TypeScript 6, Vite 8, npm (not Bun). Node 18+ (dev box runs 24).
 - Lint: oxlint (`npm run lint`). `npm run ui-lint` bans stock Tailwind palette classes, off-token
-  colors, raw gradients, and oversized radii/shadows in `src/**/*.tsx` (excludes `src/components/ui/`).
+  colors, raw gradients, and oversized radii/shadows in `src/**/*.tsx` (excludes `src/components/ui/`),
+  and also scans `src/index.css` itself for off-scale `border-radius` (must be 4px/8px/9999px/50%),
+  off-grid spacing (0/1/2/multiples-of-4), any blurred `box-shadow`, raw gradients, and raw
+  hex/rgb(a) colors outside the `:root`/`@theme inline` token block. Violations are reported as
+  `file:line: rule — snippet`. `node scripts/ui-lint.mjs --self-test` plants one known-bad case per
+  rule (tsx + each CSS rule) and must report all of them caught.
 - Browser checks: Playwright, `npm run verify:browser` (builds first, then serves `dist/` on
   :4173 and runs `scripts/browser-check.mjs` — port 4173 must be free; run in the foreground
   and let it finish, don't background it). Set `SHOT_DIR=docs/ui/after` (or any dir) to control
@@ -33,6 +38,15 @@ Static React app that generates Deadlock hero builds in the browser from a local
 - No secrets, no `.env`; the app makes no network requests after the snapshot is fetched.
 - Logs: browser console only (structured JSON lines once `src/log.ts` exists).
 - Keep the Deadlock shop look (teal bar, parchment board, slot-tinted tiles); no stock component-library theme.
+- Gotcha: the production build's lightningcss minifier can silently drop a CSS declaration that
+  equals a property's spec-default (e.g. `translate: 0;`, maybe `transform: none;`/`opacity: 1;`)
+  even when it's needed to win a cascade override — it only shows up after `npm run build`, not
+  in dev. Prefer a Tailwind utility class (e.g. an arbitrary-variant reset like
+  `max-[899px]:translate-none`) over a raw CSS reset when you need one of these to survive
+  minification.
+- Gotcha: never run `git checkout <file>` to "undo a test mutation" against a file that has
+  uncommitted edits — it reverts to the last *commit*, silently discarding the uncommitted work.
+  Back up first (`cp file /tmp/x.bak`), mutate, check, then restore from the backup copy instead.
 - UI copy: plain words, short sentences, no stats jargon.
 - Never delete a browser check to make it pass; fix it or replace it with an equivalent.
 
