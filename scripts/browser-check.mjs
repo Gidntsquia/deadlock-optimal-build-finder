@@ -178,7 +178,7 @@ try {
     const badges = await page.$$eval('.tiles .tile[data-core]', (els) => els.length);
     const abil = await page.$$eval('.ap-icon img', (els) => [...new Set(els.map((e) => e.getAttribute('alt')))]);
     const unlocks = await page.$$eval('.ap-track .pt.unlock', (els) => els.length);
-    const agreement = await page.textContent('.panel-trigger-stat');
+    const agreement = await page.textContent('.big');
     check(
       `build ${i + 1}: >=12 items, 3 phases, running totals, images`,
       rows.length >= 12 && broken === 0 && phases.length === 3 && totalsOk && imgs.every((s) => s && /\/data\/img\/items\/\d+\.webp$/.test(s)),
@@ -266,10 +266,8 @@ try {
     ['Kelvin', 'Yndio'],
   ]) {
     await pickHero(n);
-    await page.waitForFunction((w) => document.querySelector('.panel-trigger-stat')?.textContent.includes('match'), who, { timeout: 15000 });
-    const agreement = await page.textContent('.panel-trigger-stat');
-    await page.click('.panel-trigger');
     await page.waitForFunction((w) => [...document.querySelectorAll('.panel-table')].some((t) => t.textContent.includes(w)), who, { timeout: 15000 });
+    const agreement = await page.textContent('.big');
     const badges = await page.$$eval('.tiles .tile[data-core]', (els) => els.length);
     const rows = await page.$$eval('.tiles .tile', (els) => els.length);
     check(`${who}: validation panel + core badges`, /\d+% match/.test(agreement) && badges === rows, agreement);
@@ -487,12 +485,10 @@ try {
   // item 4: layout, hierarchy, and copy
   await pickHero('Infernus');
   await page.waitForFunction(
-    () => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus') && document.querySelector('.panel-trigger-stat'),
+    () => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus') && document.querySelector('.panel-summary'),
     null,
     { timeout: 15000 },
   );
-  await page.click('.panel-trigger');
-  await page.waitForSelector('.panel-summary');
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.waitForTimeout(100);
   {
@@ -512,10 +508,10 @@ try {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.waitForTimeout(100);
   {
-    const statText = await page.$eval('.panel-trigger-stat', (e) => e.innerText);
-    const words = statText.trim().split(/\s+/).filter(Boolean);
+    const summaryText = await page.$eval('.panel-summary', (e) => e.innerText);
+    const words = summaryText.trim().split(/\s+/).filter(Boolean);
     check('item 4: validation summary is short (<=45 words)', words.length <= 45, `${words.length} words`);
-    check('item 4: validation summary still shows a percentage', /\d+%/.test(statText), statText.slice(0, 60));
+    check('item 4: validation summary still shows a percentage', /\d+%/.test(summaryText), summaryText.slice(0, 60));
   }
   {
     await page.click('.disclosure-trigger');
