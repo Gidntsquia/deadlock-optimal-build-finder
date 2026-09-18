@@ -10,6 +10,7 @@
     "ui-lint": "node scripts/ui-lint.mjs",
     "fetch-data": "node scripts/fetch-data.mjs",
     "generate": "npx tsx scripts/generate-cli.ts",
+    "matchup-experiment": "npx tsx scripts/matchup-experiment.ts",
     "verify": "npx tsx scripts/verify.ts",
     "verify:browser": "npm run build && node scripts/browser-check.mjs",
     "preview": "vite preview",

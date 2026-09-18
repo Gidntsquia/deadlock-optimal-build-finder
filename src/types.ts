@@ -116,6 +116,25 @@ export interface BuildPopulation {
   style?: { key: string; name: string; tagline: string; share: number; seed: Item | null; anchors: Item[]; exclude: Item[]; defining: Item[] };
 }
 
+/** Slimmed item-stats row used by the matchup (enemy-counter) experiment: see scripts/matchup-experiment.ts. */
+export interface SlimStat {
+  item_id: number;
+  wins: number;
+  matches: number;
+}
+/**
+ * One hero's enemy-counter analytics snapshot, written by `scripts/fetch-data.mjs --matchups`.
+ * `population` records the widening rung actually used (see plans/matchup-builds.md step 1).
+ * `all` is the un-filtered item-stats for that same wide population; `vs[enemyId]` is the same
+ * hero's item-stats filtered to games against that one enemy hero.
+ */
+export interface MatchupStats {
+  hero_id: number;
+  population: { min_badge: number | null; window_days: number };
+  all: SlimStat[];
+  vs: Record<string, SlimStat[]>;
+}
+
 export type Phase = 'early' | 'mid' | 'late';
 
 export interface BuildItem {

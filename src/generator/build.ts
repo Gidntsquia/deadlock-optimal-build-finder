@@ -1,12 +1,18 @@
 // Deterministic build generator. Inputs: item catalog, hero + ability assets, and the AGGREGATE
 // analytics snapshot for the hero (item-stats, ability-order-stats, item-permutation-stats).
 // It never reads any per-player data.
-import type { Ability, AnalyticsPopulation, Build, BuildItem, BuildPopulation, Hero, HeroAnalytics, Item, ItemStat, Phase, SlotType } from '../types';
-import { ARCHETYPES, MIN_TOP_ITEM_MATCHES, MIN_TOP_SEQ_MATCHES, PARAMS, UNIT_VALUE, type Archetype } from './stats';
+import type { Ability, AnalyticsPopulation, Build, BuildItem, BuildPopulation, Hero, HeroAnalytics, Item, ItemStat, MatchupStats, Phase, SlotType } from '../types';
+import { ARCHETYPES, MIN_TOP_ITEM_MATCHES, MIN_TOP_SEQ_MATCHES, MIN_VS_MATCHES, PARAMS, UNIT_VALUE, type Archetype } from './stats';
 import { kitProfile } from './kit';
 import { pickAbilityOrder } from './abilities';
 
-export interface GeneratorInput { hero: Hero; abilities: Ability[]; items: Item[]; analytics: HeroAnalytics }
+export interface GeneratorInput {
+  hero: Hero; abilities: Ability[]; items: Item[]; analytics: HeroAnalytics;
+  /** Opt-in enemy-counter term (plans/matchup-builds.md). Absent, or PARAMS.weights.matchup === 0, is a strict no-op. */
+  matchup?: { enemies: number[]; stats: MatchupStats };
+}
+
+const shrink = (wins: number, matches: number, K: number, mean: number) => (wins + K * mean) / (matches + K);
 
 const num = (v: unknown) => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '').replace(/[^-\d.]/g, '')); return Number.isFinite(n) ? n : 0; };
 
@@ -21,7 +27,7 @@ export function statValue(item: Item, mult: Record<string, number>): number {
   return v;
 }
 
-interface Scored { item: Item; stat: ItemStat; pop: number; winLift: number; eff: number; kit: number; base: number }
+interface Scored { item: Item; stat: ItemStat; pop: number; winLift: number; eff: number; kit: number; matchupLift: number; matchupEnemies: number[]; base: number }
 
 /**
  * Picks the aggregate population to generate from. The high-rank population is preferred because
@@ -111,7 +117,56 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
   const kit = kitProfile(hero, abilities);
   const allStats = analytics.item_stats.filter((s) => catalog.has(s.item_id) && s.matches > 0);
   const maxMatches = Math.max(1, ...allStats.map((s) => s.matches));
-  const stats = allStats.filter((s) => s.matches / maxMatches >= MIN_USAGE);
+
+  // Matchup (enemy-counter) term: opt-in, its own wider population (see plans/matchup-builds.md).
+  // Only active when both an input is given AND the weight is non-zero, so passing `matchup` with
+  // weight 0 is still a strict no-op (matches "output unchanged at weight 0" requirement).
+  const matchup = input.matchup;
+  const matchupActive = !!matchup && WEIGHTS.matchup !== 0;
+  const wideStats = new Map<number, ItemStat | { item_id: number; wins: number; matches: number }>();
+  const vsMean = new Map<number, number>();
+  let matchupMeanAll = 0.5, Kvs = 0;
+  if (matchupActive) {
+    const wide = matchup!.stats;
+    for (const s of wide.all) wideStats.set(s.item_id, s);
+    const totalWAll = wide.all.reduce((a, s) => a + s.wins, 0), totalMAll = wide.all.reduce((a, s) => a + s.matches, 0);
+    matchupMeanAll = totalMAll ? totalWAll / totalMAll : 0.5;
+    const maxMatchesWide = Math.max(1, ...wide.all.map((s) => s.matches));
+    Kvs = Math.max(200, WIN_SHRINK_FRAC * maxMatchesWide);
+    for (const e of matchup!.enemies) {
+      const rows = wide.vs[String(e)];
+      if (!rows) continue;
+      const w = rows.reduce((a, r) => a + r.wins, 0), m = rows.reduce((a, r) => a + r.matches, 0);
+      if (m) vsMean.set(e, w / m);
+    }
+  }
+  // Mean over known enemies of (liftVs - liftAll) * 10, restricted to enemies whose vs-row for this
+  // item clears MIN_VS_MATCHES. Ported from ../deadlock-street-brawl-helper src/brawl/engine.ts.
+  const matchupLiftFor = (itemId: number): { lift: number; enemies: number[] } => {
+    if (!matchupActive) return { lift: 0, enemies: [] };
+    const wideStat = wideStats.get(itemId);
+    if (!wideStat) return { lift: 0, enemies: [] };
+    const liftAll = shrink(wideStat.wins, wideStat.matches, Kvs, matchupMeanAll) - matchupMeanAll;
+    let sum = 0, n = 0; const hit: number[] = [];
+    for (const e of matchup!.enemies) {
+      const rows = matchup!.stats.vs[String(e)];
+      const mean = vsMean.get(e);
+      if (!rows || mean === undefined) continue;
+      const r = rows.find((x) => x.item_id === itemId);
+      if (!r || r.matches < MIN_VS_MATCHES) continue;
+      const liftVs = shrink(r.wins, r.matches, Kvs, mean) - mean;
+      sum += (liftVs - liftAll) * 10;
+      n++; hit.push(e);
+    }
+    return { lift: n ? sum / n : 0, enemies: hit };
+  };
+
+  const stats = allStats.filter((s) => {
+    if (s.matches / maxMatches >= MIN_USAGE) return true;
+    // Let a counter item back into the candidate set even below the usage floor, as long as it has
+    // usable matchup data and a positive lift (Healbane, Metal Skin etc. are often low-usage overall).
+    return matchupActive && matchupLiftFor(s.item_id).lift > 0;
+  });
   const K = Math.max(200, WIN_SHRINK_FRAC * maxMatches);
   const totalW = stats.reduce((a, s) => a + s.wins, 0), totalM = stats.reduce((a, s) => a + s.matches, 0);
   const meanWR = totalM ? totalW / totalM : 0.5;
@@ -140,11 +195,13 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
     // The win rate is only an unbiased estimate of the item's effect when nearly everyone buys it, so
     // the lift is credited in proportion to usage (100% usage: full lift; 5% usage: 5% of it).
     const winLift = (shrunk - meanWR) * 10 * pop;
+    const { lift: matchupLift, enemies: matchupEnemies } = matchupLiftFor(item.id);
     const base =
       WEIGHTS.popularity * Math.sqrt(pop) + WEIGHTS.winLift * winLift +
       WEIGHTS.efficiency * (eff / effMax) + WEIGHTS.kit * (k / kitMax) +
+      WEIGHTS.matchup * matchupLift +
       (item.is_active_item ? WEIGHTS.active : 0);
-    return { item, stat, pop, winLift, eff: eff / effMax, kit: k / kitMax, base: base * arch.slotBias[item.item_slot_type] };
+    return { item, stat, pop, winLift, eff: eff / effMax, kit: k / kitMax, matchupLift, matchupEnemies, base: base * arch.slotBias[item.item_slot_type] };
   });
 
   // 2) pair synergy lookup
@@ -204,6 +261,7 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
         if (s.eff > 0.6) reasons.push('high stat value per soul for this archetype');
         if (s.kit > 0.6) reasons.push(`scales ${hero.name}'s kit`);
         if (syn > 0.2) reasons.push('wins more alongside items already in the build');
+        if (matchupActive && s.matchupLift > 0.1) reasons.push(`wins more against enemy hero ${s.matchupEnemies.join(', ')}`);
         best = { s, score, reasons, inChain, chain };
       }
     }

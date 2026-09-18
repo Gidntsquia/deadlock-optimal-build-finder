@@ -18,6 +18,10 @@
 //   --validation-only           re-select players and refetch validation/* for every hero
 //   --heroes 1,31               (with --validation-only or --analytics-only) only these hero ids; with --validation-only their entries are merged into manifest.validation_sets
 //   --select-only               (with --validation-only) run the selection, print the table per hero, write nothing
+//   --matchups 6:20,12,50;60:3,17,20   opt-in enemy-counter experiment fetch (plans/matchup-builds.md).
+//                                Repeatable per hero (';'-separated groups, enemies ','-separated); writes
+//                                public/data/analytics/matchups/<heroId>.json plus the -badge70/-allranks(/-allranks60d)
+//                                populations it compared to choose that rung. Does not touch the normal fetch.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -65,6 +69,77 @@ const MAX_WAIT_MS = 45 * 1000;
 let MIN_TS = Math.floor(Date.now() / 1000) - WINDOW_DAYS * 86400;
 // Rate limit is 200 req / 60 s -> ~350 ms between requests keeps us well under.
 const SLEEP_MS = 350;
+
+// `--matchups <heroId>:<e1,e2,...>` (repeatable, ';'-separated; a hero repeated across groups has its
+// enemy sets unioned so it is only fetched once). Parses to Map<heroId, Set<enemyId>>, or null.
+const MATCHUPS_ARG = (() => {
+  const i = process.argv.indexOf('--matchups');
+  if (i < 0 || !process.argv[i + 1]) return null;
+  const byHero = new Map();
+  for (const group of process.argv[i + 1].split(';').filter(Boolean)) {
+    const [heroStr, enemiesStr] = group.split(':');
+    const heroId = Number(heroStr);
+    if (!Number.isFinite(heroId)) continue;
+    if (!byHero.has(heroId)) byHero.set(heroId, new Set());
+    for (const e of (enemiesStr || '').split(',').map((x) => Number(x.trim())).filter(Number.isFinite)) byHero.get(heroId).add(e);
+  }
+  return byHero.size ? byHero : null;
+})();
+// Matchup widening ladder (plans/matchup-builds.md step 1): rung 1 is badge>=70/30d; if that rung has
+// fewer than MATCHUP_MIN_ITEMS items with >=MATCHUP_MIN_MATCHES matches against every enemy, widen to
+// all-ranks/30d; if still thin, widen to all-ranks/60d, with min_unix_timestamp clamped to not go
+// earlier than MATCHUP_LAST_PATCH_TS.
+const MATCHUP_MIN_BADGE = 70;
+const MATCHUP_MIN_ITEMS = 60;
+const MATCHUP_MIN_MATCHES = 500;
+const MATCHUP_WIDE_DAYS = 60;
+// Best-effort floor for the widened 60-day window: we do not have a reliable "last major patch" feed
+// in this pipeline, so this is a conservative placeholder (90 days back from whenever this file is
+// read) rather than a real patch date — adjust if a real patch-date source becomes available.
+const MATCHUP_LAST_PATCH_TS = Math.floor(Date.now() / 1000) - 90 * 86400;
+
+const slimStat = (s) => ({ item_id: s.item_id, wins: s.wins, matches: s.matches });
+
+// One item-stats population (`all` + per-enemy `vs`) for one hero at a given rung.
+async function fetchMatchupPopulation(heroId, enemies, { minBadge, windowDays, clampToPatch }) {
+  let minTs = Math.floor(Date.now() / 1000) - windowDays * 86400;
+  if (clampToPatch) minTs = Math.max(minTs, MATCHUP_LAST_PATCH_TS);
+  const badgeQ = minBadge != null ? `&min_average_badge=${minBadge}` : '';
+  const q = `hero_id=${heroId}&min_unix_timestamp=${minTs}${badgeQ}`;
+  const all = (await getJson(`${API}/v1/analytics/item-stats?${q}`)).map(slimStat);
+  const vs = {};
+  for (const e of enemies) vs[e] = (await getJson(`${API}/v1/analytics/item-stats?${q}&enemy_hero_ids=${e}`)).map(slimStat);
+  return { hero_id: heroId, population: { min_badge: minBadge ?? null, window_days: windowDays }, all, vs };
+}
+
+// Fewest items with >=MATCHUP_MIN_MATCHES against any single enemy — the binding constraint the
+// widening ladder checks (plan: "fewer than ~60 items have >=500 matches vs an enemy").
+const matchupMinCount = (pop, enemies) => Math.min(...enemies.map((e) => (pop.vs[e] || []).filter((r) => r.matches >= MATCHUP_MIN_MATCHES).length));
+
+async function fetchMatchupsForHero(heroId, enemies) {
+  const badge70 = await fetchMatchupPopulation(heroId, enemies, { minBadge: MATCHUP_MIN_BADGE, windowDays: WINDOW_DAYS, clampToPatch: false });
+  await save(`analytics/matchups/${heroId}-badge70.json`, badge70);
+  const allRanks = await fetchMatchupPopulation(heroId, enemies, { minBadge: null, windowDays: WINDOW_DAYS, clampToPatch: false });
+  await save(`analytics/matchups/${heroId}-allranks.json`, allRanks);
+
+  let chosen = badge70, rung = 'badge70';
+  if (matchupMinCount(badge70, enemies) < MATCHUP_MIN_ITEMS) { chosen = allRanks; rung = 'allranks'; }
+  if (matchupMinCount(chosen, enemies) < MATCHUP_MIN_ITEMS) {
+    const wide = await fetchMatchupPopulation(heroId, enemies, { minBadge: null, windowDays: MATCHUP_WIDE_DAYS, clampToPatch: true });
+    await save(`analytics/matchups/${heroId}-allranks60d.json`, wide);
+    chosen = wide; rung = 'allranks60d';
+  }
+  console.log(`   hero ${heroId}: matchup rung used = ${rung} (min items >=${MATCHUP_MIN_MATCHES} matches vs any enemy: ${matchupMinCount(chosen, enemies)})`);
+  await save(`analytics/matchups/${heroId}.json`, chosen);
+  return { heroId, enemies, rung };
+}
+
+async function fetchMatchups(byHero) {
+  console.log(`matchups-only: ${byHero.size} hero(es), ${[...byHero.values()].reduce((a, s) => a + s.size, 0)} enemy pairing(s) total`);
+  const results = [];
+  for (const [heroId, enemiesSet] of byHero) results.push(await fetchMatchupsForHero(heroId, [...enemiesSet]));
+  console.log('done', results);
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -329,6 +404,10 @@ async function fetchValidation(heroes, manifest) {
 
 async function main() {
   await mkdir(OUT, { recursive: true });
+  if (MATCHUPS_ARG) {
+    await fetchMatchups(MATCHUPS_ARG);
+    return;
+  }
   if (VALIDATION_ONLY) {
     const manifest = JSON.parse(await readFile(path.join(OUT, 'manifest.json'), 'utf8'));
     const heroes = JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8'));

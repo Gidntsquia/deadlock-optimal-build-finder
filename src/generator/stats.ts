@@ -30,7 +30,7 @@ export const ARCHETYPES: Archetype[] = [
 // chosen by scripts/tune.ts to maximise mean panel agreement over all 38 heroes (2026-09-07, after the per-style builds landed), so they
 // are in-sample for that panel.
 export const PARAMS = {
-  weights: { popularity: 3.0, winLift: 0.25, efficiency: 0, kit: 0, synergy: 0, active: -0.2 },
+  weights: { popularity: 3.0, winLift: 0.25, efficiency: 0, kit: 0, synergy: 0, active: -0.2, matchup: 0 },
   winShrinkFrac: 0.2,       // Bayesian shrinkage: prior weight = 20% of the hero's most-bought item's matches
   minUsage: 0.12,           // ignore items bought in <12% (relative) of games: their win rates are selection-biased noise
   maxItems: 16,             // the game has 16 slots
@@ -50,3 +50,7 @@ export const WEIGHTS = PARAMS.weights;
 // top_min_average_badge, currently 90 = Phantom+) when it has enough data, else fall back to all ranks.
 export const MIN_TOP_ITEM_MATCHES = 500;    // the hero's most-bought item needs >=500 high-rank matches
 export const MIN_TOP_SEQ_MATCHES = 200;     // the best high-rank ability sequence needs >=200 matches
+// Matchup (enemy-counter) term, see plans/matchup-builds.md. Higher than Brawl's MIN_VS_MATCHES=50:
+// this generator's matchup population is far bigger, so a stricter cutoff still leaves usable rows
+// while cutting more noise.
+export const MIN_VS_MATCHES = 300;
