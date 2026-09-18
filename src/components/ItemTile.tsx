@@ -1,29 +1,26 @@
+import { forwardRef } from 'react';
 import { img } from '../data/load';
 import type { Item } from '../types';
 
 const ROMAN = ['', 'I', 'II', 'III', 'IV'];
 
 // One shop-style item card: slot-tinted art, roman tier tab top-right, name plate below.
-export function ItemTile({
-  item,
-  order,
-  isCore,
-  onClick,
-  ariaLabel,
-  total,
-  cost,
-}: {
-  item: Item;
-  order?: number;
-  isCore?: boolean;
-  onClick?: () => void;
-  ariaLabel?: string;
-  total?: number;
-  cost?: number;
-}) {
+export const ItemTile = forwardRef<
+  HTMLButtonElement | HTMLDivElement,
+  {
+    item: Item;
+    order?: number;
+    isCore?: boolean;
+    onClick?: () => void;
+    ariaLabel?: string;
+    total?: number;
+    cost?: number;
+  }
+>(function ItemTile({ item, order, isCore, onClick, ariaLabel, total, cost }, ref) {
   const Tag = onClick ? 'button' : 'div';
   return (
     <Tag
+      ref={ref as never}
       className={`tile ${item.item_slot_type}`}
       onClick={onClick}
       aria-label={ariaLabel}
@@ -47,4 +44,4 @@ export function ItemTile({
       <span className="plate">{item.name}</span>
     </Tag>
   );
-}
+});

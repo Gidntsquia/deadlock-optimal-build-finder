@@ -1,6 +1,6 @@
 import { img } from '../data/load';
-import { useState } from 'react';
-import type { Build, BuildItem, Phase } from '../types';
+import { useRef, useState } from 'react';
+import type { Build, Phase } from '../types';
 import { consensusThreshold, type PanelValidation } from '../validation/heldout';
 import { fmtSouls } from '../text';
 import { ItemCard } from './ItemCard';
@@ -30,8 +30,18 @@ export function BuildView({
   heroImage?: string;
   fetchedAt?: string;
 }) {
-  const [open, setOpen] = useState<BuildItem | null>(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const tileRefs = useRef<Record<number, HTMLButtonElement | HTMLDivElement | null>>({});
+  // Kept mounted (rather than conditionally rendering the dialog) so Radix's close transition
+  // has content to animate out and `onCloseAutoFocus` fires reliably. `lastOpenIndex` is set
+  // directly by the event handlers that open/change the item (never inside an effect), so the
+  // dialog still has valid content while it closes.
+  const [lastOpenIndex, setLastOpenIndex] = useState(0);
+  const selectIndex = (i: number) => {
+    setOpenIndex(i);
+    setLastOpenIndex(i);
+  };
   const slug = `${heroName}-${build.name}`
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
@@ -111,12 +121,15 @@ export function BuildView({
                     {rows.map((b) => (
                       <ItemTile
                         key={b.item.id}
+                        ref={(el) => {
+                          tileRefs.current[b.item.id] = el;
+                        }}
                         item={b.item}
                         order={b.order}
                         isCore={isCore(b.item.id)}
                         total={b.runningTotal}
                         cost={b.paidCost}
-                        onClick={() => setOpen(b)}
+                        onClick={() => selectIndex(build.items.findIndex((x) => x.item.id === b.item.id))}
                         ariaLabel={`${b.item.name}, ${b.paidCost} souls${b.upgradesFrom ? ` (upgrade from ${b.upgradesFrom.name})` : ''}, buy ${b.order}`}
                       />
                     ))}
@@ -246,7 +259,15 @@ export function BuildView({
           )}
         </div>
       </div>
-      {open && <ItemCard bi={open} isCore={isCore(open.item.id)} onClose={() => setOpen(null)} />}
+      <ItemCard
+        open={openIndex !== null}
+        items={build.items}
+        index={openIndex ?? lastOpenIndex}
+        isCore={isCore}
+        onClose={() => setOpenIndex(null)}
+        onNavigate={selectIndex}
+        returnFocus={(itemId) => tileRefs.current[itemId]?.focus()}
+      />
     </>
   );
 }

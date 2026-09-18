@@ -1,21 +1,37 @@
-import { ItemTile } from './ItemTile';
-import { useEffect } from 'react';
 import type { BuildItem } from '../types';
 import { cleanText, fmtSouls, labelFor } from '../text';
+import { ItemTile } from './ItemTile';
+import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 
 const SLOT_LABEL = { weapon: 'Weapon', vitality: 'Vitality', spirit: 'Spirit' } as const;
 const HIDE = new Set(['AbilityUnitTargetLimit']);
 // the assets API uses a `{s:sign}` token for "show a + on positive values"
 const fmtPrefix = (prefix: string | undefined, v: unknown) => (prefix ?? '').replace('{s:sign}', Number(v) >= 0 ? '+' : '');
 const isZero = (v: unknown) => ['0', '0.0', '-1', '-1.0', '', 'undefined'].includes(String(v));
+// Raw `section_type` values from the assets API, mapped to headings a player would recognize.
+const SECTION_LABEL: Record<string, string> = { innate: 'Stats', passive: 'Passive', active: 'Active' };
+const sectionHeading = (t: string | undefined) => SECTION_LABEL[t ?? ''] ?? (t ? t.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : 'Effect');
 
-export function ItemCard({ bi, isCore, onClose }: { bi: BuildItem; isCore: boolean | undefined; onClose: () => void }) {
+export function ItemCard({
+  open,
+  items,
+  index,
+  isCore,
+  onClose,
+  onNavigate,
+  returnFocus,
+}: {
+  open: boolean;
+  items: BuildItem[];
+  index: number;
+  isCore: (id: number) => boolean | undefined;
+  onClose: () => void;
+  onNavigate: (index: number) => void;
+  returnFocus: (itemId: number) => void;
+}) {
+  const bi = items[index];
   const it = bi.item;
-  useEffect(() => {
-    const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', k);
-    return () => window.removeEventListener('keydown', k);
-  }, [onClose]);
+  const coreFlag = isCore(it.id);
 
   // Stat lines: properties the tooltip marks as shown, in tooltip order; fallback to all non-zero props.
   const ordered: string[] = [];
@@ -25,23 +41,48 @@ export function ItemCard({ bi, isCore, onClose }: { bi: BuildItem; isCore: boole
   const keys = (ordered.length ? ordered : Object.keys(it.properties)).filter((k) => it.properties[k] && !HIDE.has(k) && !isZero(it.properties[k].value));
 
   const shownTexts = new Set(it.tooltip_sections.flatMap((s) => (s.section_attributes ?? []).map((a) => cleanText(a.loc_string))));
+
+  const canPrev = index > 0;
+  const canNext = index < items.length - 1;
+  const goPrev = () => canPrev && onNavigate(index - 1);
+  const goNext = () => canNext && onNavigate(index + 1);
+
   return (
-    <div className="sheet-backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-label={it.name}>
-      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
+      <DialogContent
+        className="sheet sheet-content"
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+          returnFocus(it.id);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            goNext();
+          } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            goPrev();
+          }
+        }}
+      >
         <div className="sheet-head">
           <ItemTile item={it} />
           <div>
-            <h2>{it.name}</h2>
+            <DialogTitle asChild>
+              <h2>{it.name}</h2>
+            </DialogTitle>
             <div className="chips">
               <span className="chip">{SLOT_LABEL[it.item_slot_type]}</span>
               <span className="chip">Tier {it.item_tier}</span>
               <span className="chip">{fmtSouls(it.cost)} souls</span>
-              {isCore !== undefined && <span className={`badge ${isCore ? 'core' : 'notcore'}`}>{isCore ? 'Top-player core' : 'Not core'}</span>}
+              {coreFlag !== undefined && <span className={`badge ${coreFlag ? 'core' : 'notcore'}`}>{coreFlag ? 'Top-player core' : 'Not core'}</span>}
             </div>
           </div>
-          <button className="sheet-close" onClick={onClose} aria-label="Close">
-            ×
-          </button>
         </div>
 
         <div className="tt-section">
@@ -67,7 +108,7 @@ export function ItemCard({ bi, isCore, onClose }: { bi: BuildItem; isCore: boole
           if (!texts.length) return null;
           return (
             <div className="tt-section" key={i}>
-              <h3>{s.section_type ?? 'Effect'}</h3>
+              <h3>{sectionHeading(s.section_type)}</h3>
               {texts.map((t, j) => (
                 <p key={j}>{t}</p>
               ))}
@@ -78,13 +119,19 @@ export function ItemCard({ bi, isCore, onClose }: { bi: BuildItem; isCore: boole
           .filter(([, v]) => v && !shownTexts.has(cleanText(v)))
           .map(([k, v]) => (
             <div className="tt-section" key={k}>
-              <h3>{k}</h3>
+              <h3>{sectionHeading(k)}</h3>
               <p>{cleanText(v)}</p>
             </div>
           ))}
 
         <div className="tt-section">
           <h3>Why it's in this build</h3>
+          {bi.reasons.length > 0 && (
+            <p>
+              {bi.reasons.join('; ')}. Bought in {(bi.usageRate * 100).toFixed(0)}% of these players' games, {(bi.winRate * 100).toFixed(1)}% win rate when
+              bought.
+            </p>
+          )}
           <div className="kv">
             <span>Buy step</span>
             <span>
@@ -100,22 +147,28 @@ export function ItemCard({ bi, isCore, onClose }: { bi: BuildItem; isCore: boole
             )}
             <span>Running total after buy</span>
             <span>{fmtSouls(bi.runningTotal)}</span>
-            <span>Win rate when bought</span>
-            <span>{(bi.winRate * 100).toFixed(1)}%</span>
-            <span>Relative usage</span>
-            <span>{(bi.usageRate * 100).toFixed(0)}%</span>
-            <span>Score</span>
-            <span>{bi.score.toFixed(2)}</span>
           </div>
-          {bi.reasons.length > 0 && (
-            <ul className="reasons">
-              {bi.reasons.map((r) => (
-                <li key={r}>{r}</li>
-              ))}
-            </ul>
-          )}
+          <details className="disclosure">
+            <summary className="disclosure-trigger">Ranking details</summary>
+            <div className="disclosure-content">
+              Score: {bi.score.toFixed(2)} (this item's combined win-rate/usage-rate ranking among alternatives for this buy step — higher is better, not a stat
+              on the item itself).
+            </div>
+          </details>
         </div>
-      </div>
-    </div>
+
+        <div className="sheet-nav">
+          <button className="btn" onClick={goPrev} disabled={!canPrev} aria-label="Previous item in buy order">
+            ‹ Prev
+          </button>
+          <span className="muted">
+            {index + 1} of {items.length}
+          </span>
+          <button className="btn" onClick={goNext} disabled={!canNext} aria-label="Next item in buy order">
+            Next ›
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

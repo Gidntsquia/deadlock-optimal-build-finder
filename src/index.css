@@ -360,6 +360,14 @@ h3 {
   transform: translateY(1px);
   box-shadow: none;
 }
+.tile:hover {
+  outline: 2px solid var(--teal);
+  outline-offset: -2px;
+}
+.tile:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
 .tile .art {
   aspect-ratio: 1;
   display: grid;
@@ -776,6 +784,44 @@ h3 {
   border-radius: 14px 14px 0 0;
   padding: 12px 14px 28px;
   box-shadow: inset 0 3px 0 var(--board-edge);
+}
+/* item detail dialog: bottom sheet on phone, centred on desktop. High-specificity attribute
+   selector so these position/size rules win over the vendored dialog's own Tailwind utility
+   classes regardless of stylesheet order. */
+[data-slot='dialog-content'].sheet-content {
+  top: auto;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  translate: 0;
+  transform: none;
+  margin: 0;
+  gap: 0;
+  border: none;
+}
+@media (min-width: 900px) {
+  [data-slot='dialog-content'].sheet-content {
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+    border-radius: 14px;
+  }
+}
+.sheet-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(60, 45, 25, 0.18);
+}
+.sheet-nav .btn {
+  min-height: 40px;
+  min-width: 40px;
+  padding: 0 14px;
 }
 .sheet-head {
   display: flex;

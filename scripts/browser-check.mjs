@@ -177,7 +177,8 @@ try {
   );
   await noHScroll('item card open');
   await page.screenshot({ path: shot('item-sheet-phone.png') });
-  await page.tap('.sheet-close');
+  await page.tap('[data-slot="dialog-close"]');
+  await page.waitForSelector('.sheet', { state: 'detached' });
   await page.screenshot({ path: shot('infernus-build-phone.png'), fullPage: true });
   // hero picker view (phone): the trigger button before opening the sheet
   await page.screenshot({ path: shot('hero-picker-phone.png'), fullPage: true });
@@ -303,7 +304,72 @@ try {
   await (await page.$('.tiles .tile')).click();
   await page.waitForSelector('.sheet');
   await page.screenshot({ path: shot('item-sheet-desktop.png') });
-  await page.click('.sheet-close');
+
+  // item 5: item detail dialog — focus trap, focus return, keyboard stepping, readable headings
+  {
+    const firstTileName = await page.$eval('.tiles .tile', (el) => el.getAttribute('aria-label'));
+    const focusInDialog = await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]'));
+    check('item 5: opening the dialog moves focus inside it', focusInDialog);
+
+    let leftDialog = false;
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press('Tab');
+      const inside = await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]'));
+      if (!inside) leftDialog = true;
+    }
+    check('item 5: 12 Tab presses never leave the dialog', !leftDialog);
+
+    const titleBefore = await page.textContent('[data-slot="dialog-content"] h2');
+    await page.keyboard.press('ArrowRight');
+    await page.waitForFunction((prev) => document.querySelector('[data-slot="dialog-content"] h2')?.textContent !== prev, titleBefore, { timeout: 5000 });
+    const titleAfter = await page.textContent('[data-slot="dialog-content"] h2');
+    check('item 5: ArrowRight steps to the next item in buy order', titleAfter !== titleBefore, `${titleBefore} -> ${titleAfter}`);
+
+    const headings = await page.$$eval('[data-slot="dialog-content"] .tt-section h3', (els) => els.map((e) => e.textContent ?? ''));
+    const rawHeading = headings.find((h) => /^[a-z_]+$/.test(h));
+    check('item 5: no dialog heading prints a raw section_type', !rawHeading, headings.join(', '));
+
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('.sheet', { state: 'detached' });
+    const focusedLabel = await page.evaluate(() => document.activeElement?.getAttribute('aria-label'));
+    check(
+      'item 5: Escape closes and returns focus to the tile last shown (not the original opener)',
+      focusedLabel !== null && focusedLabel !== firstTileName,
+      `focused: ${focusedLabel}, opener was: ${firstTileName}`,
+    );
+  }
+  // item detail card checks (cost, tier, slot, stats) still pass against the new dialog markup
+  {
+    await (await page.$('.tiles .tile')).click();
+    await page.waitForSelector('.sheet');
+    const name = await page.textContent('[data-slot="dialog-content"] h2');
+    const chips = await page.$$eval('.sheet .chip', (els) => els.map((e) => e.textContent?.trim() ?? ''));
+    const stats = await page.$$eval('.sheet .stat-line', (els) => els.length);
+    check(
+      'item 5: item detail card still shows image, cost, tier, slot, stats',
+      chips.some((c) => /souls/.test(c)) && chips.some((c) => /^Tier \d/.test(c)) && chips.some((c) => /Weapon|Vitality|Spirit/.test(c)) && stats > 0,
+      `${name}: ${chips.join(' | ')}, ${stats} stat lines`,
+    );
+    await page.click('[data-slot="dialog-close"]');
+    await page.waitForSelector('.sheet', { state: 'detached' });
+  }
+  // item 5: tiles have a visible focus state distinct from their resting state
+  {
+    const tile = await page.$('.tiles .tile');
+    const resting = await tile.evaluate((el) => getComputedStyle(el).outlineStyle);
+    // A prior real mouse click leaves the page's input-modality tracking on "mouse", under which
+    // Chromium won't show :focus-visible even for a scripted .focus(); a keypress resets modality
+    // to "keyboard" first, matching how a real keyboard user would actually tab to this tile.
+    await page.keyboard.press('Tab');
+    await tile.focus();
+    const focused = await tile.evaluate((el) => getComputedStyle(el).outlineStyle);
+    check(
+      'item 5: focused tile has a visible outline distinct from resting state',
+      focused === 'solid' && resting !== 'solid',
+      `resting ${resting}, focused ${focused}`,
+    );
+    await tile.evaluate((el) => el.blur());
+  }
   await pickHero('Warden');
   await page.waitForFunction(
     () => document.querySelector('.app-header h1')?.textContent.startsWith('Warden') && document.querySelectorAll('.tiles .tile').length >= 1,
