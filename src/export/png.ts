@@ -64,7 +64,6 @@ function wrap(g: CanvasRenderingContext2D, text: string, max: number): string[] 
 export interface PngOptions {
   heroName: string;
   heroImage?: string;
-  heroAbilityOrder: string[];
   img: (p?: string) => string | undefined;
   scale?: number;
   fetchedAt?: string;
@@ -78,9 +77,7 @@ export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob>
     TILE = (W - PAD * 2 - (COLS - 1) * 10) / COLS,
     TILE_H = TILE + 36;
   const phases = PHASES.map((p) => ({ ...p, rows: build.items.filter((b) => b.phase === p.key) })).filter((p) => p.rows.length);
-  const abilities = [...new Map(build.abilityOrder.map((s) => [s.ability.id, s.ability])).values()].sort(
-    (a, b) => o.heroAbilityOrder.indexOf(a.class_name) - o.heroAbilityOrder.indexOf(b.class_name),
-  );
+  const abilities = [...new Map(build.abilityOrder.map((s) => [s.ability.id, s.ability])).values()];
   const steps = build.abilityOrder.length;
   const tileImgs = await Promise.all(build.items.map((b) => loadImg(o.img(b.item.shop_image_webp || b.item.image_webp))));
   const abImgs = await Promise.all(abilities.map((a) => loadImg(o.img(a.image_webp))));
