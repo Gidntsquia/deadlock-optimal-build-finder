@@ -182,57 +182,118 @@ h3 {
   opacity: 0.8;
 }
 
-.hero-strip {
+/* hero picker: one control per viewport — a trigger opening a sheet on phone,
+   an inline filter+grid on desktop (@media block below swaps which is visible) */
+.hero-picker-trigger {
   display: flex;
+  align-items: center;
   gap: 8px;
-  overflow-x: auto;
-  padding: 10px 14px 4px;
-  scrollbar-width: none;
+  width: calc(100% - 28px);
+  min-height: 44px;
+  margin: 8px 14px 4px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-weight: 700;
 }
-.hero-strip::-webkit-scrollbar {
+.hero-picker-trigger img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.hero-picker-trigger span {
+  flex: 1;
+  text-align: left;
+}
+.hero-picker-desktop {
   display: none;
 }
-.hero-chip {
-  flex: 0 0 auto;
+.hero-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: flex-end;
+}
+.hero-sheet {
+  width: 100%;
+  max-height: 90dvh;
+  background: var(--room2);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: 12px 14px 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.hero-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.hero-picker-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  overflow: hidden;
+}
+.hero-filter {
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: inherit;
+  font: inherit;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+  overflow-y: auto;
+}
+.hero-opt {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  min-width: 60px;
   min-height: 44px;
-  padding: 5px 4px;
-  border-radius: 10px;
+  padding: 6px 4px;
+  border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.06);
   border: 2px solid transparent;
 }
-.hero-chip img {
-  width: 40px;
-  height: 40px;
+.hero-opt img {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
   background: #000;
 }
-.hero-chip span {
+.hero-opt span {
   font-size: 11px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
   font-weight: 700;
   opacity: 0.85;
 }
-.hero-chip.active {
+.hero-opt.active {
   border-color: var(--teal);
   background: rgba(98, 182, 200, 0.18);
 }
-.hero-select {
-  width: calc(100% - 28px);
-  margin: 4px 14px 6px;
-  min-height: 44px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--navy-ink);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  padding: 8px 12px;
-  font: inherit;
-  font-weight: 700;
+.hero-opt.focus {
+  outline: 2px solid var(--teal);
+}
+.hero-empty {
+  grid-column: 1 / -1;
+  padding: 20px;
+  text-align: center;
 }
 
 /* parchment build board */
@@ -777,13 +838,16 @@ footer {
     max-width: none;
     padding: 0 0 24px;
   }
-  .hero-strip {
-    flex-wrap: wrap;
-    overflow: visible;
-    padding: 12px 20px 6px;
-  }
-  .hero-select {
+  .hero-picker-trigger {
     display: none;
+  }
+  .hero-picker-desktop {
+    display: block;
+    margin: 8px 20px 4px;
+  }
+  .hero-picker-desktop .hero-grid {
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    max-height: 220px;
   }
   .layout {
     display: grid;
@@ -818,31 +882,38 @@ footer {
   }
 }
 
+.style-tabs-wrap {
+  display: block;
+}
 .style-tabs {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  height: auto;
   margin: 8px 14px 0;
+  padding: 0;
+  background: none;
+  border-radius: 0;
 }
-.style-tabs button {
+.style-tab {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
   min-height: 48px;
   padding: 8px 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: var(--navy-ink);
   font-weight: 800;
 }
-.style-tabs button.active {
+.style-tab[data-state='active'] {
   background: var(--teal);
   color: var(--teal-ink);
   border-color: transparent;
 }
-.style-tabs small {
+.style-tab small {
   font-weight: 600;
   opacity: 0.8;
   font-size: 12px;

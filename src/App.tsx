@@ -4,6 +4,9 @@ import { img, loadAnalytics, loadCore, type Manifest } from './data/load';
 import { generateBuilds } from './generator';
 import { computeCoreSet, loadHeldout, validateAgainstPanel, type CoreSet, type HeldoutPurchases, type HeldoutSet } from './validation/heldout';
 import { BuildView } from './components/BuildView';
+import { HeroPicker } from './components/HeroPicker';
+import { slugify } from './slug';
+import { Tabs, TabsList, TabsTrigger } from './components/ui/tabs';
 import { log } from './log';
 
 const INFERNUS = 1;
@@ -77,14 +80,56 @@ function useHeldout(heroId: number, manifest: Manifest | null) {
   return heldout;
 }
 
+/** `?hero=<slug>&style=<style key>` in the URL, kept in sync with back/forward navigation.
+ * Both fields are derived from `location.search` at render time; a `popstate` listener is the
+ * only thing that calls setState, and only in response to that external event — never
+ * synchronously inside the effect body. */
+function useUrlState() {
+  const readParams = () => new URLSearchParams(window.location.search);
+  const [heroSlug, setHeroSlug] = useState(() => readParams().get('hero') ?? '');
+  const [styleSlug, setStyleSlug] = useState(() => readParams().get('style') ?? '');
+
+  useEffect(() => {
+    const onPopState = () => {
+      const p = readParams();
+      setHeroSlug(p.get('hero') ?? '');
+      setStyleSlug(p.get('style') ?? '');
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  const pickHero = (slug: string) => {
+    setHeroSlug(slug);
+    setStyleSlug('');
+    const params = readParams();
+    if (slug) params.set('hero', slug);
+    else params.delete('hero');
+    params.delete('style');
+    const qs = params.toString();
+    window.history.pushState({}, '', qs ? `?${qs}` : window.location.pathname);
+  };
+  const pickStyle = (slug: string) => {
+    setStyleSlug(slug);
+    const params = readParams();
+    if (slug) params.set('style', slug);
+    else params.delete('style');
+    const qs = params.toString();
+    window.history.pushState({}, '', qs ? `?${qs}` : window.location.pathname);
+  };
+  return { heroSlug, styleSlug, pickHero, pickStyle };
+}
+
 export default function App() {
   const { items, heroes, abilities, manifest, error } = useCore();
-  const [heroId, setHeroId] = useState(INFERNUS);
+  const { heroSlug, styleSlug, pickHero, pickStyle } = useUrlState();
+
+  // unknown/absent slug falls back to Infernus; matching is by name so URLs stay readable
+  const hero = heroes.find((h) => slugify(h.name) === heroSlug) ?? heroes.find((h) => h.id === INFERNUS);
+  const heroId = hero?.id ?? INFERNUS;
   const { state: analyticsState, retry } = useAnalytics(heroId);
   const heldout = useHeldout(heroId, manifest);
-  const [tab, setTab] = useState(0);
 
-  const hero = heroes.find((h) => h.id === heroId);
   const analytics = analyticsState.status === 'ready' ? analyticsState.data : null;
   const builds: Build[] = useMemo(
     () => (hero && analytics && items.length ? generateBuilds({ hero, abilities, items, analytics }) : []),
@@ -95,13 +140,19 @@ export default function App() {
     [heldout, items, heroId],
   );
   const validations = useMemo(() => (panel.length ? builds.map((b) => validateAgainstPanel(b, panel)) : []), [builds, panel]);
+  const tab = styleSlug
+    ? Math.max(
+        0,
+        builds.findIndex((b) => b.population.style?.key === styleSlug),
+      )
+    : 0;
   const build = builds[Math.min(tab, builds.length - 1)];
 
-  const selectHero = (id: number) => {
-    log.info('hero_selected', { heroId: id });
-    setHeroId(id);
-    setTab(0);
+  const selectHero = (h: Hero) => {
+    log.info('hero_selected', { heroId: h.id });
+    pickHero(slugify(h.name));
   };
+  const selectStyle = (b: Build) => pickStyle(b.population.style?.key ?? '');
 
   if (error)
     return (
@@ -122,27 +173,7 @@ export default function App() {
           </div>
         </div>
       </header>
-      <div className="hero-strip" role="tablist" aria-label="Hero">
-        {heroes.map((h) => (
-          <button
-            key={h.id}
-            className={`hero-chip ${h.id === heroId ? 'active' : ''}`}
-            onClick={() => selectHero(h.id)}
-            role="tab"
-            aria-selected={h.id === heroId}
-          >
-            <img src={img(h.images.small)} alt="" loading="lazy" />
-            <span>{h.name}</span>
-          </button>
-        ))}
-      </div>
-      <select className="hero-select" value={heroId} onChange={(e) => selectHero(Number(e.target.value))} aria-label="Select hero">
-        {heroes.map((h) => (
-          <option key={h.id} value={h.id}>
-            {h.name}
-          </option>
-        ))}
-      </select>
+      <HeroPicker heroes={heroes} heroId={heroId} onPick={selectHero} />
       {analyticsState.status === 'loading' && <div className="loading">Generating builds…</div>}
       {analyticsState.status === 'error' && (
         <div className="error" role="alert">
@@ -155,17 +186,26 @@ export default function App() {
         </div>
       )}
       {builds.length > 1 && (
-        <div className="style-tabs" role="tablist" aria-label="Build style">
-          {builds.map((b, i) => (
-            <button key={b.key} role="tab" aria-selected={i === tab} className={i === tab ? 'active' : ''} onClick={() => setTab(i)}>
-              <span>{b.name}</span>
-              <small>
-                {b.population.style ? `${(b.population.style.share * 100).toFixed(0)}% of games` : ''}
-                {validations[i] ? ` · ${(validations[i].agreement * 100).toFixed(0)}% panel` : ''}
-              </small>
-            </button>
-          ))}
-        </div>
+        <Tabs
+          value={build?.key}
+          onValueChange={(key) => {
+            const picked = builds.find((b) => b.key === key);
+            if (picked) selectStyle(picked);
+          }}
+          className="style-tabs-wrap"
+        >
+          <TabsList className="style-tabs" aria-label="Build style">
+            {builds.map((b, i) => (
+              <TabsTrigger key={b.key} value={b.key} className="style-tab">
+                <span>{b.name}</span>
+                <small>
+                  {b.population.style ? `${(b.population.style.share * 100).toFixed(0)}% of games` : ''}
+                  {validations[i] ? ` · ${(validations[i].agreement * 100).toFixed(0)}% panel` : ''}
+                </small>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       )}
       {build && (
         <BuildView
