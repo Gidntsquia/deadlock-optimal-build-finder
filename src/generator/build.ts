@@ -125,19 +125,26 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
   const matchupActive = !!matchup && WEIGHTS.matchup !== 0;
   const wideStats = new Map<number, ItemStat | { item_id: number; wins: number; matches: number }>();
   const vsMean = new Map<number, number>();
-  let matchupMeanAll = 0.5, Kvs = 0;
+  const KvsByEnemy = new Map<number, number>();
+  let matchupMeanAll = 0.5, KAll = 0;
   if (matchupActive) {
     const wide = matchup!.stats;
     for (const s of wide.all) wideStats.set(s.item_id, s);
     const totalWAll = wide.all.reduce((a, s) => a + s.wins, 0), totalMAll = wide.all.reduce((a, s) => a + s.matches, 0);
     matchupMeanAll = totalMAll ? totalWAll / totalMAll : 0.5;
     const maxMatchesWide = Math.max(1, ...wide.all.map((s) => s.matches));
-    Kvs = Math.max(200, WIN_SHRINK_FRAC * maxMatchesWide);
+    KAll = Math.max(200, WIN_SHRINK_FRAC * maxMatchesWide);
     for (const e of matchup!.enemies) {
       const rows = wide.vs[String(e)];
       if (!rows) continue;
       const w = rows.reduce((a, r) => a + r.wins, 0), m = rows.reduce((a, r) => a + r.matches, 0);
       if (m) vsMean.set(e, w / m);
+      // K for the per-enemy shrinkage must be scaled to the per-enemy vs-rows' own matches, not the
+      // whole population's top item — those rows have far fewer matches (one enemy vs. every enemy
+      // combined), so reusing the whole-population K over-shrinks liftVs to ~0 and erases the signal
+      // that liftAll is meant to be compared against.
+      const maxMatchesVs = Math.max(1, ...rows.map((r) => r.matches));
+      KvsByEnemy.set(e, Math.max(200, WIN_SHRINK_FRAC * maxMatchesVs));
     }
   }
   // Mean over known enemies of (liftVs - liftAll) * 10, restricted to enemies whose vs-row for this
@@ -146,12 +153,13 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
     if (!matchupActive) return { lift: 0, enemies: [] };
     const wideStat = wideStats.get(itemId);
     if (!wideStat) return { lift: 0, enemies: [] };
-    const liftAll = shrink(wideStat.wins, wideStat.matches, Kvs, matchupMeanAll) - matchupMeanAll;
+    const liftAll = shrink(wideStat.wins, wideStat.matches, KAll, matchupMeanAll) - matchupMeanAll;
     let sum = 0, n = 0; const hit: number[] = [];
     for (const e of matchup!.enemies) {
       const rows = matchup!.stats.vs[String(e)];
       const mean = vsMean.get(e);
-      if (!rows || mean === undefined) continue;
+      const Kvs = KvsByEnemy.get(e);
+      if (!rows || mean === undefined || Kvs === undefined) continue;
       const r = rows.find((x) => x.item_id === itemId);
       if (!r || r.matches < MIN_VS_MATCHES) continue;
       const liftVs = shrink(r.wins, r.matches, Kvs, mean) - mean;

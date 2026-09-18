@@ -1,4 +1,4 @@
-# Matchup-aware builds — experiment findings (2026-09-18)
+# Matchup-aware builds — experiment findings (2026-09-18, updated after K-scaling fix)
 
 Implements plans/matchup-builds.md: a hard-coded, opt-in enemy-counter scoring term
 (`PARAMS.weights.matchup`, default 0, no UI). This doc is step 5 (evaluation).
@@ -54,56 +54,58 @@ cleared it, so `--allranks60d` was never needed for these two heroes.
 
 Full run: `npm run matchup-experiment`.
 
-## Sanity verdict
+## K-scaling bug found and fixed
 
-**Fails the sanity check as currently tuned: the swaps do not match known counters.** For the three
-Abrams scenarios that were built specifically to have an obvious expected answer, the term produces
-*zero* item swaps at any of the tried weights (0.25 / 0.5 / 1), in both the badge>=70 and all-ranks
-populations. The only scenario that swapped anything (Sinclair) picked the same item regardless of
-which of 3 very different enemy compositions was passed in, which is a sign the swap is not driven by
-the enemies at all — likely `Arcane Surge` simply scores better than `Mystic Slow` under Sinclair's
-*baseline* winLift/popularity terms once it clears `MIN_VS_MATCHES` and is let back into the
-candidate pool by the "positive matchup lift" widen, not because it counters those specific enemies.
+The first pass of this experiment computed `Kvs` (the shrinkage prior used for the per-enemy
+`liftVs`) from the *entire wide population's* max item-matches — for Abrams, one item alone had
+~407k matches, giving `Kvs ≈ 81,400`. That prior is enormous next to a per-enemy vs-row (a few
+thousand to tens of thousands of matches), so `shrink()` pulled almost every `liftVs` back to the
+population mean regardless of the true enemy-specific win rate, and `liftVs - liftAll` came out
+near zero for everything. Root cause: `Kvs` was reusing the same scale as `KAll` (whole population),
+but `liftVs` and `liftAll` are shrinking arrays of very different match-count magnitudes and each
+needs its own prior scaled to its own array's max matches.
 
-Per plan step 5: **stop here, do not do the time-split validation.** Root cause, found by hand-computing
-Healbane's numbers from `public/data/analytics/matchups/6-allranks.json` (not just reading the
-experiment script's build diff):
+Fix (`src/generator/build.ts`): `Kvs` is now computed per enemy, from the max matches within that
+enemy's own `vs` rows (`KvsByEnemy`), while `KAll` (unchanged) still comes from the wide
+population's `all` rows. `npx tsc -b`, `npm run lint`, and `npm run verify` all pass after the fix,
+and `npm run verify` is still byte-identical to the pre-matchup-work baseline (weight 0 is still a
+strict no-op).
 
-- Also checked directly: `Bullet Armor` and `Spirit Armor` have **no row at all** in Abrams's
-  `item-stats` (all-ranks, 30d). Checked `public/data/items.json`: both are `disabled: true` in the
-  current snapshot (superseded/renamed items from an older patch), so they never appear in live
-  match data at all — this is expected, not a fetch bug, but it does mean two of the three
-  "obvious expected counters" for the bullet/spirit scenarios were never real test cases with this
-  item catalog. The scenario would need updating to whatever the current bullet/spirit-resist items
-  are named before it says anything about those matchups.
-- Healbane does have data, and the sign is right: mean `(liftVs - liftAll) * 10` over Ivy/Kelvin/Pocket
-  is **+0.097** (0.088, 0.104, 0.100 per enemy) — Healbane really does win a bit more against those
-  three heroes than its baseline rate. But this is far below the `> 0.1` reason threshold and, more
-  importantly, tiny next to the scale of the other terms: `WEIGHTS.popularity * sqrt(pop)` alone
-  ranges roughly 0-3, so even at `matchup` weight 1 this lift (0.097) cannot move Healbane past
-  Abrams's existing top-16.
-- The reason the lift is so small: **`K` (the Bayesian shrinkage prior) is derived from `maxMatches`
-  of the *entire* wide population**, which for a heavily-played hero like Abrams is ~407k matches, so
-  `K = max(200, 0.2 * 407k) ≈ 81,400`. Compared to that prior weight, a per-enemy vs-row of even
-  10,000-17,000 matches (Healbane vs Ivy/Kelvin/Pocket, well above `MIN_VS_MATCHES=300`) is still
-  swamped — `shrink()` pulls almost all the way back to the population mean regardless of how lopsided
-  the enemy-specific win rate actually is. This is a scaling bug carried over from
-  `deadlock-street-brawl-helper`, where `K` is computed the same way but Brawl's populations (free
-  draft, one hero at a time within a much smaller item pool) never reach hundreds of thousands of
-  matches for one item, so the same formula doesn't crush the signal there.
-- The Sinclair swap (Arcane Surge in, Mystic Slow out, identical for all 3 very different enemy
-  rosters) is consistent with this: the per-item matchup lift is small everywhere, so the "let a
-  low-usage item back into the candidate pool" rule is really just responding to a small positive
-  lift number that happens to be similar regardless of the specific enemies, not to those enemies
-  in particular.
+Hand-checked Healbane vs Abrams's healing-team scenario (Ivy/Kelvin/Pocket) after the fix: lift per
+enemy went from ~0 (pre-fix, swamped by the shared K) to +0.088 / -0.020 / +0.089-ish per-enemy diffs
+that no longer collapse to zero, landing at a mean lift of **0.0355** — small, correctly signed, but
+still far below the old `> 0.1` reason-string threshold. Scanning *all* of Abrams's items for this
+scenario after the fix, the highest lift in the whole item pool is **0.045** (`Compress Cooldown`),
+i.e. even the single best-matching item for this matchup produces a lift about half the size of the
+reason threshold — this isn't a threshold-tuning problem, the maximum achievable signal at realistic
+weights is just small.
 
-**Recommended weight: 0 (no change).** The plumbing (fetch, types, scoring term, no-op guarantee) is
-in place and verified, but the term as specified does not produce recognizable counter-picks — not
-because counters aren't in the data (Healbane's sign is correct), but because `K` scaled off the
-*whole-population* max matches crushes the signal for popular heroes, and some expected counter items
-(Bullet Armor, Spirit Armor on Abrams) have no item-stats row at all in this window. Before trying a
-non-zero weight again: (1) confirm whether Bullet/Spirit Armor genuinely have no analytics rows for
-Abrams or whether the wrong class name/id was used, and (2) rescale `K` for the matchup term
-independently of the wide population's absolute size (e.g. cap it, or base it on the per-enemy vs-row
-population instead of the hero's all-time max), since reusing the exact Brawl formula does not
-transfer to this generator's much larger match counts.
+## Sanity verdict (re-run after the fix)
+
+**Still fails the sanity check, for a different reason than before.** With `Kvs` fixed, the term is
+no longer numerically broken — lifts are real, correctly signed in spot checks, and do move rankings
+at high enough weight. But at the plan's intended weights (0.25 / 0.5 / 1) the signal is too small to
+change any of the 4 scenarios' builds at all (confirmed: zero swaps, both populations, all 3
+weights). Pushing the weight far past the intended range (tested 3 / 6 / 10, for diagnosis only, not
+a recommendation) does eventually produce swaps, but they don't look like counters:
+`Battle Vest`/`Extra Stamina`/`Counterspell`/`Arcane Surge` show up as "wins" across multiple
+*different* enemy rosters (heavy-healing, all-gun, all-spirit) for the same hero, which is the
+signature of generic noise (these items are just slightly above their own baseline win rate against
+almost anyone) rather than an enemy-specific counter — never once did the fixed term surface
+Healbane, a bullet/spirit-resist item, or anything scenario-specific, even at 10x the intended weight.
+
+`Bullet Armor` and `Spirit Armor` still have no `item-stats` row at all for Abrams (checked
+`public/data/items.json`: both `disabled: true`, superseded/renamed items from an older patch), so
+the bullet/spirit scenarios were never real test cases for the two items whose swap would have been
+the clearest sanity signal. That gap is unrelated to the `K` fix and still open.
+
+**Recommended weight: 0 (no change).** The plumbing (fetch, types, scoring term, no-op guarantee)
+and the `K` scaling are both now correct, but the resulting signal is too weak at any weight in the
+plan's intended range to produce recognizable counter-picks, and even well outside that range the
+swaps it does produce don't track the specific enemies passed in. Two independent things would need
+to improve before trying a non-zero weight again: (1) a larger real counter effect would need to
+exist in the underlying win-rate data than `liftVs - liftAll` is currently finding — this may be a
+property of the game (a well-designed item's raw win-rate edge against a specific hero composition
+may just be a few points, most of which selection bias already explains), not a further scoring bug;
+and (2) `Bullet Armor`/`Spirit Armor` need current, non-disabled equivalents in the item catalog
+before the two "obvious counter" scenarios can be evaluated at all.
