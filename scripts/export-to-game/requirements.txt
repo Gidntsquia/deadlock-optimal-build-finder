@@ -1,0 +1,3 @@
+keyvalues3>=0.3
+protobuf>=4
+grpcio-tools>=1.60

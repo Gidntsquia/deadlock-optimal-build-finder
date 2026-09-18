@@ -1,0 +1,30 @@
+{
+  "hero_id": 7,
+  "hero_class_name": "hero_wraith",
+  "name": "Test Export - delete me",
+  "description": "Generated for export_to_game.py smoke testing",
+  "categories": [
+    {
+      "name": "Early Game",
+      "description": "",
+      "width": 360,
+      "height": 175,
+      "item_ids": [1998374645, 1644605047]
+    },
+    {
+      "name": "Mid Game",
+      "description": "",
+      "width": 360,
+      "height": 175,
+      "item_ids": [2081037738, 1144549437]
+    }
+  ],
+  "ability_order": [
+    { "ability_id": 1999680326, "kind": "unlock" },
+    { "ability_id": 4147641675, "kind": "unlock" },
+    { "ability_id": 1842576017, "kind": "unlock" },
+    { "ability_id": 2981692841, "kind": "unlock" },
+    { "ability_id": 1999680326, "kind": "tier1" },
+    { "ability_id": 4147641675, "kind": "tier1" }
+  ]
+}

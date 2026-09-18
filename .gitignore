@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 screenshots/
+
+# Python
+.venv/
+__pycache__/
+*.pyc

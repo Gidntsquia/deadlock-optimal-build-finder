@@ -1,0 +1,121 @@
+{
+  "hero_id": 18,
+  "hero_class_name": "hero_krill",
+  "name": "Monclan Mo & Krill",
+  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "categories": [
+    {
+      "name": "Early Game",
+      "description": "",
+      "width": 600,
+      "height": 175,
+      "item_ids": [
+        1998374645,
+        84321454,
+        754480263,
+        3399065363,
+        3074274290
+      ]
+    },
+    {
+      "name": "Mid Game",
+      "description": "",
+      "width": 1200,
+      "height": 175,
+      "item_ids": [
+        1976391348,
+        968099481,
+        395944548,
+        2603935618,
+        865958998,
+        2447176615,
+        7409189,
+        3270001687,
+        2951612397,
+        380806748
+      ]
+    },
+    {
+      "name": "Late Game",
+      "description": "",
+      "width": 840,
+      "height": 175,
+      "item_ids": [
+        2121044373,
+        2717651715,
+        2163598980,
+        3261353684,
+        1371725689,
+        1193964439,
+        915014646
+      ]
+    }
+  ],
+  "ability_order": [
+    {
+      "ability_id": 1454278799,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1454278799,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1914797280,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2406758797,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1454278799,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2406758797,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1917840730,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2406758797,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2406758797,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1454278799,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1917840730,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1917840730,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1917840730,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1914797280,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1914797280,
+      "kind": "tier2"
+    }
+  ],
+  "tags": [
+    1454278799,
+    1914797280,
+    1998374645
+  ]
+}

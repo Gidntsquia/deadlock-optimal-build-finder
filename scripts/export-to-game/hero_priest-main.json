@@ -1,0 +1,118 @@
+{
+  "hero_id": 65,
+  "hero_class_name": "hero_priest",
+  "name": "Monclan Weapon Venator",
+  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "categories": [
+    {
+      "name": "Early Game",
+      "description": "",
+      "width": 600,
+      "height": 175,
+      "item_ids": [
+        3862866912,
+        1342610602,
+        2407033488,
+        1235347618,
+        1770441818
+      ]
+    },
+    {
+      "name": "Mid Game",
+      "description": "",
+      "width": 960,
+      "height": 175,
+      "item_ids": [
+        3399065363,
+        2059712766,
+        499683006,
+        2447176615,
+        3403085434,
+        1414319208,
+        3776945997,
+        1763073141
+      ]
+    },
+    {
+      "name": "Late Game",
+      "description": "",
+      "width": 720,
+      "height": 175,
+      "item_ids": [
+        1414025773,
+        2163598980,
+        787198704,
+        1055679805,
+        1113837674,
+        1282141666
+      ]
+    }
+  ],
+  "ability_order": [
+    {
+      "ability_id": 1764146857,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1764146857,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 911307831,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 11154161,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1764146857,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 911307831,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2918874166,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2918874166,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2918874166,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2918874166,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 11154161,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 911307831,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 911307831,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 11154161,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 11154161,
+      "kind": "tier3"
+    }
+  ],
+  "tags": [
+    1764146857,
+    911307831,
+    1235347618
+  ]
+}

@@ -366,7 +366,6 @@ async function main() {
   const heroes = active.map(slimHero);
   for (const h of heroes) {
     const l = await saveImage(h.images.small, 'heroes', h.id); if (l) h.images.small = l;
-    // card art is what the Street Brawl draft screen shows in the top bar; the recogniser matches portraits against it
     const c = await saveImage(h.images.card, 'heroes', h.id, '-card'); if (c) h.images.card = c;
   }
   await save('heroes.json', heroes);

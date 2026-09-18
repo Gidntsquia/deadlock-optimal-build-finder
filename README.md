@@ -11,7 +11,7 @@ builds are based on the item and win rate stats for high-rank players from
 the recent games of a top player on that hero so you can see how close it gets.
 
 There's also a companion project, [deadlock-street-brawl-helper](https://github.com/Gidntsquia/deadlock-street-brawl-helper),
-for Street Brawl's draft advisor.
+a draft advisor for Deadlock's Street Brawl mode.
 
 ## Quickstart 🚀
 
