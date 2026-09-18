@@ -1,6 +1,7 @@
 # UI Design Notes
 
-**User approval: awaiting, this round.** See the "Approval" section at the bottom of this file.
+**User approval: recorded for this round, 2026-09-18.** See the "Approval" section at the bottom
+of this file.
 
 ## Sources read
 
@@ -133,11 +134,12 @@ in every after shot.
 
 ## Approval
 
-**Awaiting user approval.** All 8 files in `docs/ui/after/` are ready for review:
+**Approved by the user, 2026-09-18**, after being shown all 8 files in `docs/ui/after/`:
 `hero-picker-desktop.png`, `hero-picker-phone.png`, `infernus-build-desktop.png`,
 `infernus-build-phone.png`, `item-sheet-desktop.png`, `item-sheet-phone.png`,
-`warden-styles-desktop.png`, `warden-styles-phone.png`. Note: the phone item sheet
-(`item-sheet-phone.png`) was broken (off-screen) in the version approved in round 1 — it now
-renders as a bottom sheet, full width, flush to the bottom, with the item name and stats
-legible. No agent message counts as the user's approval; this section is filled in only after
-the user has looked at the files and answered.
+`warden-styles-desktop.png`, `warden-styles-phone.png`. The phone item sheet
+(`item-sheet-phone.png`) was broken (off-screen) in the version approved in round 1 — the user
+was told this explicitly before approving — and now renders as a bottom sheet, full width,
+flush to the bottom, with the item name and stats legible. Known leftover the user flagged,
+out of this round's scope: the "Ranking details" focus ring draws as a large white box across
+the item sheet in both item-sheet shots.
