@@ -39,6 +39,37 @@ try {
     check(`no horizontal scroll (${label})`, w[0] <= w[1], `${w[0]} <= ${w[1]}`);
   };
   await noHScroll('Infernus build');
+  // item 2: computed colours come from the theme tokens, not hardcoded/stock values
+  const tokenColors = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement);
+    const body = getComputedStyle(document.body);
+    const board = document.querySelector('.board');
+    return { room: root.getPropertyValue('--room').trim(), bodyBg: body.backgroundColor, boardBg: board ? getComputedStyle(board).backgroundColor : null, boardToken: root.getPropertyValue('--board').trim() };
+  });
+  const hexToRgb = (hex) => { const n = parseInt(hex.replace('#', ''), 16); return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`; };
+  check('body background-color equals --room token', tokenColors.bodyBg === hexToRgb(tokenColors.room), `${tokenColors.bodyBg} vs ${tokenColors.room}`);
+  check('board background-color equals --board token', tokenColors.boardBg === hexToRgb(tokenColors.boardToken), `${tokenColors.boardBg} vs ${tokenColors.boardToken}`);
+  // item 2: analytics fetch failure shows an inline Retry (not a blank app), logs analytics_load_failed, and recovers
+  {
+    const consoleLines = [];
+    const onMsg = (m) => consoleLines.push(m.text());
+    page.on('console', onMsg);
+    await page.route('**/data/analytics/2.json', (route) => route.abort());
+    await page.selectOption('.hero-select', '2');
+    await page.waitForSelector('button:has-text("Retry")', { timeout: 15000 });
+    const parsed = consoleLines.map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+    const loggedFail = parsed.some((p) => p.event === 'analytics_load_failed');
+    check('analytics fetch failure shows Retry + logs analytics_load_failed', loggedFail, JSON.stringify(parsed.slice(-3)));
+    await page.unroute('**/data/analytics/2.json');
+    page.off('console', onMsg);
+    await page.selectOption('.hero-select', '3');
+    await page.waitForFunction(() => document.querySelectorAll('.tiles .tile').length >= 12, null, { timeout: 15000 });
+    const rows = await page.$$eval('.tiles .tile', (els) => els.length);
+    check('after error, selecting another hero recovers: Vindicta renders >=12 tiles', rows >= 12, `${rows} tiles`);
+    await page.selectOption('.hero-select', '1');
+    await page.waitForFunction(() => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus') && document.querySelectorAll('.tiles .tile').length >= 12, null, { timeout: 15000 });
+    errors.length = 0; // the aborted request above is an intentional, already-asserted failure, not a real regression
+  }
   const tapOk = async (label) => {
     const bad = await page.evaluate(() => [...document.querySelectorAll('button, select, a, [role=button]')].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && (r.width < 40 || r.height < 40); }).map((el) => `${el.className}:${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`));
     check(`all tap targets >= 40px (${label})`, bad.length === 0, bad.slice(0, 5).join(', '));

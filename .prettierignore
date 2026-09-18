@@ -1,0 +1,8 @@
+dist
+node_modules
+public
+docs
+screenshots
+src/components/ui
+src/generator
+src/validation/heldout.ts

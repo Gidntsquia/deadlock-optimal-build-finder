@@ -22,8 +22,17 @@ const ROW_HEIGHT = 175;
 // Infernus's Afterburn ability (id 1593133799, from abilities.json) appears verbatim as a tag on every
 // popular Infernus build. So a build's own most-important ability/item ids double as valid tag ids.
 
-export interface GameBuildCategory { name: string; description: string; width: number; height: number; item_ids: number[] }
-export interface GameAbilityStep { ability_id: number; kind: 'unlock' | 'tier1' | 'tier2' | 'tier3' }
+export interface GameBuildCategory {
+  name: string;
+  description: string;
+  width: number;
+  height: number;
+  item_ids: number[];
+}
+export interface GameAbilityStep {
+  ability_id: number;
+  kind: 'unlock' | 'tier1' | 'tier2' | 'tier3';
+}
 export interface GameBuildJson {
   hero_id: number;
   hero_class_name: string;
@@ -76,7 +85,10 @@ export function toGameBuildJson(build: Build, hero: Hero, opts?: { name?: string
   const phases: Phase[] = ['early', 'mid', 'late'];
   const categories: GameBuildCategory[] = phases
     .map((phase) => {
-      const item_ids = build.items.filter((b) => b.phase === phase).sort((a, b) => a.order - b.order).map((b) => b.item.id);
+      const item_ids = build.items
+        .filter((b) => b.phase === phase)
+        .sort((a, b) => a.order - b.order)
+        .map((b) => b.item.id);
       const width = Math.max(1, item_ids.length) * ITEM_WIDTH;
       return { name: PHASE_LABEL[phase], description: '', width, height: ROW_HEIGHT, item_ids };
     })
