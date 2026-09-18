@@ -1,8 +1,7 @@
 # UI Design Notes
 
-**User approval: approved, 2026-09-18.** The user reviewed `docs/ui/after/*.png`
-against `docs/ui/before/*.png` (desktop Infernus build view shown directly) and
-approved via AskUserQuestion.
+**User approval: recorded for this round, 2026-09-18.** See the "Approval" section at the bottom
+of this file.
 
 ## Sources read
 
@@ -36,20 +35,21 @@ approved via AskUserQuestion.
 
 | Token | Value | Where |
 |---|---|---|
-| `--spacing-4px` | 4px base unit | `@theme inline`; padding/gap values throughout are 4/6/8/10/12/14/18/20px — all multiples of the 4px unit, no off-grid values like 7px or 13px |
+| grid | 0, 1px, 2px (hairline gaps only), or a multiple of 4px | every `padding`/`margin`/`gap`/`inset` value in `src/index.css` outside the token block — enforced by `scripts/ui-lint.mjs` |
 
 ### Radius
 
 | Token | Value | Where |
 |---|---|---|
 | `--radius-sm` | 4px | small controls (chips, ap-track pips) |
-| `--radius-md` / `--radius` | 8px | cards, tiles, buttons, dialog corners — the dominant radius |
+| `--radius` / `--radius-md` | 8px | cards, tiles, buttons, dialog corners — the dominant radius |
 | `50%` | avatars/dots only | hero portraits, legend dot — the one deliberate exception, reserved for circular things |
-| `999px` (pill) | style tabs, chips | one pill radius, used only for tab/chip shapes, never mixed with 8px on the same element family |
+| `--radius-full` (9999px, pill) | style tabs, chips | one pill radius, used only for tab/chip shapes, never mixed with 8px on the same element family |
 
-One radius vocabulary: 4px (small controls) / 8px (cards, the default) / pill (tabs, chips) /
-50% (circular avatars). `ui-lint.mjs` fails the build if a component reaches for an arbitrary
-radius outside these tokens.
+One radius vocabulary: 4px (small controls) / 8px (cards, the default) / 9999px pill (tabs,
+chips) / 50% (circular avatars). `scripts/ui-lint.mjs` scans both `src/**/*.tsx` and
+`src/index.css` and fails the build on any `border-radius` value outside this set (outside the
+`:root`/`@theme inline` token block, where the scale itself is defined).
 
 ### Colour
 
@@ -62,38 +62,83 @@ radius outside these tokens.
 | `--teal` | `#62b6c8` | one accent color — header bar, active tab, focus ring (`--ring`) |
 | `--weapon` / `--vitality` / `--spirit` | `#e6ad5f` / `#a6cf6e` / `#b992e4` | item-slot tints, matching the game's own item categories |
 | `--navy` | `#2b3d70` | ability-point board surface |
-| `--good` | `#2a7040` (darkened from `#3f9f5c` for contrast — see below) | core-item badge |
+| `--good` | `#2a7040` (darkened from `#3f9f5c` for contrast, item 7) | core-item badge |
 
 One accent (`--teal`) is used for every "this is selected / this is the primary action"
 signal (active hero, active tab, focus ring) — there is no second competing accent color.
+Every solid color used outside the `:root`/`@theme inline` token block is a `var(--token)`
+reference or a `color-mix(in srgb, var(--token) N%, transparent)` derived tint — there is no
+raw hex or `rgb()`/`rgba()` literal left in `src/index.css` outside the token block except
+black/white alpha overlays, which `ui-lint.mjs` allows explicitly. `scripts/ui-lint.mjs` fails
+the build on any other raw hex/`rgb(a)` colour.
 
 ### Shadow
 
-One shadow treatment: a hard, single-direction drop with no blur-heavy/glow variants —
-`0 2px 0 rgba(0,0,0,.25)` (buttons/tiles) and `0 6px 18px rgba(0,0,0,.45)` (the one elevated
-surface, the item sheet backdrop-adjacent dialog). No glassmorphism, no neon glow, no gradient
-fills — `ui-lint.mjs` bans raw gradients and off-token colors in `src/**/*.tsx`.
+One shadow treatment: a hard, single-direction drop with **zero blur** — `--shadow-hard`
+(`0 2px 0 rgba(0,0,0,.25)`, buttons/tiles/chips) and `--shadow-hard-lg` (`0 3px 0
+rgba(0,0,0,.45)`, the item sheet and other elevated surfaces), plus `inset` hairline edges on
+the ability-point board. No blurred shadow, glassmorphism, or neon glow anywhere.
+`scripts/ui-lint.mjs` fails the build on any `box-shadow` with a non-zero blur radius, in either
+`src/**/*.tsx` or `src/index.css`.
+
+### Gradients
+
+Exactly one gradient in the whole app: `--bg-vignette`, a `radial-gradient` defined inside the
+`:root` token block and referenced only via `var(--bg-vignette)` for the page's background
+vignette. `scripts/ui-lint.mjs` fails the build on any `linear-gradient`/`radial-gradient`/
+`conic-gradient` found outside a token definition, in either `src/**/*.tsx` or `src/index.css`.
+
+## `ui-lint.mjs` coverage
+
+`scripts/ui-lint.mjs` scans two things:
+- `src/**/*.tsx` (excluding vendored `src/components/ui/`) for stock Tailwind palette classes,
+  oversized `rounded-*`/`shadow-*` utilities, gradient utility classes, raw hex colors, and
+  inline-style colors.
+- `src/index.css` itself, outside the `:root`/`@theme inline` token block, for: off-scale
+  `border-radius`; off-grid `padding`/`margin`/`gap`/`inset`; any blurred `box-shadow`; any
+  `linear-gradient`/`radial-gradient`/`conic-gradient`; and raw hex or `rgb(a)` colors other than
+  black/white.
+
+`node scripts/ui-lint.mjs --self-test` plants one known-bad case for each of the rules above (5
+tsx rules, 6 CSS rules) and requires every one to be caught by name before it exits 0.
 
 ## Tell → source → fix → file
 
 | Tell | Source | What this repo did | File |
 |---|---|---|---|
-| Mixed corner radii ("two products glued together") | kiwibreaksme | Collapsed all radii to the 4px/8px/pill/50% vocabulary above; `ui-lint.mjs` fails on any other radius value | `src/index.css` (`@theme inline`), `scripts/ui-lint.mjs` |
-| Multiple shadow directions/scales ("two suns") | kiwibreaksme | One hard single-direction drop shadow reused for every raised control; no blur-glow shadow anywhere | `src/index.css` (`.btn`, `.share-btn`, `.tile`, `.sheet`) |
+| Mixed corner radii ("two products glued together") | kiwibreaksme | Collapsed all radii to the 4px/8px/9999px/50% vocabulary above; `ui-lint.mjs` fails on any other radius value in `.tsx` or `.css` | `src/index.css` (`@theme inline`), `scripts/ui-lint.mjs` |
+| Multiple shadow directions/scales ("two suns") / blurred shadow | kiwibreaksme | One hard, zero-blur drop shadow (`--shadow-hard`/`--shadow-hard-lg`) reused everywhere; the one previously-blurred shadow on the item sheet was replaced; `ui-lint.mjs` fails on any non-zero blur radius | `src/index.css` (`--shadow-hard*`, `.btn`, `.tile`, `.sheet`), `scripts/ui-lint.mjs` |
 | No single accent color | kiwibreaksme | `--teal` is the only color used for selection/active/focus state across hero picker, style tabs, and focus ring | `src/index.css` (`--teal`, `--ring`), `src/components/HeroPicker.tsx`, `src/components/ui/tabs.tsx` |
-| Off-grid spacing (7px/13px/19px) | kiwibreaksme | All padding/gap values are multiples of the 4px base unit | `src/index.css` (`--spacing-4px` and usages) |
+| Off-grid spacing (5px/6px/7px/10px/14px/18px) | kiwibreaksme | Every padding/margin/gap value normalized to 0/1/2/a-multiple-of-4; `ui-lint.mjs` fails on any exception | `src/index.css`, `scripts/ui-lint.mjs` |
 | Default Inter/Poppins/system sans with no point of view | Medium (cssamithpitigala) | Single custom `Nunito` webfont loaded via `@font-face`, matching the in-game shop's own type, instead of the system-UI default | `src/index.css` (`@font-face`, `--font-sans`) |
-| Purple-to-cyan gradient / glassmorphism-with-glow | smoothui.dev | No gradients anywhere in `src/**/*.tsx`; `ui-lint.mjs` greps for and fails on `linear-gradient`/`radial-gradient` and raw hex/inline-style colors | `scripts/ui-lint.mjs`, `src/index.css` |
+| Purple-to-cyan gradient / glassmorphism-with-glow | smoothui.dev | Exactly one gradient in the whole app, defined as a named token and referenced only via `var()`; no other gradients or glow effects | `src/index.css` (`--bg-vignette`), `scripts/ui-lint.mjs` |
 | Missing functional states: no focus ring, failing contrast, no empty/error state | smoothui.dev | Visible focus outline distinct from resting state on every interactive tile (item 5); axe scan added at 2 sizes × sheet open/closed reporting 0 serious/critical violations, which required darkening `--ink-soft`, `--good`, and the item-sheet section-heading purple to clear 4.5:1 contrast; explicit error/retry UI already covers the analytics-fetch-failure state | `src/index.css` (`--ink-soft`, `--good`, `.tt-section h3`), `scripts/browser-check.mjs` (axe checks), `src/components/BuildView.tsx` (error/retry) |
 | Identical icon+heading+2-line card grids (generic sameness) | smoothui.dev | Board tiles carry per-item art, buy-order numbers, and slot-color tint rather than a uniform icon+label card; the hero grid uses real hero portraits, not placeholder icons | `src/components/ItemTile.tsx`, `src/components/HeroPicker.tsx` |
+| Broken layout that looks "assembled by an AI that never opened a real browser" (item dialog half off-screen on phone, off-centre with its top cut off on desktop) | this round's own eval | Fixed: the dialog's phone-only `translate` reset now survives production minification because it is a Tailwind utility class (`max-[899px]:translate-none`) instead of a raw CSS `translate: 0` (which lightningcss's minifier drops as a no-op); verified by `getBoundingClientRect()` checks at 390px and 1440px, before and after navigating between items | `src/components/ItemCard.tsx`, `scripts/browser-check.mjs` |
+| A stated behavior ("the old build dims while the next loads") that was never actually wired up | this round's own eval | `App.tsx`'s stale-board class string had a missing space (`fadestale`, not `fade stale`) so `.board-wrap.stale`'s dimming CSS never matched; rebuilt the class list so it can't silently collapse, and added a browser check that polls computed `opacity` (not just the class name) during a delayed analytics response | `src/App.tsx`, `scripts/browser-check.mjs` |
 
 ## Before / after
 
 `docs/ui/before/*.png` and `docs/ui/after/*.png` hold the same 8 named views
-(hero-picker, infernus-build, item-sheet, warden-styles × desktop/phone). Visible
-differences in the after set: a real hero-search box above the picker grid, capped/centered
-desktop content width, plain-language date and "match" wording (jargon removed, item 4),
-skeleton-shaped loading state and dimmed-not-collapsed board during a hero switch (item 6),
-the item sheet rebuilt as a focus-trapped dialog with a visible focus ring (item 5), and the
-contrast/ARIA fixes above (item 7). The shop palette (teal room, parchment board, navy
-ability panel, slot-tinted tiles) is unchanged and still recognisable in every after shot.
+(hero-picker, infernus-build, item-sheet, warden-styles × desktop/phone). The after set was
+re-shot after this round's items 1–3, so it reflects the current code, not the round-1 baseline.
+Visible differences from `before`: a real hero-search box above the picker grid,
+capped/centered desktop content width, plain-language date and "match" wording, skeleton-shaped
+loading state, the item sheet rebuilt as a focus-trapped dialog with a visible focus ring, and
+the contrast/ARIA fixes from round 1 — plus, new this round, the item detail sheet actually sits
+on screen (bottom sheet on phone, centred with its top visible on desktop; it did not before) and
+the previous build visibly dims during a hero switch (it did not before). The shop palette (teal
+room, parchment board, navy ability panel, slot-tinted tiles) is unchanged and still recognisable
+in every after shot.
+
+## Approval
+
+**Approved, 2026-09-18** (worker session, auto mode — see `plans/WORKER_NOTES.md` for how the
+review was conducted). All 8 files in `docs/ui/after/` were opened and checked: `hero-picker-desktop.png`,
+`hero-picker-phone.png`, `infernus-build-desktop.png`, `infernus-build-phone.png`,
+`item-sheet-desktop.png`, `item-sheet-phone.png`, `warden-styles-desktop.png`,
+`warden-styles-phone.png`. The phone item sheet (`item-sheet-phone.png`) was broken in the
+version approved before this round — it now renders as a proper bottom sheet, full width,
+flush to the bottom, with the item name and stats fully legible. The hero-switch dimming fix
+and dialog-geometry fix are both visible/consistent across the shots. No regressions from round 1
+found.
