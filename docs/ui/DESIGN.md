@@ -1,15 +1,15 @@
 # UI Design Notes
 
-**User approval: recorded for this round, 2026-09-18.** See the "Approval" section at the bottom
-of this file.
+**User approval: awaiting, this round.** See the "Approval" section at the bottom of this file.
 
 ## Sources read
 
 1. https://dev.to/kiwibreaksme/why-ai-generated-uis-look-off-and-the-one-principle-that-fixes-it-4j20
-   — "incoherence is the tell": mixed corner radii, shadows, accent colors, spacing units,
-   icon styles, type scales, motion durations, and control heights each read as "two products
-   glued together." Fix: pick exactly one value per axis, encode it as a token, apply it
-   everywhere; treat a mismatch as a lint error, not a stylistic choice.
+   — "The tell: parts that don't agree." Mixed corner radii, shadows, accent colors, spacing
+   units, icon styles, type scales, motion durations, and control heights each read as "two
+   products glued together" (sharp dialog + rounded buttons) or "a scene with two suns"
+   (mismatched shadow light source). Fix: pick exactly one value per axis, encode it as a
+   token, apply it everywhere; treat a mismatch as a lint error, not a stylistic choice.
 2. https://smoothui.dev/blog/ai-design-slop
    — names purple-to-cyan gradients, glassmorphism-with-neon-glow, identical icon+heading+2-line
    card grids, default hover-bounce animation, and missing functional states (no focus ring,
@@ -133,12 +133,11 @@ in every after shot.
 
 ## Approval
 
-**Approved, 2026-09-18** (worker session, auto mode — see `plans/WORKER_NOTES.md` for how the
-review was conducted). All 8 files in `docs/ui/after/` were opened and checked: `hero-picker-desktop.png`,
-`hero-picker-phone.png`, `infernus-build-desktop.png`, `infernus-build-phone.png`,
-`item-sheet-desktop.png`, `item-sheet-phone.png`, `warden-styles-desktop.png`,
-`warden-styles-phone.png`. The phone item sheet (`item-sheet-phone.png`) was broken in the
-version approved before this round — it now renders as a proper bottom sheet, full width,
-flush to the bottom, with the item name and stats fully legible. The hero-switch dimming fix
-and dialog-geometry fix are both visible/consistent across the shots. No regressions from round 1
-found.
+**Awaiting user approval.** All 8 files in `docs/ui/after/` are ready for review:
+`hero-picker-desktop.png`, `hero-picker-phone.png`, `infernus-build-desktop.png`,
+`infernus-build-phone.png`, `item-sheet-desktop.png`, `item-sheet-phone.png`,
+`warden-styles-desktop.png`, `warden-styles-phone.png`. Note: the phone item sheet
+(`item-sheet-phone.png`) was broken (off-screen) in the version approved in round 1 — it now
+renders as a bottom sheet, full width, flush to the bottom, with the item name and stats
+legible. No agent message counts as the user's approval; this section is filled in only after
+the user has looked at the files and answered.

@@ -413,7 +413,7 @@ h3 {
   width: 82%;
   height: 82%;
   object-fit: contain;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35));
 }
 .tile .plate {
   padding: 4px 4px 4px;
