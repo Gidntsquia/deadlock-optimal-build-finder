@@ -240,7 +240,7 @@ export default function App() {
           <>
             {!shownBuild && analyticsState.status === 'loading' && <BoardSkeleton />}
             {shownBuild && (
-              <div className={`board-wrap fade${isStale ? 'stale' : ''}`} aria-busy={isStale}>
+              <div className={['board-wrap', 'fade', isStale ? 'stale' : null].filter(Boolean).join(' ')} aria-busy={isStale}>
                 <BuildView
                   key={shownBuild.key}
                   build={shownBuild}

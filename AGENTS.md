@@ -47,6 +47,13 @@ Static React app that generates Deadlock hero builds in the browser from a local
 - Gotcha: never run `git checkout <file>` to "undo a test mutation" against a file that has
   uncommitted edits — it reverts to the last *commit*, silently discarding the uncommitted work.
   Back up first (`cp file /tmp/x.bak`), mutate, check, then restore from the backup copy instead.
+- Gotcha: `prettier-plugin-tailwindcss` reformats `className` template-literal strings and will
+  silently swallow a leading/trailing space you add around a dynamic segment (e.g.
+  `` `board-wrap fade${x ? ' stale' : ''}` `` gets the space stripped back out on the next
+  `prettier --write`, so a "fix a missing space in a conditional class string" change looks
+  correct until the pre-commit hook or your next format pass reverts it). Build conditional class
+  lists with `['a', 'b', cond ? 'c' : null].filter(Boolean).join(' ')` instead of a template
+  literal with a leading space.
 - UI copy: plain words, short sentences, no stats jargon.
 - Never delete a browser check to make it pass; fix it or replace it with an equivalent.
 

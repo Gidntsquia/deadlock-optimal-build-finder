@@ -572,6 +572,43 @@ try {
     await page.waitForFunction(() => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus'), null, { timeout: 15000 });
   }
 
+  // item 3: the previous build stays mounted and visibly dims (not just "same class name") while the
+  // next hero's analytics are still loading — delay the response, poll computed opacity/aria-busy/tile
+  // count during the delay, then confirm it recovers to opacity 1 once the response lands.
+  {
+    await page.route('**/data/analytics/2.json', async (route) => {
+      await new Promise((r) => setTimeout(r, 800));
+      await route.continue();
+    });
+    await pickHero('Seven');
+    await page.waitForFunction(() => document.querySelector('.board-wrap')?.getAttribute('aria-busy') === 'true', null, { timeout: 2000 }).catch(() => {});
+    let sawBusy = false;
+    let minOpacity = 1;
+    let minTiles = Infinity;
+    const deadline = Date.now() + 700;
+    while (Date.now() < deadline) {
+      const busy = await page.getAttribute('.board-wrap', 'aria-busy').catch(() => null);
+      if (busy === 'true') sawBusy = true;
+      const opacity = await page.$eval('.board-wrap', (el) => parseFloat(getComputedStyle(el).opacity)).catch(() => 1);
+      minOpacity = Math.min(minOpacity, opacity);
+      const tiles = await page.$$eval('.board-wrap .tiles .tile', (els) => els.length).catch(() => 0);
+      if (tiles > 0) minTiles = Math.min(minTiles, tiles);
+      await page.waitForTimeout(50);
+    }
+    check('item 3: board-wrap has aria-busy="true" during hero switch', sawBusy);
+    check('item 3: board-wrap computed opacity dips below 1 during hero switch', minOpacity < 1, `min opacity=${minOpacity}`);
+    check('item 3: previous build stays mounted (>=12 tiles) while dimmed', minTiles >= 12, `min tiles=${minTiles}`);
+    await page.waitForFunction(() => document.querySelector('.app-header h1')?.textContent.startsWith('Seven'), null, { timeout: 15000 });
+    await page
+      .waitForFunction(() => parseFloat(getComputedStyle(document.querySelector('.board-wrap')).opacity) === 1, null, { timeout: 5000 })
+      .catch(() => {});
+    const finalOpacity = await page.$eval('.board-wrap', (el) => parseFloat(getComputedStyle(el).opacity));
+    check('item 3: board-wrap opacity returns to 1 once the new build loads', finalOpacity === 1, `${finalOpacity}`);
+    await page.unroute('**/data/analytics/2.json');
+    await pickHero('Infernus');
+    await page.waitForFunction(() => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus'), null, { timeout: 15000 });
+  }
+
   // item 6: Share failure (toBlob stubbed to throw) shows a visible failure message, never a native dialog
   {
     const page2 = await ctx.newPage();
