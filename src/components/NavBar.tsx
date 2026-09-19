@@ -2,6 +2,7 @@ import { ArrowUpRight, Hammer, ListOrdered, Swords } from 'lucide-react';
 import { hrefFor, type Page } from '../route';
 
 export const BRAWL_URL = 'https://gidntsquia.github.io/deadlock-street-brawl-helper/';
+export const CREDIT_URL = 'https://github.com/GidntSquia';
 const LOGO = `${(import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? '/'}favicon.svg`;
 
 /** Top bar on every page: logo + name, then Build Finder / Tier List (in-app) and Street Brawl (its own site). */
@@ -34,7 +35,7 @@ export function NavBar({ page, onNavigate }: { page: Page; onNavigate: (p: Page)
           onNavigate('build');
         }}
       >
-        <img src={LOGO} alt="" width={32} height={32} />
+        <img src={LOGO} alt="" width={24} height={24} />
         <span className="nav-name">Deadlock Builds</span>
       </a>
       <nav className="nav-links" aria-label="Main">
@@ -46,6 +47,9 @@ export function NavBar({ page, onNavigate }: { page: Page; onNavigate: (p: Page)
           <ArrowUpRight className="nav-out" aria-hidden="true" />
         </a>
       </nav>
+      <a className="nav-credit" href={CREDIT_URL}>
+        by GidntSquia
+      </a>
     </header>
   );
 }

@@ -224,7 +224,13 @@ try {
     }
     check('main controls are inside the viewport', bad.length === 0, bad.join(', '));
     check('main screen has no technical text', !bannedHit(await page.evaluate(() => document.querySelector('main').innerText)));
-    check('tap targets >= 40px', (await tapTargets()).length === 0, (await tapTargets()).slice(0, 5).join(', '));
+    // desktop nav is a 36px mouse bar (links >= 28px, above WCAG 2.5.8's 24px); phone steps below hold nav to 40px
+    const small = (await tapTargets()).filter((c) => !/^nav/.test(c));
+    check('tap targets >= 40px', small.length === 0, small.slice(0, 5).join(', '));
+    check(
+      'desktop nav links are at least 28px tall',
+      await page.evaluate(() => [...document.querySelectorAll('.nav-link, .nav-brand')].every((a) => a.getBoundingClientRect().height >= 28)),
+    );
     check('exactly one visible hero control', (await page.$$('.hero-btn:visible')).length === 1);
   }
   await snap({ path: shot('infernus-build-desktop.png') });
@@ -644,6 +650,33 @@ try {
       text,
     );
     check('tier list: page does not scroll sideways at 1440', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    for (const [w, h] of [
+      [1440, 900],
+      [1920, 1080],
+    ]) {
+      await page.setViewportSize({ width: w, height: h });
+      await frames();
+      const r = await page.evaluate(() => ({
+        v: document.documentElement.scrollHeight - innerHeight,
+        h: document.documentElement.scrollWidth - innerWidth,
+        inner: [...document.querySelectorAll('.tiers, .tier-rows, .tier-heroes')].some(
+          (e) => e.scrollHeight > e.clientHeight + 1 || e.scrollWidth > e.clientWidth + 1,
+        ),
+        n: document.querySelectorAll('.tier-hero').length,
+        foot: (() => {
+          const b = document.querySelector('.tier-foot')?.getBoundingClientRect();
+          return !!b && b.bottom <= innerHeight;
+        })(),
+        credit: document.querySelector('.nav-credit')?.href,
+      }));
+      check(
+        `tier list fits ${w}x${h} without scrolling; rule link and credit visible`,
+        r.v <= 0 && r.h <= 0 && !r.inner && r.n === 38 && r.foot && r.credit === 'https://github.com/GidntSquia',
+        JSON.stringify(r),
+      );
+    }
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await frames();
     await snap({ path: shot('tier-list-desktop.png'), fullPage: true });
     await axe('desktop, tier list');
   }

@@ -5,6 +5,7 @@ import { slugify } from '../slug';
 import { hrefFor } from '../route';
 import type { Hero } from '../types';
 import { log } from '../log';
+import { CREDIT_URL } from '../components/NavBar';
 
 function fmtDate(iso: string) {
   const d = new Date(iso);
@@ -82,13 +83,18 @@ export function TierList({ onPickHero }: { onPickHero: (slug: string) => void })
         </div>
       )}
       {data && (
-        <details className="tier-rule">
-          <summary>How tiers are set</summary>
-          <p>
-            Win rate is wins divided by games, counting only Phantom and above games. S+ is 54% or more, S 52–54%, A 50–52%, B 48–50%, C 46–48%, D under 46%.
-            Best win rate comes first inside a tier.
-          </p>
-        </details>
+        <div className="tier-foot">
+          <details className="tier-rule">
+            <summary>How tiers are set</summary>
+            <p>
+              Win rate is wins divided by games, counting only Phantom and above games. S+ is 54% or more, S 52–54%, A 50–52%, B 48–50%, C 46–48%, D under 46%.
+              Best win rate comes first inside a tier.
+            </p>
+          </details>
+          <span className="tier-credit">
+            Made by <a href={CREDIT_URL}>GidntSquia</a>
+          </span>
+        </div>
       )}
     </main>
   );

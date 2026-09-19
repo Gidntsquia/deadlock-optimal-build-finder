@@ -86,7 +86,7 @@
   --row-head: #564d3d;
   --row-head-ink: #f4ead3;
   --row-body: #bfb08f;
-  --nav-h: 48px;
+  --nav-h: 36px;
   --pill: #d3e6ec;
   --frame-edge: #4a9db2;
 
@@ -856,24 +856,24 @@ button.tile:hover {
   .screen {
     --tile: clamp(64px, min(4.6vw, calc((100vh - var(--nav-h)) * 0.088)), 112px);
     display: grid;
-    --side-w: clamp(220px, min(27vw, calc((100dvh - var(--nav-h) - 24px - 200px) * 0.737)), 600px);
+    --side-w: clamp(220px, min(27vw, calc((100dvh - var(--nav-h) - 8px - 200px) * 0.737)), 600px);
     grid-template-columns: var(--side-w) minmax(0, 1fr);
     gap: 16px;
     align-items: start;
     max-width: 2000px;
     margin: 0 auto;
-    padding: 12px 24px;
+    padding: 4px 24px;
   }
   .hero-side {
     display: block;
     position: sticky;
-    top: 12px;
+    top: 4px;
   }
   .hero-card {
     position: relative;
     display: flex;
     flex-direction: column;
-    height: calc(100dvh - var(--nav-h) - 24px);
+    height: calc(100dvh - var(--nav-h) - 8px);
     width: 100%;
     border-radius: var(--radius-md);
     background: var(--teal);
@@ -927,7 +927,7 @@ button.tile:hover {
     display: inline-flex;
     position: absolute;
     /* centre of the name plate: below the portrait, above the Change Hero button */
-    top: calc((4px + (var(--side-w) - 8px) * 0.5 * 380 / 140 + 8px + 100dvh - var(--nav-h) - 24px - 4px - 60px) / 2 - 22px);
+    top: calc((4px + (var(--side-w) - 8px) * 0.5 * 380 / 140 + 8px + 100dvh - var(--nav-h) - 8px - 4px - 60px) / 2 - 22px);
   }
   .hero-arrow.prev {
     left: 20px;
@@ -982,7 +982,7 @@ button.tile:hover {
   .frame {
     padding: 0 8px 8px 12px;
     border-radius: var(--radius-md) 0 0 var(--radius-md);
-    min-height: calc(100dvh - var(--nav-h) - 24px);
+    min-height: calc(100dvh - var(--nav-h) - 8px);
     display: flex;
     flex-direction: column;
   }
@@ -1055,19 +1055,28 @@ button.tile:hover {
   align-items: center;
   gap: 8px;
   flex: none;
-  min-width: 40px;
-  min-height: 40px;
-  padding: 4px 8px 4px 4px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0 8px 0 4px;
   color: var(--navy-ink);
   text-decoration: none;
   font-weight: 900;
-  font-size: 17px;
+  font-size: 16px;
   white-space: nowrap;
 }
 .nav-brand img {
   display: block;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
+}
+.nav-credit {
+  margin-left: auto;
+  padding: 0 8px;
+  color: var(--navy-ink);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: underline;
+  white-space: nowrap;
 }
 .nav-links {
   display: flex;
@@ -1079,7 +1088,7 @@ button.tile:hover {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px;
+  min-height: 28px;
   padding: 0 12px;
   border-radius: var(--radius-sm);
   color: var(--navy-ink);
@@ -1107,15 +1116,24 @@ button.tile:hover {
   box-shadow: var(--shadow-hard);
 }
 @media (max-width: 599px) {
+  :root {
+    --nav-h: 44px;
+  }
   .nav {
     gap: 4px;
     padding: 0 8px;
   }
   .nav-name,
+  .nav-credit,
   .nav-out {
     display: none;
   }
+  .nav-brand {
+    min-width: 40px;
+    min-height: 40px;
+  }
   .nav-link {
+    min-height: 40px;
     gap: 4px;
     padding: 0 8px;
     font-size: 13px;
@@ -1269,5 +1287,86 @@ button.tile:hover {
   .tier-hero img {
     width: 48px;
     height: 48px;
+  }
+}
+
+@media (min-width: 900px) {
+  .tiers {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - var(--nav-h));
+    max-width: 1280px;
+    padding: 8px 16px;
+    overflow: hidden;
+  }
+  .tiers-head h1 {
+    display: inline;
+    font-size: 20px;
+  }
+  .tiers-head p {
+    display: inline;
+    margin: 0 0 0 12px;
+    font-size: 14px;
+  }
+  .tier-rows {
+    flex: 1;
+    min-height: 0;
+    margin-top: 8px;
+    gap: 8px;
+  }
+  .tier-row {
+    flex: 1 1 0;
+    min-height: 0;
+    align-items: stretch;
+  }
+  .tier-tag {
+    width: 96px;
+    padding: 4px;
+  }
+  .tier-heroes {
+    align-content: center;
+    gap: 4px;
+    padding: 4px 8px;
+  }
+  .tier-hero {
+    width: 72px;
+    padding: 2px;
+  }
+  .tier-hero img {
+    width: 52px;
+    height: 52px;
+  }
+  .tier-foot {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .tier-rule {
+    margin: 0;
+  }
+  .tier-rule p {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    max-width: 640px;
+    margin: 0 0 4px;
+    padding: 8px 12px;
+    background: var(--room2);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-hard);
+  }
+}
+.tier-credit {
+  color: var(--navy-ink);
+  font-size: 14px;
+}
+.tier-foot {
+  margin-top: 16px;
+}
+@media (min-width: 900px) {
+  .tier-foot {
+    margin-top: 8px;
   }
 }

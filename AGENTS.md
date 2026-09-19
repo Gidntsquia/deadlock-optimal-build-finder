@@ -24,8 +24,8 @@ Static React app that generates Deadlock hero builds in the browser from a local
   `docs/tier-list.md`, data `public/data/hero-stats.json` from `fetch-data`, `--hero-stats-only` for just that). `vite.config.ts`
   copies `dist/index.html` to `dist/tier-list/index.html` and `404.html` so direct loads work on Pages. Add a page = a route in
   `src/route.ts` + a copy in that plugin.
-- Top nav (`components/NavBar.tsx`, `<header class="nav">`, height `--nav-h` 48px) is on every page: logo (`favicon.svg`), name,
-  Build Finder, Tier List, Street Brawl (external link). Layout heights subtract `--nav-h`; keep new full-height rules doing so.
+- Top nav (`components/NavBar.tsx`, `<header class="nav">`, height `--nav-h` 36px (44px on phone)) is on every page: logo (`favicon.svg`), name,
+  Build Finder, Tier List, Street Brawl (external link), and a "by GidntSquia" credit link at the right (hidden on phone; the tier list footer also credits). The tier list page must fit one screen at >=900px wide (checked at 1440x900 and 1920x1080). Layout heights subtract `--nav-h`; keep new full-height rules doing so.
   Favicon links in `index.html` carry `?v=2`: browsers cache tab icons hard, bump it when the icon changes.
 - Screen layout: one in-game style build window (`BuildView.tsx`): hero button, title, build
   pills, Share, Details, three phase rows, Ability Order grid (`.ap-grid`, one row per ability, one chip per point). The only top bar is the nav; no footer. The hero
