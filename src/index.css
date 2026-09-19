@@ -999,6 +999,8 @@ button.tile:hover {
   .frame-head {
     flex-wrap: nowrap;
     padding: 8px 8px 8px 4px;
+    /* room for the 48px pill track (40 pill + 4 + 4) so heroes with one build get the same bar */
+    min-height: 64px;
   }
   .frame-head h1 {
     font-size: 20px;

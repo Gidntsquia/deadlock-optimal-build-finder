@@ -437,7 +437,7 @@ try {
           const g = w === 1440 ? await gridProbe() : [];
           if (w === 1440) {
             const pos = await page.evaluate(() =>
-              ['.style-pill', '.share-btn', '.details-btn', '.board'].map((q) => {
+              ['.style-pill', '.share-btn', '.details-btn', '.board', '.frame-head', '.frame-head h1', '.hero-avatar'].map((q) => {
                 const r = document.querySelector(q)?.getBoundingClientRect() ?? { x: 0, y: 0, width: 0, height: 0 };
                 return [q, Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)].join(':');
               }),
@@ -455,6 +455,35 @@ try {
       bad.length === 0,
       bad.slice(0, 4).join(' // '),
     );
+  }
+
+  // ---- title bar: same height and y whether the hero has build pills or one build ----
+  {
+    const seen = new Map();
+    for (const name of ['Infernus', 'Warden', 'Mina', 'Seven', 'Abrams', 'Haze', 'Lash', 'Bebop', 'Dynamo', 'Shiv', 'Viscous', 'Vyper']) {
+      await gotoHero(name.toLowerCase());
+      await settled(name);
+      const k = (await page.$$('.style-pill')).length > 1 ? 'pills' : 'single';
+      if (seen.has(k)) continue;
+      seen.set(
+        k,
+        await page.evaluate(() =>
+          ['.frame-head', '.frame-head h1', '.share-btn', '.board']
+            .map((q) => {
+              const r = document.querySelector(q).getBoundingClientRect();
+              return `${q}:${Math.round(r.y)}:${Math.round(r.height)}`;
+            })
+            .join(' '),
+        ),
+      );
+      if (seen.size === 2) break;
+    }
+    check(
+      'title bar: same height, and everything under it at the same y, with and without build pills',
+      seen.size === 2 && seen.get('pills') === seen.get('single'),
+      JSON.stringify([...seen]),
+    );
+    await page.setViewportSize({ width: 1440, height: 900 });
   }
 
   // ---- share: real PNG, then the failure path ----
