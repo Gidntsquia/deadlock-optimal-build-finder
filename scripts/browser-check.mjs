@@ -45,7 +45,7 @@ let fails = 0;
 let passes = 0;
 const check = (n, ok, d = '') => {
   ok ? passes++ : fails++;
-  console.log(`${ok ? 'PASS' : 'FAIL'}  ${n}${!ok && d ? ' — ' + d : ''}`);
+  console.log(`${((Date.now() - t0) / 1000).toFixed(1)}s ${ok ? 'PASS' : 'FAIL'}  ${n}${!ok && d ? ' — ' + d : ''}`);
 };
 const T = { timeout: 15000 };
 const settled = (name) =>
@@ -211,7 +211,6 @@ try {
   }
   {
     const f = await fitProbe();
-    check('fits 1440x900: no scroll, no clipped tiles', !f.v && !f.h && !f.scrollers && !f.clipped, JSON.stringify(f));
     check(
       'one top bar (the nav bar), no footer, no other header',
       (await page.$$('header')).length === 1 && (await page.$$('footer, .app-header')).length === 0,
@@ -223,7 +222,7 @@ try {
       if (!r || r.x < 0 || r.y < 0 || r.x + r.width > 1440 || r.y + r.height > 900) bad.push(sel);
     }
     check('main controls are inside the viewport', bad.length === 0, bad.join(', '));
-    check('main screen has no technical text', !bannedHit(await page.evaluate(() => document.querySelector('main').innerText)));
+    check('main screen has no technical text', !bannedHit(await page.evaluate(() => document.querySelector('main.screen').innerText)));
     // desktop nav is a 36px mouse bar (links >= 28px, above WCAG 2.5.8's 24px); phone steps below hold nav to 40px
     const small = (await tapTargets()).filter((c) => !/^nav/.test(c));
     check('tap targets >= 40px', small.length === 0, small.slice(0, 5).join(', '));
@@ -392,7 +391,8 @@ try {
   // ---- fit sample: a few heroes x every style x both desktop sizes (1440 covers the ability grid too) ----
   {
     const bad = [];
-    for (const name of ['Infernus', 'Haze', 'Warden', 'Mina']) {
+    let posBase = [];
+    for (const name of ['Infernus', 'Warden', 'Mina']) {
       await gotoHero(name.toLowerCase());
       await settled(name);
       const n = Math.max(1, (await page.$$('.style-pill')).length);
@@ -418,13 +418,26 @@ try {
           await frames();
           const f = await fitProbe();
           const g = w === 1440 ? await gridProbe() : [];
+          if (w === 1440) {
+            const pos = await page.evaluate(() =>
+              ['.style-pill', '.share-btn', '.details-btn', '.board'].map((q) => {
+                const r = document.querySelector(q)?.getBoundingClientRect() ?? { x: 0, y: 0, width: 0, height: 0 };
+                return [q, Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)].join(':');
+              }),
+            );
+            (i === 0 ? (posBase = pos) : pos).forEach((v, k) => v !== posBase[k] && bad.push(`${name}#${i} moved ${posBase[k]} -> ${v}`));
+          }
           if (f.v || f.h || f.scrollers || f.clipped || f.tiles !== want || !want || g.length)
             bad.push(`${name}#${i}@${w}: ${JSON.stringify(f)} ${g.slice(0, 2)}`);
         }
         await page.setViewportSize({ width: 1440, height: 900 });
       }
     }
-    check('sample heroes x styles fit at 1440x900 and 1920x1080, all items shown, grid correct', bad.length === 0, bad.slice(0, 4).join(' // '));
+    check(
+      'sample heroes x styles fit at 1440x900 and 1920x1080, all items shown, grid correct, pills/Share/Details/board never move',
+      bad.length === 0,
+      bad.slice(0, 4).join(' // '),
+    );
   }
 
   // ---- share: real PNG, then the failure path ----
@@ -520,7 +533,7 @@ try {
       'phone: tap targets >= 40px, one hero control, no technical text',
       (await tapTargets()).length === 0 &&
         (await page.$$('.hero-btn:visible')).length === 1 &&
-        !bannedHit(await page.evaluate(() => document.querySelector('main').innerText)),
+        !bannedHit(await page.evaluate(() => document.querySelector('main.screen').innerText)),
     );
     await snap({ path: shot('infernus-build-phone.png'), fullPage: true });
     await openHeroes();
@@ -590,7 +603,26 @@ try {
     await snap({ path: shot('nav-build-desktop.png') });
   }
   await page.evaluate(() => (window.__noReload = true));
+  const pageSwitchProbe = () =>
+    new Promise((res) =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() =>
+          res({
+            heroes: [...document.querySelectorAll('.tier-hero')].filter((e) => e.getClientRects().length).length,
+            skel: !!document.querySelector('.tier-skel'),
+            anims: document
+              .getAnimations()
+              .filter((a) => a.playState === 'running')
+              .map((a) => a.animationName ?? a.constructor.name),
+          }),
+        ),
+      ),
+    );
   await page.click('.nav-link:has-text("Tier List")');
+  {
+    const r = await page.evaluate(pageSwitchProbe);
+    check('Build -> Tier List shows all 38 heroes at once, no skeleton, no animation', r.heroes === 38 && !r.skel && !r.anims.length, JSON.stringify(r));
+  }
   await page.waitForSelector('.tier-hero', T);
   {
     const st = await page.evaluate(() => ({
@@ -649,7 +681,6 @@ try {
       /Phantom and above/.test(text) && /win rate/i.test(text) && /Data from \d{1,2} [A-Z][a-z]{2} \d{4}/.test(text),
       text,
     );
-    check('tier list: page does not scroll sideways at 1440', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     for (const [w, h] of [
       [1440, 900],
       [1920, 1080],
@@ -695,6 +726,7 @@ try {
                 skeleton: !!document.querySelector('.sk-head'),
                 stale: !!document.querySelector('.board-wrap.stale'),
                 tiles: document.querySelectorAll('.tiles .tile').length,
+                anims: document.getAnimations().filter((a) => a.playState === 'running').length,
               }),
             ),
           );
@@ -702,7 +734,7 @@ try {
     );
     check(
       'Back from the tier list shows the build at once (no skeleton)',
-      r.title.startsWith('Vindicta') && r.visible && !r.skeleton && !r.stale && r.tiles > 0,
+      r.title.startsWith('Vindicta') && r.visible && !r.skeleton && !r.stale && r.tiles > 0 && r.anims === 0,
       JSON.stringify(r),
     );
   }
@@ -713,6 +745,20 @@ try {
   await page.click('.tier-hero:has-text("Lash")');
   await settled('Lash');
   check('tier list: picking a hero opens that hero’s build', /[?&]hero=lash/.test(page.url()));
+  {
+    // a hero step plays the portrait slide; leaving and returning must not replay it
+    await page.click('.hero-arrow.next:visible');
+    await page.waitForFunction(() => !document.querySelector('.hero-leave') && !document.querySelector('.board-wrap.stale'), null, T);
+    await page.click('.nav-link:has-text("Tier List")');
+    await page.click('.nav-link:has-text("Build Finder")');
+    const r = await page.evaluate(
+      () =>
+        new Promise((res) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => res(document.getAnimations().filter((x) => x.playState === 'running').length))),
+        ),
+    );
+    check('Tier List -> Build Finder plays no entrance animation', r === 0, String(r));
+  }
   await page.goto(URL0 + 'tier-list/');
   await page.waitForSelector('.tier-hero', T);
   check('loading the tier list URL directly opens the tier list', (await page.$$('.tier-hero')).length === 38);

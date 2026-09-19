@@ -271,6 +271,11 @@ export default function App({ active = true }: { active?: boolean }) {
     : null;
 
   const [heroesOpen, setHeroesOpen] = useState(false);
+  // display:none -> shown restarts CSS animations; drop the slide state while hidden so switching pages plays nothing
+  if (!active && (slide.dir !== 0 || leaving)) {
+    setSlide((s) => ({ dir: 0, n: s.n }));
+    setLeaving(null);
+  }
 
   if (error)
     return (

@@ -127,7 +127,7 @@ export function BuildView({
           </button>
           <HeroArrow dir={1} onStep={onStepHero} />
         </div>
-        <h1>{title}</h1>
+        <h1 title={title}>{title}</h1>
         {builds.length > 1 && (
           <div className="pills style-switch" role="group" aria-label="Build">
             {builds.map((b) => (

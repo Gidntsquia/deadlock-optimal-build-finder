@@ -72,7 +72,7 @@ export function TierList({ onPickHero }: { onPickHero: (slug: string) => void })
                           onPickHero(slugify(hero.name));
                         }}
                       >
-                        <img src={img(hero.images.small ?? hero.images.card)} alt="" width={72} height={72} loading="lazy" />
+                        <img src={img(hero.images.small ?? hero.images.card)} alt="" width={72} height={72} />
                         <span>{hero.name}</span>
                       </a>
                     </li>

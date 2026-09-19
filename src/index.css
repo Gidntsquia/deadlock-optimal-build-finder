@@ -1004,7 +1004,11 @@ button.tile:hover {
   }
   .frame-head h1 {
     font-size: 20px;
-    flex: 0 1 auto;
+    /* fixed width so the pills never move when the title changes */
+    flex: 0 0 clamp(200px, 24vw, 340px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .pills {
     flex: 1 1 0;
