@@ -32,7 +32,11 @@ export default function Shell() {
   return (
     <>
       <NavBar page={page} onNavigate={go} />
-      {page === 'tiers' ? <TierList onPickHero={openHero} /> : <App />}
+      {page === 'tiers' && <TierList onPickHero={openHero} />}
+      {/* stays mounted (hidden) on the tier list so the build is ready the moment you come back */}
+      <div style={{ display: page === 'build' ? 'contents' : 'none' }}>
+        <App active={page === 'build'} />
+      </div>
     </>
   );
 }

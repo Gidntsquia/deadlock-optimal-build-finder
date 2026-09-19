@@ -33,6 +33,7 @@
   --navy: #2b3d70;
   --navy-track: #1a2a58;
   --navy-ink: #e9edf8;
+  --navy-dim: #8b96ad;
   /* Darkened from #3f9f5c — axe: white text on the original green is 3.32:1 at 10px bold,
      below WCAG's 4.5:1 for normal-weight text (bold-at-10px doesn't qualify as "large text"). */
   --good: #2a7040;
@@ -1072,11 +1073,23 @@ button.tile:hover {
 .nav-credit {
   margin-left: auto;
   padding: 0 8px;
-  color: var(--navy-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--navy-dim);
   font-size: 13px;
   font-weight: 800;
   text-decoration: underline;
   white-space: nowrap;
+}
+.credit-icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+.nav-credit:hover,
+.tier-credit a:hover {
+  color: var(--navy-ink);
 }
 .nav-links {
   display: flex;
@@ -1359,8 +1372,14 @@ button.tile:hover {
   }
 }
 .tier-credit {
-  color: var(--navy-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--navy-dim);
   font-size: 14px;
+}
+.tier-credit a {
+  color: inherit;
 }
 .tier-foot {
   margin-top: 16px;

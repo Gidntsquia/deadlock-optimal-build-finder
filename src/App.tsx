@@ -14,6 +14,7 @@ import {
 import { BuildView, HeroArrow, SwapCue } from './components/BuildView';
 import { HeroPicker } from './components/HeroPicker';
 import { slugify } from './slug';
+import { pageFromPath } from './route';
 import { BoardSkeleton } from './components/BoardSkeleton';
 import { Toaster } from './components/ui/sonner';
 import { log } from './log';
@@ -143,13 +144,15 @@ function useHeldout(heroId: number, manifest: Manifest | null) {
  * Both fields are derived from `location.search` at render time; a `popstate` listener is the
  * only thing that calls setState, and only in response to that external event — never
  * synchronously inside the effect body. */
-function useUrlState() {
+function useUrlState(active: boolean) {
   const readParams = () => new URLSearchParams(window.location.search);
   const [heroSlug, setHeroSlug] = useState(() => readParams().get('hero') ?? '');
   const [styleSlug, setStyleSlug] = useState(() => readParams().get('style') ?? '');
 
   useEffect(() => {
     const onPopState = () => {
+      // App stays mounted behind the tier list; ignore history moves that land on another page
+      if (pageFromPath(window.location.pathname) !== 'build') return;
       const p = readParams();
       setHeroSlug(p.get('hero') ?? '');
       setStyleSlug(p.get('style') ?? '');
@@ -157,6 +160,15 @@ function useUrlState() {
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
+
+  // coming back from the tier list (e.g. after picking a hero there): follow the URL
+  useEffect(() => {
+    if (!active) return;
+    const p = readParams();
+    setHeroSlug(p.get('hero') ?? '');
+    setStyleSlug(p.get('style') ?? '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
 
   const pickHero = (slug: string) => {
     setHeroSlug(slug);
@@ -179,9 +191,9 @@ function useUrlState() {
   return { heroSlug, styleSlug, pickHero, pickStyle };
 }
 
-export default function App() {
+export default function App({ active = true }: { active?: boolean }) {
   const { items, heroes, abilities, manifest, error } = useCore();
-  const { heroSlug, styleSlug, pickHero, pickStyle } = useUrlState();
+  const { heroSlug, styleSlug, pickHero, pickStyle } = useUrlState(active);
 
   // unknown/absent slug falls back to Infernus; matching is by name so URLs stay readable
   const hero = heroes.find((h) => slugify(h.name) === heroSlug) ?? heroes.find((h) => h.id === INFERNUS);

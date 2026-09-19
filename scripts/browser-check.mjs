@@ -668,10 +668,11 @@ try {
           return !!b && b.bottom <= innerHeight;
         })(),
         credit: document.querySelector('.nav-credit')?.href,
+        icon: !!document.querySelector('.nav-credit svg') && !!document.querySelector('.tier-credit svg'),
       }));
       check(
         `tier list fits ${w}x${h} without scrolling; rule link and credit visible`,
-        r.v <= 0 && r.h <= 0 && !r.inner && r.n === 38 && r.foot && r.credit === 'https://github.com/GidntSquia',
+        r.v <= 0 && r.h <= 0 && !r.inner && r.n === 38 && r.foot && r.credit === 'https://github.com/GidntSquia' && r.icon,
         JSON.stringify(r),
       );
     }
@@ -680,7 +681,31 @@ try {
     await snap({ path: shot('tier-list-desktop.png'), fullPage: true });
     await axe('desktop, tier list');
   }
-  await page.goBack();
+  {
+    // instant return: right after Back, within two frames, the build is already drawn (no skeleton, no stale dim)
+    const r = await page.evaluate(
+      () =>
+        new Promise((res) => {
+          history.back();
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() =>
+              res({
+                title: document.querySelector('.frame-head h1')?.textContent ?? '',
+                visible: !!document.querySelector('.frame-head h1')?.getClientRects().length,
+                skeleton: !!document.querySelector('.sk-head'),
+                stale: !!document.querySelector('.board-wrap.stale'),
+                tiles: document.querySelectorAll('.tiles .tile').length,
+              }),
+            ),
+          );
+        }),
+    );
+    check(
+      'Back from the tier list shows the build at once (no skeleton)',
+      r.title.startsWith('Vindicta') && r.visible && !r.skeleton && !r.stale && r.tiles > 0,
+      JSON.stringify(r),
+    );
+  }
   await settled('Vindicta');
   check('Back from the tier list returns to the same build', /[?&]hero=vindicta/.test(page.url()) && !/tier-list/.test(page.url()));
   await page.goForward();

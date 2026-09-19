@@ -5,7 +5,7 @@ import { slugify } from '../slug';
 import { hrefFor } from '../route';
 import type { Hero } from '../types';
 import { log } from '../log';
-import { CREDIT_URL } from '../components/NavBar';
+import { CREDIT_URL, GithubMark } from '../components/NavBar';
 
 function fmtDate(iso: string) {
   const d = new Date(iso);
@@ -92,6 +92,7 @@ export function TierList({ onPickHero }: { onPickHero: (slug: string) => void })
             </p>
           </details>
           <span className="tier-credit">
+            <GithubMark />
             Made by <a href={CREDIT_URL}>GidntSquia</a>
           </span>
         </div>
