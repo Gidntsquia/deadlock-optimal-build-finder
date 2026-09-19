@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Toaster } from './components/ui/sonner';
 import './index.css';
-import App from './App';
+import Shell from './Shell';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <App />
+      <Shell />
       <Toaster />
     </ErrorBoundary>
   </StrictMode>,

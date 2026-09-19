@@ -11,10 +11,12 @@
 //                                          with per-match purchases; 5 players per hero, chosen automatically
 //                                          from the Phantom+ scoreboard (see selectValidationPlayers)   (VALIDATION ONLY)
 //   public/data/img/{items,heroes,abilities}/  webp images so the app needs no network at all
+//   public/data/hero-stats.json            per-hero wins + matches, Phantom+ (badge >= 90), same window; feeds the tier list
 //   public/data/manifest.json              timestamps + counts + validation_sets (who was selected and why)
 //
 // Flags
 //   --analytics-only            refresh analytics/* only
+//   --hero-stats-only           refresh hero-stats.json only (a few seconds)
 //   --validation-only           re-select players and refetch validation/* for every hero
 //   --heroes 1,31               (with --validation-only or --analytics-only) only these hero ids; with --validation-only their entries are merged into manifest.validation_sets
 //   --select-only               (with --validation-only) run the selection, print the table per hero, write nothing
@@ -280,6 +282,22 @@ async function fetchStyles(hero, topQ, top, shopIds) {
   return { styles, scanned: cands.length };
 }
 
+// Tier list input: one request, every hero's wins and matches at badge >= TOP_BADGE over the snapshot window.
+async function fetchHeroStats(heroes) {
+  console.log(`hero win rates (badge>=${TOP_BADGE})`);
+  const rows = await getJson(`${API}/v1/analytics/hero-stats?min_average_badge=${TOP_BADGE}&min_unix_timestamp=${MIN_TS}`);
+  const byId = new Map(rows.map((r) => [r.hero_id, r]));
+  const missing = heroes.filter((h) => !byId.has(h.id)).map((h) => h.name);
+  if (missing.length) throw new Error(`hero-stats has no row for: ${missing.join(', ')}`);
+  await save('hero-stats.json', {
+    fetched_at: new Date().toISOString(),
+    min_average_badge: TOP_BADGE,
+    min_unix_timestamp: MIN_TS,
+    window_days: WINDOW_DAYS,
+    heroes: heroes.map((h) => ({ hero_id: h.id, wins: byId.get(h.id).wins, matches: byId.get(h.id).matches })),
+  });
+}
+
 async function fetchAnalytics(heroes, manifest) {
   const targets = HEROES_ARG ? heroes.filter((h) => HEROES_ARG.includes(h.id)) : heroes;
   console.log(`4/5 per-hero analytics (${targets.length} heroes, all ranks + badge>=${TOP_BADGE}, plus build styles)`);
@@ -416,12 +434,20 @@ async function main() {
     if (!SELECT_ONLY) await save('manifest.json', manifest);
     return;
   }
+  if (process.argv.includes('--hero-stats-only')) {
+    const manifest = JSON.parse(await readFile(path.join(OUT, 'manifest.json'), 'utf8'));
+    const heroes = JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8'));
+    MIN_TS = manifest.min_unix_timestamp;
+    await fetchHeroStats(heroes);
+    return;
+  }
   if (ANALYTICS_ONLY) {
     const manifest = JSON.parse(await readFile(path.join(OUT, 'manifest.json'), 'utf8'));
     const heroes = JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8'));
     MIN_TS = manifest.min_unix_timestamp; // keep the same window as the rest of the snapshot
     manifest.analytics_fetched_at = new Date().toISOString();
     await fetchAnalytics(heroes, manifest);
+    await fetchHeroStats(heroes);
     await save('manifest.json', manifest);
     return;
   }
@@ -460,6 +486,7 @@ async function main() {
   manifest.counts.abilities = abilities.length;
 
   await fetchAnalytics(heroes, manifest);
+  await fetchHeroStats(heroes);
 
   await fetchValidation(heroes, manifest);
 

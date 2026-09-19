@@ -212,7 +212,10 @@ try {
   {
     const f = await fitProbe();
     check('fits 1440x900: no scroll, no clipped tiles', !f.v && !f.h && !f.scrollers && !f.clipped, JSON.stringify(f));
-    check('no top bar / footer elements', (await page.$$('header, nav, footer, .app-header')).length === 0);
+    check(
+      'one top bar (the nav bar), no footer, no other header',
+      (await page.$$('header')).length === 1 && (await page.$$('footer, .app-header')).length === 0,
+    );
     check('one details control, closed by default', (await page.$$('.details-btn')).length === 1 && (await page.$$('.details')).length === 0);
     let bad = [];
     for (const sel of ['.hero-btn:visible', '.style-switch', '.row.abilities', '.ap-grid', '.share-btn', '.details-btn']) {
@@ -545,6 +548,142 @@ try {
   // ---- back to desktop: axe, unknown slug, reduced motion ----
   await page.setViewportSize({ width: 1440, height: 900 });
   await axe('desktop');
+  // ---- nav bar + tier list ----
+  await page.goto(URL0 + '?hero=vindicta');
+  await settled('Vindicta');
+  check('shared build URL (?hero=vindicta) still opens that hero', true);
+  {
+    const nav = await page.evaluate(() => {
+      const links = [...document.querySelectorAll('.nav-link')];
+      const logo = document.querySelector('.nav-brand img');
+      return {
+        labels: links.map((a) => a.textContent.trim()),
+        current: links.filter((a) => a.getAttribute('aria-current') === 'page').map((a) => a.textContent.trim()),
+        brawl: links[2]?.getAttribute('href'),
+        name: document.querySelector('.nav-name')?.textContent,
+        logo: logo?.getAttribute('src'),
+        logoOk: !!logo && logo.complete && logo.naturalWidth > 0,
+        icons: links.every((a) => a.querySelector('svg')),
+        top: document.querySelector('.nav').getBoundingClientRect().top,
+        h: document.querySelector('.nav').getBoundingClientRect().height,
+      };
+    });
+    check(
+      'nav (build page): logo, name, 3 entries with icons, Build Finder current',
+      nav.labels.join('|') === 'Build Finder|Tier List|Street Brawl' &&
+        nav.current.join() === 'Build Finder' &&
+        nav.icons &&
+        nav.name === 'Deadlock Builds' &&
+        nav.logoOk &&
+        /favicon\.svg$/.test(nav.logo) &&
+        nav.top === 0 &&
+        nav.h > 0,
+      JSON.stringify(nav),
+    );
+    check('nav: Street Brawl links to its own site', nav.brawl === 'https://gidntsquia.github.io/deadlock-street-brawl-helper/', nav.brawl);
+    await snap({ path: shot('nav-build-desktop.png') });
+  }
+  await page.evaluate(() => (window.__noReload = true));
+  await page.click('.nav-link:has-text("Tier List")');
+  await page.waitForSelector('.tier-hero', T);
+  {
+    const st = await page.evaluate(() => ({
+      kept: window.__noReload === true,
+      path: location.pathname,
+      cur: document.querySelector('.nav-link[aria-current=page]')?.textContent.trim(),
+    }));
+    check(
+      'nav: Tier List opens without a reload, URL changes, entry highlighted',
+      st.kept && /\/tier-list\/$/.test(st.path) && st.cur === 'Tier List',
+      JSON.stringify(st),
+    );
+    const dom = await page.evaluate(() =>
+      [...document.querySelectorAll('.tier-row')].map((r) => ({
+        tier: r.dataset.tier,
+        label: r.querySelector('.tier-tag').textContent,
+        heroes: [...r.querySelectorAll('.tier-hero span')].map((s) => s.textContent),
+      })),
+    );
+    const [heroes, stats] = await page.evaluate(() =>
+      Promise.all([fetch('/data/heroes.json').then((r) => r.json()), fetch('/data/hero-stats.json').then((r) => r.json())]),
+    );
+    // independent restatement of the rule in docs/tier-list.md
+    const cuts = [
+      ['S+', 54],
+      ['S', 52],
+      ['A', 50],
+      ['B', 48],
+      ['C', 46],
+      ['D', -1],
+    ];
+    const rate = new Map(stats.heroes.map((s) => [s.hero_id, (100 * s.wins) / s.matches]));
+    const want = new Map(heroes.map((h) => [h.name, cuts.find(([, m]) => rate.get(h.id) >= m || m < 0)[0]]));
+    const got = new Map(dom.flatMap((r) => r.heroes.map((n) => [n, r.tier])));
+    const all = dom.flatMap((r) => r.heroes);
+    const byName = new Map(heroes.map((h) => [h.name, rate.get(h.id)]));
+    const order = dom.every((r, i) => dom.slice(i + 1).every((lo) => r.heroes.every((a) => lo.heroes.every((b) => byName.get(a) >= byName.get(b)))));
+    check(
+      'tier list: all snapshot heroes exactly once, each in the tier the written rule gives',
+      all.length === heroes.length && new Set(all).size === heroes.length && [...want].every(([n, t]) => got.get(n) === t),
+      `${all.length}/${heroes.length}`,
+    );
+    check(
+      'tier list: tiers labelled, best first, no hero above a better-winning hero below',
+      dom.every((r) => r.label.startsWith(r.tier)) &&
+        order &&
+        dom.map((r) => r.tier).join() ===
+          cuts
+            .map((c) => c[0])
+            .filter((t) => dom.some((r) => r.tier === t))
+            .join(),
+    );
+    const text = await page.evaluate(() => document.querySelector('.tiers-head').innerText);
+    check(
+      'tier list: says Phantom+ win rates and shows the data date',
+      /Phantom and above/.test(text) && /win rate/i.test(text) && /Data from \d{1,2} [A-Z][a-z]{2} \d{4}/.test(text),
+      text,
+    );
+    check('tier list: page does not scroll sideways at 1440', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    await snap({ path: shot('tier-list-desktop.png'), fullPage: true });
+    await axe('desktop, tier list');
+  }
+  await page.goBack();
+  await settled('Vindicta');
+  check('Back from the tier list returns to the same build', /[?&]hero=vindicta/.test(page.url()) && !/tier-list/.test(page.url()));
+  await page.goForward();
+  await page.waitForSelector('.tier-hero', T);
+  await page.click('.tier-hero:has-text("Lash")');
+  await settled('Lash');
+  check('tier list: picking a hero opens that hero’s build', /[?&]hero=lash/.test(page.url()));
+  await page.goto(URL0 + 'tier-list/');
+  await page.waitForSelector('.tier-hero', T);
+  check('loading the tier list URL directly opens the tier list', (await page.$$('.tier-hero')).length === 38);
+  {
+    const fs = await import('node:fs');
+    check('build output has tier-list/index.html and 404.html for GitHub Pages', fs.existsSync('dist/tier-list/index.html') && fs.existsSync('dist/404.html'));
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await frames();
+  {
+    const f = await fitProbe();
+    check(
+      'phone: tier list has no sideways scroll, nav fits, tap targets >= 40px',
+      !f.h &&
+        (await page.evaluate(() => {
+          const n = document.querySelector('.nav');
+          return n.scrollWidth <= n.clientWidth;
+        })) &&
+        (await tapTargets()).filter((c) => /nav/.test(c)).length === 0,
+      JSON.stringify(f),
+    );
+    await snap({ path: shot('tier-list-phone.png') });
+    if (process.env.SHOT_DIR) {
+      await page.goto(URL0);
+      await settled('Infernus');
+      await snap({ path: shot('nav-build-phone.png') });
+    }
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(URL0 + '?hero=nope');
   errors.length = 0; // tearing down the previous page mid-fetch logs a stray error from the old document
   await settled('Infernus');

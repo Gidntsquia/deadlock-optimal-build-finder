@@ -86,6 +86,7 @@
   --row-head: #564d3d;
   --row-head-ink: #f4ead3;
   --row-body: #bfb08f;
+  --nav-h: 48px;
   --pill: #d3e6ec;
   --frame-edge: #4a9db2;
 
@@ -180,7 +181,7 @@ h3 {
 /* screen: hero on the dark left, teal-framed board on the right (phone: board only) */
 .screen {
   --tile: 25%;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--nav-h));
   padding: 8px;
 }
 .hero-side {
@@ -853,9 +854,9 @@ button.tile:hover {
 
 @media (min-width: 900px) {
   .screen {
-    --tile: clamp(64px, min(4.9vw, 9.2vh), 112px);
+    --tile: clamp(64px, min(4.6vw, calc((100vh - var(--nav-h)) * 0.088)), 112px);
     display: grid;
-    --side-w: clamp(220px, min(27vw, calc((100dvh - 24px - 200px) * 0.737)), 600px);
+    --side-w: clamp(220px, min(27vw, calc((100dvh - var(--nav-h) - 24px - 200px) * 0.737)), 600px);
     grid-template-columns: var(--side-w) minmax(0, 1fr);
     gap: 16px;
     align-items: start;
@@ -872,7 +873,7 @@ button.tile:hover {
     position: relative;
     display: flex;
     flex-direction: column;
-    height: calc(100dvh - 24px);
+    height: calc(100dvh - var(--nav-h) - 24px);
     width: 100%;
     border-radius: var(--radius-md);
     background: var(--teal);
@@ -926,7 +927,7 @@ button.tile:hover {
     display: inline-flex;
     position: absolute;
     /* centre of the name plate: below the portrait, above the Change Hero button */
-    top: calc((4px + (var(--side-w) - 8px) * 0.5 * 380 / 140 + 8px + 100dvh - 24px - 4px - 60px) / 2 - 22px);
+    top: calc((4px + (var(--side-w) - 8px) * 0.5 * 380 / 140 + 8px + 100dvh - var(--nav-h) - 24px - 4px - 60px) / 2 - 22px);
   }
   .hero-arrow.prev {
     left: 20px;
@@ -981,7 +982,7 @@ button.tile:hover {
   .frame {
     padding: 0 8px 8px 12px;
     border-radius: var(--radius-md) 0 0 var(--radius-md);
-    min-height: calc(100dvh - 24px);
+    min-height: calc(100dvh - var(--nav-h) - 24px);
     display: flex;
     flex-direction: column;
   }
@@ -1033,5 +1034,240 @@ button.tile:hover {
     right: auto;
     bottom: auto;
     border-radius: var(--radius-md);
+  }
+}
+
+/* top nav: dark bar, teal underline like the shop header; current page is a teal plate */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--nav-h);
+  padding: 0 12px;
+  background: var(--room);
+  border-bottom: 2px solid var(--frame-edge);
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 4px 8px 4px 4px;
+  color: var(--navy-ink);
+  text-decoration: none;
+  font-weight: 900;
+  font-size: 17px;
+  white-space: nowrap;
+}
+.nav-brand img {
+  display: block;
+  width: 32px;
+  height: 32px;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  color: var(--navy-ink);
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.nav-link svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.nav-link .nav-out {
+  width: 12px;
+  height: 12px;
+  margin-left: -4px;
+}
+.nav-link:hover {
+  background: var(--room2);
+}
+.nav-link[aria-current='page'] {
+  background: var(--teal);
+  color: var(--teal-ink);
+  box-shadow: var(--shadow-hard);
+}
+@media (max-width: 599px) {
+  .nav {
+    gap: 4px;
+    padding: 0 8px;
+  }
+  .nav-name,
+  .nav-out {
+    display: none;
+  }
+  .nav-link {
+    gap: 4px;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+}
+
+/* tier list page */
+.tiers {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 12px 32px;
+}
+.tiers-head h1 {
+  font-size: 24px;
+}
+.tiers-head p {
+  margin: 4px 0 16px;
+  color: var(--navy-ink);
+  font-size: 15px;
+}
+.tier-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tier-row {
+  display: flex;
+  background: var(--board);
+  border: 2px solid var(--board-edge);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-hard);
+}
+.tier-skel {
+  min-height: 96px;
+  background: var(--room2);
+  border-radius: var(--radius-md);
+}
+.tier-tag {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 104px;
+  padding: 8px;
+  background: var(--tier-color, var(--board-head));
+  color: var(--ink);
+  text-align: center;
+}
+.tier-tag b {
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+}
+.tier-tag span {
+  font-size: 12px;
+  font-weight: 800;
+}
+.tier-row[data-tier='S+'] {
+  --tier-color: var(--weapon);
+}
+.tier-row[data-tier='S'] {
+  --tier-color: var(--vitality);
+}
+.tier-row[data-tier='A'] {
+  --tier-color: var(--teal);
+}
+.tier-row[data-tier='B'] {
+  --tier-color: var(--spirit);
+}
+.tier-row[data-tier='C'] {
+  --tier-color: var(--board-head);
+}
+.tier-row[data-tier='D'] {
+  --tier-color: var(--row-head);
+  color: var(--row-head-ink);
+}
+.tier-row[data-tier='D'] .tier-tag {
+  color: var(--row-head-ink);
+}
+.tier-heroes {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+}
+.tier-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 80px;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+}
+.tier-hero img {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  background: var(--avatar-bg);
+  border-radius: var(--radius-sm);
+}
+.tier-hero:hover {
+  background: var(--board-head);
+}
+.tier-rule {
+  margin-top: 16px;
+  color: var(--navy-ink);
+  font-size: 14px;
+}
+.tier-rule summary {
+  cursor: pointer;
+  font-weight: 800;
+}
+.tier-rule p {
+  margin: 8px 0 0;
+  max-width: 640px;
+}
+@media (max-width: 599px) {
+  .tier-tag {
+    width: 56px;
+    padding: 4px;
+  }
+  .tier-tag b {
+    font-size: 24px;
+  }
+  .tier-tag span {
+    display: none;
+  }
+  .tier-heroes {
+    gap: 4px;
+    padding: 4px;
+  }
+  .tier-hero {
+    width: 56px;
+    padding: 2px;
+    font-size: 11px;
+  }
+  .tier-hero img {
+    width: 48px;
+    height: 48px;
   }
 }

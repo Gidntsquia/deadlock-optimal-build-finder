@@ -63,3 +63,5 @@ export const heroBackdrop = (heroId: number) => ({
   backgroundSize: 'auto 170%',
   backgroundPosition: `${10 + ((heroId * 37) % 81)}% ${15 + ((heroId * 53) % 71)}%`,
 });
+
+export const loadTierData = () => Promise.all([j<Hero[]>('heroes.json'), j<import('../tiers').HeroStats>('hero-stats.json')]);

@@ -216,3 +216,12 @@ was told this explicitly before approving — and now renders as a bottom sheet,
 flush to the bottom, with the item name and stats legible. Known leftover the user flagged,
 out of this round's scope: the "Ranking details" focus ring draws as a large white box across
 the item sheet in both item-sheet shots.
+
+## Nav bar and tier list (2026-09-19)
+
+Reference: `docs/ui/reference/nav-deadlockmeta.png` (layout only: logo + name left, icon + label entries, current entry
+plated). Ours: dark room-colour bar, teal underline (`--frame-edge`), 48px (`--nav-h`); current entry is a solid teal plate
+with `--teal-ink` text. Phone: name and the external-link arrow hide, entries keep icon + label.
+Tier list: one parchment row per tier (`--board`, `--board-edge`), a solid tier plate at the left using existing tokens
+(S+ weapon, S vitality, A teal, B spirit, C board-head, D row-head), portraits 72px with the hero name under them. No gradients,
+no new colours. Screenshots: `docs/ui/after/nav-build-*.png`, `tier-list-*.png`.

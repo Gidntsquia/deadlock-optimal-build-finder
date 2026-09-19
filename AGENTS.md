@@ -19,10 +19,18 @@ Static React app that generates Deadlock hero builds in the browser from a local
   Includes `@axe-core/playwright` scans (desktop, phone with item sheet open and closed) — must report 0 serious/critical violations.
   `npm test` = verify and the tour run side by side via `scripts/test.mjs` (~15s). `npm run test:full` = tsc + the same (before merge). A guard (`.claude/test-commands.sh`) blocks bare full-suite runs by agents; `TS_FULL=1` overrides.
   Logic checks: `npm run verify`. Typecheck: `npx tsc -b`. Format: `npx prettier --check/--write`.
+- Pages: `src/Shell.tsx` owns the page (URL path under the Vite base, `pushState` + `popstate`): the build finder at `<base>`
+  (`?hero=&style=` unchanged) and the tier list at `<base>tier-list/` (`src/pages/TierList.tsx`, rule in `src/tiers.ts` and
+  `docs/tier-list.md`, data `public/data/hero-stats.json` from `fetch-data`, `--hero-stats-only` for just that). `vite.config.ts`
+  copies `dist/index.html` to `dist/tier-list/index.html` and `404.html` so direct loads work on Pages. Add a page = a route in
+  `src/route.ts` + a copy in that plugin.
+- Top nav (`components/NavBar.tsx`, `<header class="nav">`, height `--nav-h` 48px) is on every page: logo (`favicon.svg`), name,
+  Build Finder, Tier List, Street Brawl (external link). Layout heights subtract `--nav-h`; keep new full-height rules doing so.
+  Favicon links in `index.html` carry `?v=2`: browsers cache tab icons hard, bump it when the icon changes.
 - Screen layout: one in-game style build window (`BuildView.tsx`): hero button, title, build
-  pills, Share, Details, three phase rows, Ability Order grid (`.ap-grid`, one row per ability, one chip per point). No top bar or footer. The hero
+  pills, Share, Details, three phase rows, Ability Order grid (`.ap-grid`, one row per ability, one chip per point). The only top bar is the nav; no footer. The hero
   picker is a dialog (`HeroPicker.tsx`). Every number, stat, data date, validation result and
-  link lives in the Details dialog (`Details.tsx`) and nowhere else; `verify:browser` fails if
+  link lives in the Details dialog (`Details.tsx`) and nowhere else; The tier list page may say "win rate"/"Phantom"; the rules below are for the build screen. `verify:browser` fails if
   banned words (%, match, win rate, README...) show on the main screen or in the share PNG, or
   if any hero x style scrolls at 1440x900 / 1920x1080. Keep `<Toaster>` and dialogs outside
   `<main className="screen">`: it is a CSS grid and extra children add a row that breaks the fit.
