@@ -11,7 +11,7 @@ import {
   type HeldoutSet,
   type PanelValidation,
 } from './validation/heldout';
-import { BuildView, SwapCue } from './components/BuildView';
+import { BuildView, HeroArrow, SwapCue } from './components/BuildView';
 import { HeroPicker } from './components/HeroPicker';
 import { slugify } from './slug';
 import { BoardSkeleton } from './components/BoardSkeleton';
@@ -176,6 +176,11 @@ export default function App() {
     log.info('hero_selected', { heroId: h.id });
     pickHero(slugify(h.name));
   };
+  const stepHero = (d: -1 | 1) => {
+    const i = heroes.findIndex((h) => h.id === heroId);
+    const next = heroes[(i + d + heroes.length) % heroes.length];
+    if (next) selectHero(next);
+  };
   const selectStyle = (b: Build) => pickStyle(b.population.style?.key ?? '');
 
   // en-GB's "short" month gives "Sept" (4 letters) for September; build the day/month/year
@@ -215,11 +220,15 @@ export default function App() {
     <>
       <main className="screen">
         <aside className="hero-side">
-          <button className="hero-card hero-btn" onClick={() => setHeroesOpen(true)} aria-label={`${hero.name}, change hero`}>
-            <img src={img(hero.images.card ?? hero.images.small)} alt="" width={260} height={380} />
-            <span className="hero-name">{hero.name}</span>
-            <SwapCue />
-          </button>
+          <div className="hero-card">
+            <button className="hero-face hero-btn" onClick={() => setHeroesOpen(true)} aria-label={`${hero.name}, change hero`}>
+              <img src={img(hero.images.card ?? hero.images.small)} alt="" width={280} height={380} />
+              <span className="hero-name">{hero.name}</span>
+              <SwapCue />
+            </button>
+            <HeroArrow dir={-1} onStep={stepHero} />
+            <HeroArrow dir={1} onStep={stepHero} />
+          </div>
         </aside>
         <div className="frame">
           {analyticsState.status === 'error' && (
@@ -248,6 +257,7 @@ export default function App() {
               builds={build ? builds : [shownBuild]}
               onPickStyle={selectStyle}
               onOpenHeroes={() => setHeroesOpen(true)}
+              onStepHero={stepHero}
               panel={build ? (validations[tab] ?? null) : (lastGood?.panel ?? null)}
               hero={shownHero}
               windowDays={manifest?.window_days}

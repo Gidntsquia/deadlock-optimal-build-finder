@@ -33,11 +33,27 @@ export const SwapCue = () => (
   </span>
 );
 
+export const HeroArrow = ({ dir, onStep }: { dir: -1 | 1; onStep: (d: -1 | 1) => void }) => (
+  <button className={['hero-arrow', dir < 0 ? 'prev' : 'next'].join(' ')} onClick={() => onStep(dir)} aria-label={dir < 0 ? 'Previous hero' : 'Next hero'}>
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <path
+        d={dir < 0 ? 'M10.5 2.5 5 8l5.5 5.5' : 'M5.5 2.5 11 8l-5.5 5.5'}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  </button>
+);
+
 export function BuildView({
   build,
   builds,
   onPickStyle,
   onOpenHeroes,
+  onStepHero,
   panel,
   hero,
   windowDays,
@@ -48,6 +64,7 @@ export function BuildView({
   builds: Build[];
   onPickStyle: (b: Build) => void;
   onOpenHeroes: () => void;
+  onStepHero: (d: -1 | 1) => void;
   panel: PanelValidation | null;
   hero: Pick<Hero, 'name' | 'images'>;
   windowDays?: number;
@@ -102,10 +119,14 @@ export function BuildView({
   return (
     <>
       <div className="frame-head">
-        <button className="hero-avatar hero-btn" onClick={onOpenHeroes} aria-label={`${hero.name}, change hero`}>
-          <img src={img(hero.images.small)} alt="" width={44} height={44} />
-          <SwapCue />
-        </button>
+        <div className="hero-mini">
+          <HeroArrow dir={-1} onStep={onStepHero} />
+          <button className="hero-avatar hero-btn" onClick={onOpenHeroes} aria-label={`${hero.name}, change hero`}>
+            <img src={img(hero.images.small)} alt="" width={44} height={44} />
+            <SwapCue />
+          </button>
+          <HeroArrow dir={1} onStep={onStepHero} />
+        </div>
         <h1>{title}</h1>
         {builds.length > 1 && (
           <div className="pills style-switch" role="group" aria-label="Build">

@@ -436,6 +436,32 @@ h3 {
   display: none;
 }
 
+/* prev / next hero arrows */
+.hero-mini {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.hero-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--pill);
+  color: var(--teal-ink);
+  box-shadow: var(--shadow-hard);
+}
+.hero-arrow svg {
+  width: 20px;
+  height: 20px;
+}
+.hero-side .hero-arrow {
+  display: none;
+}
+
 /* item tile: slot-coloured art, tier flag in the corner, pale name plate */
 .tile {
   position: relative;
@@ -785,9 +811,10 @@ button.tile:hover {
 
 @media (min-width: 900px) {
   .screen {
-    --tile: clamp(72px, min(5.5vw, 9.2vh), 112px);
+    --tile: clamp(64px, min(4.9vw, 9.2vh), 112px);
     display: grid;
-    grid-template-columns: clamp(220px, 20vw, 400px) minmax(0, 1fr);
+    --side-w: clamp(220px, min(27vw, calc((100dvh - 24px - 200px) * 0.737)), 600px);
+    grid-template-columns: var(--side-w) minmax(0, 1fr);
     gap: 16px;
     align-items: start;
     max-width: 2000px;
@@ -800,6 +827,7 @@ button.tile:hover {
     top: 12px;
   }
   .hero-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     height: calc(100dvh - 24px);
@@ -810,31 +838,53 @@ button.tile:hover {
     overflow: hidden;
     box-shadow: var(--shadow-hard-lg);
   }
-  .hero-card img {
+  .hero-face {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    text-align: center;
+  }
+  .hero-face img {
     display: block;
     width: 100%;
-    flex: 1 1 0;
-    min-height: 0;
-    object-fit: contain;
-    object-position: 50% 50%;
+    aspect-ratio: 280 / 380;
+    object-fit: cover;
     background: var(--avatar-bg);
     border-radius: var(--radius-sm);
   }
-  .hero-card .hero-name {
+  .hero-face .hero-name {
     display: block;
-    font-size: 24px;
+    font-size: 32px;
     font-weight: 900;
-    padding: 8px 0 4px;
+    padding: 16px 0;
+    margin: auto 0;
     color: var(--teal-ink);
   }
-  .hero-card .hero-cue {
+  .hero-face .hero-cue {
     display: flex;
     justify-content: center;
-    min-height: 40px;
+    min-height: 44px;
     margin: 4px 12px 12px;
     font-size: 16px;
     background: var(--pill);
     box-shadow: var(--shadow-hard);
+    align-items: center;
+  }
+  .hero-side .hero-arrow {
+    display: inline-flex;
+    position: absolute;
+    top: calc(var(--side-w) * 0.688 - 22px);
+  }
+  .hero-arrow.prev {
+    left: 12px;
+  }
+  .hero-arrow.next {
+    right: 12px;
+  }
+  .hero-mini {
+    display: none;
   }
   .row.abilities {
     flex: 1;

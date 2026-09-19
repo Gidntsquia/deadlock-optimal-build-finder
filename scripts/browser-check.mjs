@@ -66,22 +66,39 @@ function assertInsideViewport(check, label, rect, innerWidth, innerHeight) {
 }
 // Hero picker: the visible hero control (portrait on desktop, avatar on phone) opens one dialog
 // with a search box and grid. `pickHero` opens it, types the name, and clicks the match.
-const isPhone = () => page.viewportSize()?.width < 900;
-const openHeroes = async () => {
-  await page.click('.hero-btn:visible');
-  await page.waitForSelector('.hero-dialog .hero-filter');
+const isPhone = (pg = page) => pg.viewportSize()?.width < 900;
+const openHeroes = async (pg = page) => {
+  await pg.click('.hero-btn:visible');
+  await pg.waitForSelector('.hero-dialog .hero-filter');
 };
-const pickHero = async (name) => {
-  await openHeroes();
-  if (isPhone()) {
-    const vp = page.viewportSize();
-    const r = await stableRect(page, '.hero-dialog');
+const pickHero = async (name, pg = page) => {
+  await openHeroes(pg);
+  if (isPhone(pg)) {
+    const vp = pg.viewportSize();
+    const r = await stableRect(pg, '.hero-dialog');
     assertInsideViewport(check, 'item 1 (phone hero sheet)', r, vp.width, vp.height);
   }
-  await page.fill('.hero-dialog .hero-filter', name);
-  await page.click(`.hero-dialog .hero-opt:has-text("${name}")`);
-  await page.waitForSelector('.hero-dialog', { state: 'detached' });
+  await pg.fill('.hero-dialog .hero-filter', name);
+  await pg.click(`.hero-dialog .hero-opt:has-text("${name}")`);
+  await pg.waitForSelector('.hero-dialog', { state: 'detached' });
 };
+// Runs fn(page, item) over items on `n` fresh pages in parallel (same offline rules as the main page).
+// Hero x style loops are independent, so this cuts wall time without dropping any check.
+async function pool(items, n, viewport, fn) {
+  const queue = [...items];
+  await Promise.all(
+    Array.from({ length: Math.min(n, items.length) }, async () => {
+      const wctx = await browser.newContext({ viewport, ...(viewport.width < 900 ? { isMobile: true, hasTouch: true, deviceScaleFactor: 2 } : {}) });
+      const wp = await wctx.newPage();
+      await wp.route('**/*', (route) => (route.request().url().startsWith('http://localhost:4173') ? route.continue() : route.abort()));
+      wp.on('pageerror', (e) => errors.push(String(e)));
+      await wp.goto('http://localhost:4173/');
+      await wp.waitForSelector('.tiles .tile', { timeout: 20000 });
+      for (let it; (it = queue.shift()) !== undefined;) await fn(wp, it);
+      await wctx.close();
+    }),
+  );
+}
 const BANNED = [
   /%/,
   /match/i,
@@ -98,8 +115,8 @@ const BANNED = [
 ];
 const bannedHit = (text) => BANNED.map((re) => re.exec(text)?.[0]).find(Boolean);
 // Ability grid probe: 4 rows, one marker per step, own column, left-to-right = point order, own row, tier text 1/2/5.
-const gridProbe = () =>
-  page.evaluate(() => {
+const gridProbe = (pg = page) =>
+  pg.evaluate(() => {
     const why = [];
     const grid = document.querySelector('.ap-grid');
     if (!grid) return ['no .ap-grid'];
@@ -487,6 +504,8 @@ try {
 
     await page.keyboard.press('Escape');
     await page.waitForSelector('.sheet', { state: 'detached' });
+    // Radix restores focus a frame after unmount: poll for it (bounded) instead of reading once.
+    await page.waitForFunction(() => document.activeElement?.classList.contains('tile'), null, { timeout: 2000 }).catch(() => {});
     const focusedLabel = await page.evaluate(() => (document.activeElement?.classList.contains('tile') ? document.activeElement.textContent : null));
     check(
       'item 5: Escape closes and returns focus to the tile last shown (not the original opener)',
@@ -561,8 +580,8 @@ try {
   // Main screen rules at 1440x900 (desktop viewport is already set)
   {
     const mainText = () => page.evaluate(() => document.querySelector('main').innerText);
-    const fitProbe = () =>
-      page.evaluate(() => {
+    const fitProbe = (pg = page) =>
+      pg.evaluate(() => {
         const scrollers = [...document.querySelectorAll('main *')]
           .filter((el) => {
             const cs = getComputedStyle(el);
@@ -586,8 +605,8 @@ try {
           clipped,
         };
       });
-    const waitSettled = (name) =>
-      page.waitForFunction(
+    const waitSettled = (name, pg = page) =>
+      pg.waitForFunction(
         (h) => document.querySelector('.frame-head h1')?.textContent.startsWith(h + ' - ') && !document.querySelector('.board-wrap.stale'),
         name,
         {
@@ -629,6 +648,7 @@ try {
     check('details: win rate', /win rate/i.test(dText));
     check('details: data date', /data from \d{1,2} \w{3} \d{4}/i.test(dText), dText.match(/data from.{0,30}/i)?.[0]);
     await closeDetails();
+    await page.waitForFunction(() => document.activeElement?.classList.contains('details-btn'), null, { timeout: 2000 }).catch(() => {});
     check('details: Escape returns focus to the details control', await page.evaluate(() => document.activeElement?.classList.contains('details-btn')));
 
     // banned words on the main screen, Infernus and Warden, desktop and phone
@@ -656,37 +676,37 @@ try {
     let gridCombos = 0;
     const gridBad = [];
     const bad = [];
-    for (const name of allHeroes) {
-      await page.setViewportSize({ width: 1440, height: 900 });
-      await pickHero(name);
-      await waitSettled(name);
-      const nStyles = Math.max(1, (await page.$$('.style-pill')).length);
+    await pool(allHeroes, 6, { width: 1440, height: 900 }, async (pg, name) => {
+      await pg.setViewportSize({ width: 1440, height: 900 });
+      await pickHero(name, pg);
+      await waitSettled(name, pg);
+      const nStyles = Math.max(1, (await pg.$$('.style-pill')).length);
       for (let i = 0; i < nStyles; i++) {
         if (i > 0) {
-          await page.locator('.style-pill').nth(i).click();
-          await page.waitForFunction(
+          await pg.locator('.style-pill').nth(i).click();
+          await pg.waitForFunction(
             (k) => document.querySelectorAll('.style-pill')[k]?.getAttribute('aria-pressed') === 'true' && !document.querySelector('.board-wrap.stale'),
             i,
-            {
-              timeout: 15000,
-            },
+            { timeout: 15000 },
           );
         }
-        await openDetails();
-        const want = await page.$$eval('.details .item-table tbody tr', (els) => els.length);
-        await closeDetails();
+        await pg.click('.details-btn');
+        await pg.waitForSelector('.details');
+        const want = await pg.$$eval('.details .item-table tbody tr', (els) => els.length);
+        await pg.keyboard.press('Escape');
+        await pg.waitForSelector('.details', { state: 'detached' });
         for (const size of [
           { width: 1440, height: 900 },
           { width: 1920, height: 1080 },
         ]) {
-          await page.setViewportSize(size);
-          await page.waitForTimeout(60);
+          await pg.setViewportSize(size);
+          await pg.waitForTimeout(60);
           if (size.width === 1440) {
-            const gw = await gridProbe();
+            const gw = await gridProbe(pg);
             gridCombos++;
             if (gw.length) gridBad.push(`${name}#${i}: ${gw.slice(0, 3).join('; ')}`);
           }
-          const f = await fitProbe();
+          const f = await fitProbe(pg);
           combos++;
           const why = [];
           if (f.sh > f.ih) why.push(`scrollHeight ${f.sh} > ${f.ih}`);
@@ -697,7 +717,7 @@ try {
           if (why.length) bad.push(`${name}#${i}@${size.width}: ${why.join('; ')}`);
         }
       }
-    }
+    });
     check(
       `every hero x style fits with all items shown at 1440x900 and 1920x1080 (${combos} combos)`,
       bad.length === 0 && combos >= allHeroes.length * 2,
@@ -711,15 +731,14 @@ try {
     );
 
     // phone: no sideways scroll for any hero; whole grid visible
-    await page.setViewportSize({ width: 390, height: 844 });
     const wide = [];
     const gridWide = [];
-    for (const name of allHeroes) {
-      await pickHero(name);
-      await waitSettled(name);
-      const w = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
+    await pool(allHeroes, 6, { width: 390, height: 844 }, async (pg, name) => {
+      await pickHero(name, pg);
+      await waitSettled(name, pg);
+      const w = await pg.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
       if (w[0] > w[1]) wide.push(`${name} ${w[0]}`);
-      const g = await page.evaluate(() => {
+      const g = await pg.evaluate(() => {
         const grid = document.querySelector('.ap-grid');
         const off = [...grid.querySelectorAll('.ap-mark')].filter((m) => {
           const r = m.getBoundingClientRect();
@@ -728,7 +747,7 @@ try {
         return { sw: grid.scrollWidth, cw: grid.clientWidth, off };
       });
       if (g.sw > g.cw || g.off) gridWide.push(`${name} sw${g.sw}/cw${g.cw} off${g.off}`);
-    }
+    });
     check('phone 390x844: whole ability grid visible, no sideways scroll, markers inside viewport', gridWide.length === 0, gridWide.slice(0, 6).join(', '));
     check('phone 390x844: no sideways scroll for any hero', wide.length === 0, wide.join(', '));
 
@@ -745,6 +764,55 @@ try {
     check('back restores the previous hero', true);
   }
 
+  // prev / next hero arrows: visible at rest, step through heroes with wrap, update the URL, 44px on phone
+  for (const size of [
+    { width: 1440, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(size);
+    await pickHero('Infernus');
+    await page.waitForFunction(() => document.querySelector('.frame-head h1')?.textContent.startsWith('Infernus') && document.querySelector('.board'), null, {
+      timeout: 15000,
+    });
+    const tag = `${size.width}x${size.height}`;
+    const arrows = await page.evaluate(() =>
+      ['Previous hero', 'Next hero'].map((n) => {
+        const el = [...document.querySelectorAll(`button[aria-label="${n}"]`)].find((b) => b.getBoundingClientRect().width > 0);
+        const r = el?.getBoundingClientRect();
+        return el ? { w: r.width, h: r.height, o: Number(getComputedStyle(el).opacity), inside: r.left >= 0 && r.right <= innerWidth } : null;
+      }),
+    );
+    check(
+      `hero arrows visible at rest at ${tag}`,
+      arrows.every((a) => a && a.w >= 44 && a.h >= 44 && a.o === 1 && a.inside),
+      JSON.stringify(arrows),
+    );
+    const title = () => page.$eval('.frame-head h1', (e) => e.textContent.split(' - ')[0]);
+    const step = async (name) => {
+      const before = await title();
+      await page.locator(`button[aria-label="${name}"]:visible`).click();
+      await page.waitForFunction(
+        (b) => document.querySelector('.frame-head h1')?.textContent.split(' - ')[0] !== b && document.querySelector('.board-wrap:not(.stale)'),
+        before,
+        {
+          timeout: 15000,
+        },
+      );
+      return [before, await title(), new URL(page.url()).searchParams.get('hero')];
+    };
+    const [b1, n1, u1] = await step('Next hero');
+    const [, n2, u2] = await step('Previous hero');
+    check(`next hero arrow shows another hero and updates the URL at ${tag}`, n1 !== b1 && !!u1 && u1.length > 0, `${b1} -> ${n1}, ?hero=${u1}`);
+    check(`previous hero arrow returns to the first hero at ${tag}`, n2 === b1, `${n1} -> ${n2}, ?hero=${u2}`);
+    const [, w1] = await step('Previous hero');
+    check(`previous from the first hero wraps at ${tag}`, !!w1 && w1 !== b1, `${b1} -> ${w1}`);
+    await page.locator('button[aria-label="Next hero"]:visible').click();
+    await page.waitForFunction(
+      (b) => document.querySelector('.frame-head h1')?.textContent.startsWith(b) && document.querySelector('.board-wrap:not(.stale)'),
+      b1,
+      { timeout: 15000 },
+    );
+  }
   // hero control cue: visible at rest (pointer away, nothing focused), pressing it opens the hero dialog
   for (const size of [
     { width: 1440, height: 900 },

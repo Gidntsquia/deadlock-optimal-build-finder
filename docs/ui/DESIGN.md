@@ -27,7 +27,7 @@ nothing else.
   row and marker has an aria-label. Phone: same grid, columns shrink to fit, no sideways scroll.
   The share PNG draws the same grid.
 - Hero cue: the hero control is always marked. Desktop: a teal "Change Hero" pill with a swap icon
-  under the portrait name. Phone: a round swap-arrows badge on the avatar corner. Both are visible
+  at the bottom of the portrait, with Previous/Next hero arrows on its sides. Phone: a round swap-arrows badge on the avatar corner. Both are visible
   at rest, no hover needed; still one button named "<Hero>, change hero".
 - Item sheet: art, slot, tier, cost, stats, passive/active text. No ranking text.
 - Details (the single quiet control, closed by default): tagline, match count, rank floor, data
@@ -62,6 +62,13 @@ unlock, grey for upgrades), on screen and in the share PNG. On desktop the hero 
 of the window, matching the frame, with the portrait filling it and a pill-style "Change Hero" button at
 the bottom; the Ability Order rows stretch to use the height left on the board, so neither side has a void.
 Phone unchanged apart from the glyphs.
+
+Round 8 eval, user's words: "No. The outer border of the hero portrait seems to be surrounding air. It also
+feels like there's dead space again. Also, add a left/right arrow to traverse between characters".
+Round 9 answer: the desktop hero column is sized from the portrait (280x380) and the window height, so the
+teal frame hugs the uncropped image with no bands; the board and tiles shrink a little to make room. Previous /
+Next hero arrows (44px, named "Previous hero" / "Next hero", wrapping around the hero list) sit on the
+portrait sides on desktop and on either side of the avatar on phone. `verify:browser` clicks them at both sizes.
 
 ## Sources read
 
