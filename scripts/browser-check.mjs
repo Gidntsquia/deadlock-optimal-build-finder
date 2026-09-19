@@ -54,7 +54,11 @@ if (!STAGE) {
       c.on('close', (code) => resolve({ st, out, code, secs: ((Date.now() - started) / 1000).toFixed(1) }));
     });
   // a few stages at a time: more browsers than cores just makes every stage slower
-  const queue = [...STAGES];
+  // STAGE_ONLY=a,b runs just those stages (the fast tier); unset runs all
+  const only = process.env.STAGE_ONLY?.split(',').filter(Boolean);
+  const run = only ? STAGES.filter((s) => only.includes(s)) : STAGES;
+  if (only && run.length !== only.length) throw new Error('unknown stage in STAGE_ONLY: ' + only.filter((s) => !STAGES.includes(s)));
+  const queue = [...run];
   const done = {};
   const JOBS = Number(process.env.STAGE_JOBS) || 6;
   await Promise.all(
@@ -62,7 +66,7 @@ if (!STAGE) {
       for (let st; (st = queue.shift());) done[st] = await runStage(st);
     }),
   );
-  const results = STAGES.map((st) => done[st]);
+  const results = run.map((st) => done[st]);
   srv.kill();
   let bad = 0;
   for (const r of results) {

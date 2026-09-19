@@ -18,6 +18,8 @@ Static React app that generates Deadlock hero builds in the browser from a local
   where the check's screenshots land; default is `screenshots/` (gitignored).
   Includes an `@axe-core/playwright` scan at desktop/phone × item-sheet open/closed — must
   report 0 serious/critical violations.
+  `npm test` = fast tier (verify + stages main, arrows, fit-0; ~15s). `npm run test:full` = tsc + verify + all stages (~35s; CI/before merge).
+  `STAGE_ONLY=a,b npm run verify:browser` runs just those stages. A guard (`.claude/test-commands.sh`) blocks bare full-suite runs by agents; `TS_FULL=1` overrides.
   Logic checks: `npm run verify`. Typecheck: `npx tsc -b`. Format: `npx prettier --check/--write`.
 - Screen layout: one in-game style build window (`BuildView.tsx`): hero button, title, build
   pills, Share, Details, three phase rows, Ability Order grid (`.ap-grid`, one row per ability, one chip per point). No top bar or footer. The hero
