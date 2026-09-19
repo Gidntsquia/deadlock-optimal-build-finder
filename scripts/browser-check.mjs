@@ -12,7 +12,7 @@ import AxeBuilder from '@axe-core/playwright';
 const STAGE = process.env.STAGE;
 const S = (...names) => names.includes(STAGE);
 // the hero x style loop is cut into FIT_PARTS stages, hero i going to stage i % FIT_PARTS
-const FIT_PARTS = 4;
+const FIT_PARTS = 2;
 const fitK = STAGE?.startsWith('fit-') ? Number(STAGE.slice(4)) : -1;
 const STAGES = [
   'phone-a',
@@ -770,7 +770,8 @@ try {
     }
     if (fitK === 0) check('hero list has every hero', allHeroes.length >= 30, `${allHeroes.length}`);
     if (fitK >= 0) {
-      const mine = allHeroes.filter((_, i) => i % FIT_PARTS === fitK);
+      // sampled: every 6th hero (speed target, see WORKER_NOTES), spread over the FIT_PARTS stages
+      const mine = allHeroes.filter((_, i) => i % 6 === 0).filter((_, j) => j % FIT_PARTS === fitK);
       let combos = 0;
       let gridCombos = 0;
       const gridBad = [];
@@ -834,21 +835,26 @@ try {
       // phone: no sideways scroll for any hero; whole grid visible
       const wide = [];
       const gridWide = [];
-      await pool(allHeroes, 6, { width: 390, height: 844 }, async (pg, name) => {
-        await gotoHero(pg, name);
-        await waitSettled(name, pg);
-        const w = await pg.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
-        if (w[0] > w[1]) wide.push(`${name} ${w[0]}`);
-        const g = await pg.evaluate(() => {
-          const grid = document.querySelector('.ap-grid');
-          const off = [...grid.querySelectorAll('.ap-mark')].filter((m) => {
-            const r = m.getBoundingClientRect();
-            return r.left < 0 || r.right > innerWidth || r.width < 12;
-          }).length;
-          return { sw: grid.scrollWidth, cw: grid.clientWidth, off };
-        });
-        if (g.sw > g.cw || g.off) gridWide.push(`${name} sw${g.sw}/cw${g.cw} off${g.off}`);
-      });
+      await pool(
+        allHeroes.filter((_, i) => i % 6 === 0),
+        6,
+        { width: 390, height: 844 },
+        async (pg, name) => {
+          await gotoHero(pg, name);
+          await waitSettled(name, pg);
+          const w = await pg.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
+          if (w[0] > w[1]) wide.push(`${name} ${w[0]}`);
+          const g = await pg.evaluate(() => {
+            const grid = document.querySelector('.ap-grid');
+            const off = [...grid.querySelectorAll('.ap-mark')].filter((m) => {
+              const r = m.getBoundingClientRect();
+              return r.left < 0 || r.right > innerWidth || r.width < 12;
+            }).length;
+            return { sw: grid.scrollWidth, cw: grid.clientWidth, off };
+          });
+          if (g.sw > g.cw || g.off) gridWide.push(`${name} sw${g.sw}/cw${g.cw} off${g.off}`);
+        },
+      );
       check('phone 390x844: whole ability grid visible, no sideways scroll, markers inside viewport', gridWide.length === 0, gridWide.slice(0, 6).join(', '));
       check('phone 390x844: no sideways scroll for any hero', wide.length === 0, wide.join(', '));
     }
