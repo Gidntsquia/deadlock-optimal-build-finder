@@ -792,6 +792,48 @@ button.tile:hover {
     animation-iteration-count: 1 !important;
   }
 }
+@keyframes hero-slide-in {
+  from {
+    translate: calc(var(--slide-from) * 100%) 0;
+  }
+  to {
+    translate: 0% 0;
+  }
+}
+.hero-slide[data-slide='1'] {
+  --slide-from: 1;
+  animation: hero-slide-in 240ms ease-out;
+}
+.hero-slide[data-slide='-1'] {
+  --slide-from: -1;
+  animation: hero-slide-in 240ms ease-out;
+}
+@keyframes hero-slide-out {
+  from {
+    translate: 0% 0;
+  }
+  to {
+    translate: calc(var(--slide-to) * 100%) 0;
+  }
+}
+.hero-leave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+}
+.hero-leave[data-slide='1'] {
+  --slide-to: -1;
+  animation: hero-slide-out 240ms ease-out forwards;
+}
+.hero-leave[data-slide='-1'] {
+  --slide-to: 1;
+  animation: hero-slide-out 240ms ease-out forwards;
+}
+.hero-face {
+  position: relative;
+}
 .board-wrap {
   transition: opacity 150ms ease;
 }

@@ -2,7 +2,7 @@
 export function cleanText(s: string | undefined): string {
   if (!s) return '';
   return s
-    .replace(/<svg[\s\S]*?<\/svg>/gi, '')
+    .replace(/<svg[\s\S]*?<\/svg>\s*/gi, '')
     .replace(/<img[^>]*alt="([^"]*)"[^>]*\/?>/gi, '')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<[^>]+>/g, '')

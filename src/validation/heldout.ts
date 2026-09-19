@@ -8,7 +8,16 @@ export type HeldoutSet = ValidationSetRef;
 export interface HeldoutPurchases { account_id: number; player: string; hero_id: number; hero: string; total_hero_matches?: number; matchmaking_hero_matches?: number; matches: { match_id: number; won: boolean; duration_s: number; items: { item_id: number; game_time_s: number; sold_time_s: number }[] }[] }
 
 /** Loads one held-out snapshot. Only this module reads public/data/validation/. */
-export const loadHeldout = (set: HeldoutSet) => j<HeldoutPurchases>(set.file);
+const heldoutCache = new Map<string, Promise<HeldoutPurchases>>();
+export const loadHeldout = (set: HeldoutSet) => {
+  let p = heldoutCache.get(set.file);
+  if (!p) {
+    p = j<HeldoutPurchases>(set.file);
+    heldoutCache.set(set.file, p);
+    p.catch(() => heldoutCache.delete(set.file));
+  }
+  return p;
+};
 
 export const CORE_THRESHOLD = 0.3;   // item must appear in >=30% of (win-weighted) sampled matches
 export const WIN_WEIGHT = 1.5;       // a won match counts 1.5x, a lost match 1x

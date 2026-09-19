@@ -15,7 +15,13 @@ const t0 = Date.now();
 
 const srv = spawn('node', ['node_modules/vite/bin/vite.js', 'preview', '--port', '4173', '--strictPort'], { stdio: 'ignore' });
 for (let i = 0; i < 100; i++) {
-  if (await fetch(URL0).then((r) => r.ok, () => false)) break;
+  if (
+    await fetch(URL0).then(
+      (r) => r.ok,
+      () => false,
+    )
+  )
+    break;
   await new Promise((r) => setTimeout(r, 100));
 }
 
@@ -44,7 +50,10 @@ const check = (n, ok, d = '') => {
 const T = { timeout: 15000 };
 const settled = (name) =>
   page.waitForFunction(
-    (h) => document.querySelector('.frame-head h1')?.textContent.startsWith(h) && !document.querySelector('.board-wrap.stale') && document.querySelectorAll('.tiles .tile').length >= 1,
+    (h) =>
+      document.querySelector('.frame-head h1')?.textContent.startsWith(h) &&
+      !document.querySelector('.board-wrap.stale') &&
+      document.querySelectorAll('.tiles .tile').length >= 1,
     name,
     T,
   );
@@ -77,7 +86,16 @@ const gotoHero = async (slug) => {
     dispatchEvent(new PopStateEvent('popstate'));
   }, slug);
 };
-const frames = (n = 2) => page.evaluate((k) => new Promise((res) => (function f(i) { i ? requestAnimationFrame(() => f(i - 1)) : res(); })(k)), n);
+const frames = (n = 2) =>
+  page.evaluate(
+    (k) =>
+      new Promise((res) =>
+        (function f(i) {
+          i ? requestAnimationFrame(() => f(i - 1)) : res();
+        })(k),
+      ),
+    n,
+  );
 const rectOf = (sel) =>
   page.$eval(
     sel,
@@ -95,7 +113,20 @@ const rectOf = (sel) =>
       }),
   );
 const inside = (r, w, h) => r.left >= -0.5 && r.top >= -0.5 && r.right <= w + 0.5 && r.bottom <= h + 0.5 && r.width >= 300;
-const BANNED = [/%/, /match/i, /players/i, /win rate/i, /high-rank/i, /Phantom/, /souls by end/i, /Last \d+ days/i, /data from/i, /Validation/i, /measured/i, /README/i];
+const BANNED = [
+  /%/,
+  /match/i,
+  /players/i,
+  /win rate/i,
+  /high-rank/i,
+  /Phantom/,
+  /souls by end/i,
+  /Last \d+ days/i,
+  /data from/i,
+  /Validation/i,
+  /measured/i,
+  /README/i,
+];
 const bannedHit = (text) => BANNED.map((re) => re.exec(text)?.[0]).find(Boolean);
 const gridProbe = () =>
   page.evaluate(() => {
@@ -113,7 +144,8 @@ const gridProbe = () =>
         const kind = kinds.find((c) => m.classList.contains(c));
         if (!order[k] || m.dataset.ability !== order[k][0] || kind !== order[k][1]) why.push(`x-order ${k}`);
       });
-    if (new Set(marks.map((m) => Math.round(m.getBoundingClientRect().left + m.getBoundingClientRect().width / 2))).size !== marks.length) why.push('shared column');
+    if (new Set(marks.map((m) => Math.round(m.getBoundingClientRect().left + m.getBoundingClientRect().width / 2))).size !== marks.length)
+      why.push('shared column');
     const cost = { tier1: '1', tier2: '2', tier3: '5' };
     for (const m of marks) {
       const kind = kinds.find((c) => m.classList.contains(c));
@@ -127,7 +159,10 @@ const fitProbe = () =>
   page.evaluate(() => {
     const scrollers = [...document.querySelectorAll('main *')].filter((el) => {
       const cs = getComputedStyle(el);
-      return (/(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight + 1) || (/(auto|scroll)/.test(cs.overflowX) && el.scrollWidth > el.clientWidth + 1);
+      return (
+        (/(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight + 1) ||
+        (/(auto|scroll)/.test(cs.overflowX) && el.scrollWidth > el.clientWidth + 1)
+      );
     }).length;
     const tiles = [...document.querySelectorAll('.tiles .tile')];
     const clipped = tiles.filter((t) => {
@@ -166,7 +201,11 @@ try {
     const srcs = await page.$$eval('.tiles .tile img', (els) => els.map((e) => e.getAttribute('src')));
     check('build: item images point at local data', srcs.length === tiles.length && srcs.every((s) => /\/data\/img\/items\/\d+\.webp$/.test(s)));
     const abil = await page.$$eval('.ap-row', (els) => els.map((e) => e.dataset.ability));
-    check('abilities: 4 real Infernus abilities', ['Napalm', 'Flame Dash', 'Afterburn', 'Concussive Combustion'].every((n) => abil.includes(n)) && abil.length === 4, abil.join(', '));
+    check(
+      'abilities: 4 real Infernus abilities',
+      ['Napalm', 'Flame Dash', 'Afterburn', 'Concussive Combustion'].every((n) => abil.includes(n)) && abil.length === 4,
+      abil.join(', '),
+    );
     const g = await gridProbe();
     check('ability grid: rows, columns, point order, 1/2/5 markers', g.length === 0, g.slice(0, 3).join('; '));
   }
@@ -197,7 +236,12 @@ try {
     const tiles = await page.$$eval('.tiles .tile', (e) => e.length);
     check(
       'details: agreement %, match count, win rate, data date, player table, core badge per item',
-      /\d+% match/.test(text) && /[\d,]+ matches/.test(text) && /win rate/i.test(text) && /data from \d{1,2} \w{3} \d{4}/i.test(text) && (await page.$$('.details .panel-table tbody tr')).length >= 1 && badges === tiles,
+      /\d+% match/.test(text) &&
+        /[\d,]+ matches/.test(text) &&
+        /win rate/i.test(text) &&
+        /data from \d{1,2} \w{3} \d{4}/i.test(text) &&
+        (await page.$$('.details .panel-table tbody tr')).length >= 1 &&
+        badges === tiles,
       text.slice(0, 120),
     );
     await snap({ path: shot('details-desktop.png') });
@@ -216,11 +260,19 @@ try {
     const chips = await page.$$eval('.sheet .chip', (els) => els.map((e) => e.textContent.trim()));
     check(
       'item sheet: image, cost, tier, slot, stat lines',
-      !!(await page.$('.sheet-head img')) && chips.some((c) => /^[\d,]+$/.test(c)) && chips.some((c) => /^Tier \d/.test(c)) && chips.some((c) => /Weapon|Vitality|Spirit/.test(c)) && (await page.$$('.sheet .stat-line')).length > 0,
+      !!(await page.$('.sheet-head img')) &&
+        chips.some((c) => /^[\d,]+$/.test(c)) &&
+        chips.some((c) => /^Tier \d/.test(c)) &&
+        chips.some((c) => /Weapon|Vitality|Spirit/.test(c)) &&
+        (await page.$$('.sheet .stat-line')).length > 0,
       `${name}: ${chips.join(' | ')}`,
     );
     const r = await rectOf('[role="dialog"]');
-    check('item sheet: centred and inside the window', inside(r, 1440, 900) && Math.abs((r.left + r.right) / 2 - 720) <= 2 && Math.abs((r.top + r.bottom) / 2 - 450) <= 2, JSON.stringify(r));
+    check(
+      'item sheet: centred and inside the window',
+      inside(r, 1440, 900) && Math.abs((r.left + r.right) / 2 - 720) <= 2 && Math.abs((r.top + r.bottom) / 2 - 450) <= 2,
+      JSON.stringify(r),
+    );
     check('item sheet: focus starts inside the dialog', await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]')));
     let left = false;
     for (let i = 0; i < 6; i++) {
@@ -258,7 +310,11 @@ try {
   await snap({ path: shot('hero-picker-desktop.png') });
   await page.fill('.hero-dialog .hero-filter', 'las');
   const las = await page.$$eval('.hero-dialog .hero-opt', (els) => els.map((e) => e.textContent.trim()));
-  check('hero picker: lists every hero; "las" leaves only Lash', allHeroes.length >= 30 && las.length === 1 && las[0].includes('Lash'), `${allHeroes.length} heroes; ${las.join(',')}`);
+  check(
+    'hero picker: lists every hero; "las" leaves only Lash',
+    allHeroes.length >= 30 && las.length === 1 && las[0].includes('Lash'),
+    `${allHeroes.length} heroes; ${las.join(',')}`,
+  );
   await page.press('.hero-dialog .hero-filter', 'Enter');
   await settled('Lash');
   check('picking a hero puts hero=lash in the URL', new URL(page.url()).searchParams.get('hero') === 'lash', page.url());
@@ -280,7 +336,11 @@ try {
     const step = async (n) => {
       const before = await title();
       await page.locator(`button[aria-label="${n}"]:visible`).click();
-      await page.waitForFunction((b) => document.querySelector('.frame-head h1')?.textContent.split(' - ')[0] !== b && document.querySelector('.board-wrap:not(.stale)'), before, T);
+      await page.waitForFunction(
+        (b) => document.querySelector('.frame-head h1')?.textContent.split(' - ')[0] !== b && document.querySelector('.board-wrap:not(.stale)'),
+        before,
+        T,
+      );
       return [before, await title()];
     };
     const [b1, n1] = await step('Next hero');
@@ -289,6 +349,21 @@ try {
     check('arrows: next changes hero, previous returns, previous from first wraps', n1 !== b1 && n2 === b1 && w1 !== b1, `${b1} -> ${n1} -> ${n2} -> ${w1}`);
     await page.locator('button[aria-label="Next hero"]:visible').click();
     await settled(b1);
+    // one click away is prefetched: stepping to a neighbour makes no analytics request, and the portrait slides in from the arrow's side
+    const reqs = [];
+    const onReq = (r) => /analytics\//.test(r.url()) && reqs.push(r.url());
+    page.on('request', onReq);
+    await page.locator('button[aria-label="Next hero"]:visible').first().click();
+    const slide = await page.locator('.hero-slide:visible').first().getAttribute('data-slide');
+    await settled((await title()).split(' - ')[0]);
+    page.off('request', onReq);
+    check(
+      'arrows: neighbour is prefetched (no analytics request) and portrait slides from the right',
+      reqs.length === 0 && slide === '1',
+      `reqs=${reqs.length} slide=${slide}`,
+    );
+    await page.locator('button[aria-label="Previous hero"]:visible').first().click();
+    await settled(b1);
   }
   await pickHero('Warden');
   {
@@ -296,7 +371,11 @@ try {
     if (pills.length >= 2) {
       const before = await page.evaluate(() => document.querySelector('.tiles .tile')?.textContent + document.querySelector('.frame-head h1')?.textContent);
       await pills[1].click();
-      await page.waitForFunction((p) => document.querySelector('.tiles .tile')?.textContent + document.querySelector('.frame-head h1')?.textContent !== p, before, T);
+      await page.waitForFunction(
+        (p) => document.querySelector('.tiles .tile')?.textContent + document.querySelector('.frame-head h1')?.textContent !== p,
+        before,
+        T,
+      );
       check('Warden: second style tab changes the build and adds style= to the URL', new URL(page.url()).searchParams.has('style'), page.url());
     } else check('Warden: second style tab', false, `${pills.length} style tabs`);
   }
@@ -311,17 +390,27 @@ try {
       for (let i = 0; i < n; i++) {
         if (i > 0) {
           await page.locator('.style-pill').nth(i).click();
-          await page.waitForFunction((k) => document.querySelectorAll('.style-pill')[k]?.getAttribute('aria-pressed') === 'true' && !document.querySelector('.board-wrap.stale'), i, T);
+          await page.waitForFunction(
+            (k) => document.querySelectorAll('.style-pill')[k]?.getAttribute('aria-pressed') === 'true' && !document.querySelector('.board-wrap.stale'),
+            i,
+            T,
+          );
         }
         await openDetails();
         const want = await page.$$eval('.details .item-table tbody tr', (e) => e.length);
         await closeDetails();
-        for (const [w, h] of i === 0 ? [[1440, 900], [1920, 1080]] : [[1440, 900]]) {
+        for (const [w, h] of i === 0
+          ? [
+              [1440, 900],
+              [1920, 1080],
+            ]
+          : [[1440, 900]]) {
           await page.setViewportSize({ width: w, height: h });
           await frames();
           const f = await fitProbe();
           const g = w === 1440 ? await gridProbe() : [];
-          if (f.v || f.h || f.scrollers || f.clipped || f.tiles !== want || !want || g.length) bad.push(`${name}#${i}@${w}: ${JSON.stringify(f)} ${g.slice(0, 2)}`);
+          if (f.v || f.h || f.scrollers || f.clipped || f.tiles !== want || !want || g.length)
+            bad.push(`${name}#${i}@${w}: ${JSON.stringify(f)} ${g.slice(0, 2)}`);
         }
         await page.setViewportSize({ width: 1440, height: 900 });
       }
@@ -375,6 +464,9 @@ try {
     const onMsg = (m) => lines.push(m.text());
     page.on('console', onMsg);
     await page.route('**/data/analytics/2.json', (r) => r.abort());
+    // one-click-away prefetch caches heroes already visited or adjacent; reload so Seven is genuinely uncached
+    await page.reload();
+    await page.waitForSelector('.tiles .tile', T);
     await openHeroes();
     await page.fill('.hero-dialog .hero-filter', 'Seven');
     await page.click('.hero-dialog .hero-opt:has-text("Seven")');
@@ -386,7 +478,10 @@ try {
         return false;
       }
     });
-    check('analytics failure: Retry shown, hero control still there, analytics_load_failed logged', logged && (await page.$$('.hero-btn:visible, .hero-retry-pick:visible')).length >= 1);
+    check(
+      'analytics failure: Retry shown, hero control still there, analytics_load_failed logged',
+      logged && (await page.$$('.hero-btn:visible, .hero-retry-pick:visible')).length >= 1,
+    );
     await page.unroute('**/data/analytics/2.json');
     page.off('console', onMsg);
     await page.click('.hero-retry-pick');
@@ -406,10 +501,18 @@ try {
     check('phone: no sideways scroll, whole ability grid visible', !f.h, JSON.stringify(f));
     const grid = await page.evaluate(() => {
       const g = document.querySelector('.ap-grid');
-      return g.scrollWidth <= g.clientWidth && [...g.querySelectorAll('.ap-mark')].every((m) => m.getBoundingClientRect().left >= 0 && m.getBoundingClientRect().right <= innerWidth);
+      return (
+        g.scrollWidth <= g.clientWidth &&
+        [...g.querySelectorAll('.ap-mark')].every((m) => m.getBoundingClientRect().left >= 0 && m.getBoundingClientRect().right <= innerWidth)
+      );
     });
     check('phone: ability markers all inside the viewport', grid);
-    check('phone: tap targets >= 40px, one hero control, no technical text', (await tapTargets()).length === 0 && (await page.$$('.hero-btn:visible')).length === 1 && !bannedHit(await page.evaluate(() => document.querySelector('main').innerText)));
+    check(
+      'phone: tap targets >= 40px, one hero control, no technical text',
+      (await tapTargets()).length === 0 &&
+        (await page.$$('.hero-btn:visible')).length === 1 &&
+        !bannedHit(await page.evaluate(() => document.querySelector('main').innerText)),
+    );
     await snap({ path: shot('infernus-build-phone.png'), fullPage: true });
     await openHeroes();
     check('phone: hero sheet fits the screen', inside(await rectOf('.hero-dialog'), 390, 844));
@@ -421,11 +524,18 @@ try {
     await page.click('.tiles .tile');
     await page.waitForSelector('.sheet');
     const r = await rectOf('[role="dialog"]');
-    check('phone: item sheet is bottom-anchored, edge to edge, on screen', inside(r, 390, 844) && Math.abs(r.bottom - 844) <= 1 && r.left <= 1 && r.right >= 389, JSON.stringify(r));
+    check(
+      'phone: item sheet is bottom-anchored, edge to edge, on screen',
+      inside(r, 390, 844) && Math.abs(r.bottom - 844) <= 1 && r.left <= 1 && r.right >= 389,
+      JSON.stringify(r),
+    );
     await page.keyboard.press('ArrowRight');
     await frames();
     check('phone: item sheet still on screen after ArrowRight', inside(await rectOf('[role="dialog"]'), 390, 844));
-    check('phone: no sideways scroll with the item sheet open', await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth));
+    check(
+      'phone: no sideways scroll with the item sheet open',
+      await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
+    );
     await snap({ path: shot('item-sheet-phone.png') });
     await axe('phone, item sheet open');
     await page.keyboard.press('Escape');
@@ -440,7 +550,16 @@ try {
   await settled('Infernus');
   check('unknown ?hero= falls back to Infernus with no console error', errors.length === 0, errors.slice(0, 3).join(' | '));
   const worst = await page.evaluate(() =>
-    Math.max(0, ...[...document.querySelectorAll('*')].map((el) => Math.max(...getComputedStyle(el).transitionDuration.split(',').map((s) => parseFloat(s) || 0)))),
+    Math.max(
+      0,
+      ...[...document.querySelectorAll('*')].map((el) =>
+        Math.max(
+          ...getComputedStyle(el)
+            .transitionDuration.split(',')
+            .map((s) => parseFloat(s) || 0),
+        ),
+      ),
+    ),
   );
   check('reduced motion: no element has a transition duration above 0s', worst <= 0, `${worst}s`);
 } catch (e) {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import type { Ability, Build, Hero, HeroAnalytics, Item } from './types';
-import { heroBackdrop, img, loadAnalytics, loadCore, type Manifest } from './data/load';
+import { heroBackdrop, img, loadAnalytics, loadCore, preloadImage, type Manifest } from './data/load';
 import { generateBuilds } from './generator';
 import {
   computeCoreSet,
@@ -68,6 +68,56 @@ function useAnalytics(heroId: number) {
   }, [heroId, retryToken]);
   const state: AnalyticsState | { status: 'loading' } = resolved && resolved.heroId === heroId ? resolved : { status: 'loading' };
   return { state, retry: () => setRetryToken((t) => t + 1) };
+}
+
+// Builds are a pure function of (hero, abilities, items, analytics); keyed by the analytics object so
+// a build made during prefetch is the same one the screen shows after the click.
+const buildsCache = new WeakMap<HeroAnalytics, Build[]>();
+function buildsFor(hero: Hero, abilities: Ability[], items: Item[], analytics: HeroAnalytics): Build[] {
+  let b = buildsCache.get(analytics);
+  if (!b) {
+    b = generateBuilds({ hero, abilities, items, analytics });
+    buildsCache.set(analytics, b);
+  }
+  return b;
+}
+
+function preloadBuildImages(builds: Build[]) {
+  for (const b of builds) {
+    for (const it of b.items) preloadImage(it.item.shop_image_webp || it.item.image_webp);
+    for (const s of b.abilityOrder) preloadImage(s.ability.image_webp);
+  }
+}
+
+/** Everything one click away is fetched, generated and decoded ahead of time: the current hero's
+ * other styles, and each neighbour's data, standard build and portrait. Runs when idle. */
+function usePrefetch(hero: Hero | undefined, heroes: Hero[], items: Item[], abilities: Ability[], manifest: Manifest | null, analytics: HeroAnalytics | null) {
+  useEffect(() => {
+    if (!hero || !items.length) return;
+    let live = true;
+    const idle = (fn: () => void) => {
+      const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+      if (w.requestIdleCallback) w.requestIdleCallback(fn, { timeout: 1500 });
+      else window.setTimeout(fn, 50);
+    };
+    if (analytics) idle(() => live && preloadBuildImages(buildsFor(hero, abilities, items, analytics)));
+    const i = heroes.findIndex((h) => h.id === hero.id);
+    for (const d of [1, -1]) {
+      const n = heroes[(i + d + heroes.length) % heroes.length];
+      if (!n || n.id === hero.id) continue;
+      preloadImage(n.images.card ?? n.images.small);
+      preloadImage(n.images.small);
+      for (const set of manifest?.validation_sets?.filter((v) => v.hero_id === n.id) ?? []) loadHeldout(set).catch(() => {});
+      loadAnalytics(n.id)
+        .then((a) => {
+          if (live) idle(() => live && preloadBuildImages(buildsFor(n, abilities, items, a).slice(0, 1)));
+        })
+        .catch(() => {});
+    }
+    return () => {
+      live = false;
+    };
+  }, [hero, heroes, items, abilities, manifest, analytics]);
 }
 
 function useHeldout(heroId: number, manifest: Manifest | null) {
@@ -141,9 +191,10 @@ export default function App() {
 
   const analytics = analyticsState.status === 'ready' ? analyticsState.data : null;
   const builds: Build[] = useMemo(
-    () => (hero && analytics && items.length ? generateBuilds({ hero, abilities, items, analytics }) : []),
+    () => (hero && analytics && items.length ? buildsFor(hero, abilities, items, analytics) : []),
     [hero, abilities, items, analytics],
   );
+  usePrefetch(hero, heroes, items, abilities, manifest, analytics);
   const panel: { set: HeldoutSet; core: CoreSet }[] = useMemo(
     () => (items.length ? heldout.filter((h) => h.data.hero_id === heroId).map((h) => ({ set: h.set, core: computeCoreSet(h.data, items) })) : []),
     [heldout, items, heroId],
@@ -174,12 +225,24 @@ export default function App() {
 
   const selectHero = (h: Hero) => {
     log.info('hero_selected', { heroId: h.id });
+    setSlide((s) => ({ dir: 0, n: s.n }));
     pickHero(slugify(h.name));
+  };
+  const [slide, setSlide] = useState<{ dir: -1 | 0 | 1; n: number }>({ dir: 0, n: 0 });
+  // the portrait that just left, drawn on top while it slides out
+  const [leaving, setLeaving] = useState<{ hero: Hero; dir: -1 | 1; n: number } | null>(null);
+  const pickFromList = (h: Hero) => {
+    setLeaving(null);
+    selectHero(h);
   };
   const stepHero = (d: -1 | 1) => {
     const i = heroes.findIndex((h) => h.id === heroId);
     const next = heroes[(i + d + heroes.length) % heroes.length];
-    if (next) selectHero(next);
+    if (next) {
+      if (hero) setLeaving((l) => ({ hero, dir: d, n: (l?.n ?? 0) + 1 }));
+      selectHero(next);
+      setSlide((s) => ({ dir: d, n: s.n + 1 }));
+    }
   };
   const selectStyle = (b: Build) => pickStyle(b.population.style?.key ?? '');
 
@@ -222,7 +285,30 @@ export default function App() {
         <aside className="hero-side">
           <div className="hero-card">
             <button className="hero-face hero-btn" onClick={() => setHeroesOpen(true)} aria-label={`${hero.name}, change hero`}>
-              <img src={img(hero.images.card ?? hero.images.small)} alt="" width={280} height={380} style={heroBackdrop(hero.id)} />
+              <img
+                key={hero.id}
+                className="hero-slide"
+                data-slide={slide.dir || undefined}
+                src={img(hero.images.card ?? hero.images.small)}
+                alt=""
+                width={280}
+                height={380}
+                style={heroBackdrop(hero.id)}
+              />
+              {leaving && (
+                <img
+                  key={leaving.n}
+                  className="hero-leave"
+                  data-slide={leaving.dir}
+                  src={img(leaving.hero.images.card ?? leaving.hero.images.small)}
+                  alt=""
+                  aria-hidden="true"
+                  width={280}
+                  height={380}
+                  style={heroBackdrop(leaving.hero.id)}
+                  onAnimationEnd={() => setLeaving(null)}
+                />
+              )}
               <span className="hero-name">{hero.name}</span>
               <SwapCue />
             </button>
@@ -267,7 +353,7 @@ export default function App() {
           )}
         </div>
       </main>
-      <HeroPicker open={heroesOpen} onOpenChange={setHeroesOpen} heroes={heroes} heroId={heroId} onPick={selectHero} />
+      <HeroPicker open={heroesOpen} onOpenChange={setHeroesOpen} heroes={heroes} heroId={heroId} onPick={pickFromList} />
       <Toaster />
     </>
   );

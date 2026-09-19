@@ -31,7 +31,28 @@ export interface Manifest {
   validation_sets?: ValidationSetRef[];
 }
 export const loadCore = () => Promise.all([j<Item[]>('items.json'), j<Hero[]>('heroes.json'), j<Ability[]>('abilities.json'), j<Manifest>('manifest.json')]);
-export const loadAnalytics = (heroId: number) => j<HeroAnalytics>(`analytics/${heroId}.json`);
+/** Memoised per hero so a prefetch and the later real load share one request; failures are not cached. */
+const analyticsCache = new Map<number, Promise<HeroAnalytics>>();
+export const loadAnalytics = (heroId: number) => {
+  let p = analyticsCache.get(heroId);
+  if (!p) {
+    p = j<HeroAnalytics>(`analytics/${heroId}.json`);
+    analyticsCache.set(heroId, p);
+    p.catch(() => analyticsCache.delete(heroId));
+  }
+  return p;
+};
+
+const preloaded = new Set<string>();
+/** Warm the browser cache for an image so it paints instantly when it is first shown. */
+export const preloadImage = (p?: string) => {
+  const url = img(p);
+  if (!url || preloaded.has(url)) return;
+  preloaded.add(url);
+  const im = new Image();
+  im.decoding = 'async';
+  im.src = url;
+};
 
 /** Image fields in the snapshot are app-relative (img/...) after fetch-data; absolute URLs pass through. */
 export const img = (p?: string) => (!p ? undefined : /^https?:/.test(p) ? p : base + p);
