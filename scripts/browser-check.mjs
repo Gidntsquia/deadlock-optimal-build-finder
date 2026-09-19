@@ -362,7 +362,11 @@ try {
     const onReq = (r) => /analytics\//.test(r.url()) && reqs.push(r.url());
     page.on('request', onReq);
     await page.locator('button[aria-label="Next hero"]:visible').first().click();
-    const slide = await page.locator('.hero-slide:visible').first().getAttribute('data-slide');
+    const slide = await page.evaluate(() => {
+      const a = document.querySelector('.hero-in')?.getAnimations() ?? [];
+      const f = a[0]?.effect?.getKeyframes?.()[0]?.transform ?? '';
+      return f.includes('100%') && !f.includes('-') ? '1' : f;
+    });
     await settled((await title()).split(' - ')[0]);
     page.off('request', onReq);
     check(
@@ -372,6 +376,19 @@ try {
     );
     await page.locator('button[aria-label="Previous hero"]:visible').first().click();
     await settled(b1);
+    // rapid clicks (regression: stacked portraits until refresh): 14 clicks, no waits
+    const next = page.locator('button[aria-label="Next hero"]:visible').first();
+    const prevB = page.locator('button[aria-label="Previous hero"]:visible').first();
+    for (let i = 0; i < 14; i++) await (i % 5 === 4 ? prevB : next).click({ noWaitAfter: true });
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('.hero-out')).display === 'none', null, T);
+    await settled((await title()).split(' - ')[0]);
+    const card = await page.evaluate(() => {
+      const c = document.querySelector('.hero-card').getBoundingClientRect();
+      const imgs = [...document.querySelectorAll('.hero-card img')].filter((i) => getComputedStyle(i).display !== 'none');
+      const r = imgs[0]?.getBoundingClientRect();
+      return { n: imgs.length, top: r?.top - c.top, inside: r && r.bottom <= c.bottom + 1 && r.width > c.width * 0.9 };
+    });
+    check('arrows: 14 rapid clicks end with exactly one portrait filling the card', card.n === 1 && card.top < 8 && card.inside, JSON.stringify(card));
   }
   await pickHero('Warden');
   {
@@ -748,7 +765,11 @@ try {
   {
     // a hero step plays the portrait slide; leaving and returning must not replay it
     await page.click('.hero-arrow.next:visible');
-    await page.waitForFunction(() => !document.querySelector('.hero-leave') && !document.querySelector('.board-wrap.stale'), null, T);
+    await page.waitForFunction(
+      () => getComputedStyle(document.querySelector('.hero-out')).display === 'none' && !document.querySelector('.board-wrap.stale'),
+      null,
+      T,
+    );
     await page.click('.nav-link:has-text("Tier List")');
     await page.click('.nav-link:has-text("Build Finder")');
     const r = await page.evaluate(

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { Ability, Build, Hero, HeroAnalytics, Item } from './types';
 import { heroBackdrop, img, loadAnalytics, loadCore, preloadImage, type Manifest } from './data/load';
 import { generateBuilds } from './generator';
@@ -191,6 +191,43 @@ function useUrlState(active: boolean) {
   return { heroSlug, styleSlug, pickHero, pickStyle };
 }
 
+// Hero card portrait. Exactly two <img> elements live here forever (in and out); a step slides the
+// old hero out and the new one in with the Web Animations API, so rapid clicks can never leave a
+// stray portrait in the DOM the way keyed mount/unmount did.
+function HeroPortrait({ hero, dir, n }: { hero: Hero; dir: -1 | 0 | 1; n: number }) {
+  const inRef = useRef<HTMLImageElement>(null);
+  const outRef = useRef<HTMLImageElement>(null);
+  const prev = useRef<Hero>(hero);
+  const anims = useRef<Animation[]>([]);
+  const src = (h: Hero) => img(h.images.card ?? h.images.small);
+  useLayoutEffect(() => {
+    const before = prev.current;
+    prev.current = hero;
+    const inEl = inRef.current;
+    const outEl = outRef.current;
+    if (!inEl || !outEl) return;
+    anims.current.forEach((a) => a.cancel());
+    anims.current = [];
+    outEl.style.display = 'none';
+    if (!dir || before.id === hero.id || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    outEl.src = src(before) ?? '';
+    Object.assign(outEl.style, heroBackdrop(before.id), { display: 'block' });
+    const opts = { duration: 240, easing: 'ease-out' };
+    const a1 = inEl.animate([{ transform: `translateX(${dir * 100}%)` }, { transform: 'translateX(0)' }], opts);
+    const a2 = outEl.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${-dir * 100}%)` }], { ...opts, fill: 'forwards' as FillMode });
+    anims.current = [a1, a2];
+    a2.onfinish = () => {
+      outEl.style.display = 'none';
+    };
+  }, [hero.id, n]); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <span className="hero-stage">
+      <img ref={inRef} className="hero-in" src={src(hero)} alt="" width={280} height={380} style={heroBackdrop(hero.id)} />
+      <img ref={outRef} className="hero-out" src="" alt="" aria-hidden="true" width={280} height={380} style={{ display: 'none' }} />
+    </span>
+  );
+}
+
 export default function App({ active = true }: { active?: boolean }) {
   const { items, heroes, abilities, manifest, error } = useCore();
   const { heroSlug, styleSlug, pickHero, pickStyle } = useUrlState(active);
@@ -241,17 +278,11 @@ export default function App({ active = true }: { active?: boolean }) {
     pickHero(slugify(h.name));
   };
   const [slide, setSlide] = useState<{ dir: -1 | 0 | 1; n: number }>({ dir: 0, n: 0 });
-  // the portrait that just left, drawn on top while it slides out
-  const [leaving, setLeaving] = useState<{ hero: Hero; dir: -1 | 1; n: number } | null>(null);
-  const pickFromList = (h: Hero) => {
-    setLeaving(null);
-    selectHero(h);
-  };
+  const pickFromList = (h: Hero) => selectHero(h);
   const stepHero = (d: -1 | 1) => {
     const i = heroes.findIndex((h) => h.id === heroId);
     const next = heroes[(i + d + heroes.length) % heroes.length];
     if (next) {
-      if (hero) setLeaving((l) => ({ hero, dir: d, n: (l?.n ?? 0) + 1 }));
       selectHero(next);
       setSlide((s) => ({ dir: d, n: s.n + 1 }));
     }
@@ -272,10 +303,7 @@ export default function App({ active = true }: { active?: boolean }) {
 
   const [heroesOpen, setHeroesOpen] = useState(false);
   // display:none -> shown restarts CSS animations; drop the slide state while hidden so switching pages plays nothing
-  if (!active && (slide.dir !== 0 || leaving)) {
-    setSlide((s) => ({ dir: 0, n: s.n }));
-    setLeaving(null);
-  }
+  if (!active && slide.dir !== 0) setSlide((s) => ({ dir: 0, n: s.n }));
 
   if (error)
     return (
@@ -302,30 +330,7 @@ export default function App({ active = true }: { active?: boolean }) {
         <aside className="hero-side">
           <div className="hero-card">
             <button className="hero-face hero-btn" onClick={() => setHeroesOpen(true)} aria-label={`${hero.name}, change hero`}>
-              <img
-                key={hero.id}
-                className="hero-slide"
-                data-slide={slide.dir || undefined}
-                src={img(hero.images.card ?? hero.images.small)}
-                alt=""
-                width={280}
-                height={380}
-                style={heroBackdrop(hero.id)}
-              />
-              {leaving && (
-                <img
-                  key={leaving.n}
-                  className="hero-leave"
-                  data-slide={leaving.dir}
-                  src={img(leaving.hero.images.card ?? leaving.hero.images.small)}
-                  alt=""
-                  aria-hidden="true"
-                  width={280}
-                  height={380}
-                  style={heroBackdrop(leaving.hero.id)}
-                  onAnimationEnd={() => setLeaving(null)}
-                />
-              )}
+              <HeroPortrait hero={hero} dir={slide.dir} n={slide.n} />
               <span className="hero-name">{hero.name}</span>
               <SwapCue />
             </button>

@@ -242,6 +242,27 @@ h3 {
 .pill:hover {
   background: #fff;
 }
+/* segmented selector: a dark track holds the build pills, the chosen one lights up */
+.style-switch {
+  align-items: center;
+  align-self: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  background: var(--teal-ink);
+  box-shadow: var(--shadow-hard);
+}
+.style-switch .pill {
+  background: none;
+  color: var(--navy-ink);
+}
+.style-switch .pill:hover {
+  background: var(--navy);
+}
+.style-switch .pill[aria-pressed='true'] {
+  background: var(--pill);
+  color: var(--teal-ink);
+}
 .pill[aria-pressed='true'] {
   background: var(--teal-ink);
   color: #fff;
@@ -794,44 +815,26 @@ button.tile:hover {
     animation-iteration-count: 1 !important;
   }
 }
-@keyframes hero-slide-in {
-  from {
-    translate: calc(var(--slide-from) * 100%) 0;
-  }
-  to {
-    translate: 0% 0;
-  }
+.hero-stage {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 280 / 380;
+  border-radius: var(--radius-sm);
 }
-.hero-slide[data-slide='1'] {
-  --slide-from: 1;
-  animation: hero-slide-in 240ms ease-out;
+.hero-stage img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--avatar-bg);
 }
-.hero-slide[data-slide='-1'] {
-  --slide-from: -1;
-  animation: hero-slide-in 240ms ease-out;
-}
-@keyframes hero-slide-out {
-  from {
-    translate: 0% 0;
-  }
-  to {
-    translate: calc(var(--slide-to) * 100%) 0;
-  }
-}
-.hero-leave {
+.hero-stage .hero-out {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
   pointer-events: none;
-}
-.hero-leave[data-slide='1'] {
-  --slide-to: -1;
-  animation: hero-slide-out 240ms ease-out forwards;
-}
-.hero-leave[data-slide='-1'] {
-  --slide-to: 1;
-  animation: hero-slide-out 240ms ease-out forwards;
 }
 .hero-face {
   position: relative;
@@ -890,13 +893,8 @@ button.tile:hover {
     width: 100%;
     text-align: center;
   }
-  .hero-face img {
-    display: block;
-    width: 100%;
-    aspect-ratio: 280 / 380;
-    object-fit: cover;
-    background: var(--avatar-bg);
-    border-radius: var(--radius-sm);
+  .hero-face .hero-stage {
+    flex: none;
   }
   .hero-face .hero-name {
     display: flex;
@@ -1013,6 +1011,11 @@ button.tile:hover {
   .pills {
     flex: 1 1 0;
     flex-wrap: nowrap;
+  }
+  .style-switch {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
   }
   .pill {
     min-height: 40px;
