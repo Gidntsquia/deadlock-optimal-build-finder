@@ -22,8 +22,8 @@ nothing else.
 - Hero dialog: search box (type, Enter picks the first match, arrows move) over a portrait grid.
 - Ability order: the in-game "Ability Point Order" grid (`docs/ui/reference/ability-order.png`).
   One banded row per ability, dark glyph on a cream icon chip at the left, one column per point
-  spent. A dark chip sits in the ability's row at the column of each point: purple bolt = unlock,
-  diamond + 1, 2, 5 = the three upgrades (in-game point costs). The only digits are 1/2/5. Each
+  spent. A dark chip sits in the ability's row at the column of each point: purple diamond with a bolt cut out = unlock,
+  grey diamond-with-bolt + 1, 2, 5 = the three upgrades (in-game point costs). The only digits are 1/2/5. Each
   row and marker has an aria-label. Phone: same grid, columns shrink to fit, no sideways scroll.
   The share PNG draws the same grid.
 - Hero cue: the hero control is always marked. Desktop: a teal "Change Hero" pill with a swap icon
@@ -52,6 +52,16 @@ Round-5 eval, user's words: ability grid "Works"; hero cue: "Put the hero image 
 to make it clear that it is changeable and not a static part of the page"; overall "Works".
 Round 6 answer: the hero is now framed as a portrait (teal frame, name plate and "Change Hero" strip inside
 it on desktop; square framed portrait with a swap badge on phone).
+
+Round-6 eval, user's words: "It's not exactly the same--the purple is missing the diamond, and the gray is
+missing the inner lightning bolt"; "Desktop doesn't look quite right-- phone looks good."; "The bottom left
+of the app is empty, which creates an uncomfortable dead space. The app is visually unbalanced (more stuff
+on the right than on the left)".
+Round 7 answer: both markers are now the in-game glyph (rounded diamond with a bolt cut out; purple for
+unlock, grey for upgrades), on screen and in the share PNG. On desktop the hero card runs the full height
+of the window, matching the frame, with the portrait filling it and a pill-style "Change Hero" button at
+the bottom; the Ability Order rows stretch to use the height left on the board, so neither side has a void.
+Phone unchanged apart from the glyphs.
 
 ## Sources read
 

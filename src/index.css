@@ -76,8 +76,8 @@
   --tooltip-bg: #2d2418;
   --tooltip-ink: #f2e7cf;
   --ap-icon-bg: #f3ead6;
-  --ap-track-fill: #5b6485;
   --ap-track-unlock: #a06be0;
+  --ap-glyph: #a9a39a;
   --section-heading: #5f2e7d; /* darkened from #7a3f9e, see the axe note further down */
   --error-ink: #ff9a8a;
   --weapon-plate: #f1dcb4;
@@ -342,9 +342,10 @@ h3 {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  min-width: 100%;
-  max-width: 44px;
-  height: 20px;
+  min-width: 32px;
+  max-width: 100%;
+  padding: 0 4px;
+  height: 22px;
   border-radius: var(--radius-sm);
   background: var(--room);
   color: var(--navy-ink);
@@ -354,14 +355,20 @@ h3 {
 }
 .ap-glyph {
   flex: none;
-  width: 8px;
-  height: 8px;
-  fill: var(--ap-track-fill);
+  width: 12px;
+  height: 12px;
+  fill: var(--ap-glyph);
+  stroke: var(--ap-glyph);
+}
+.ap-glyph .ap-bolt {
+  fill: var(--room);
+  stroke: none;
 }
 .ap-glyph.unlock-glyph {
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
   fill: var(--ap-track-unlock);
+  stroke: var(--ap-track-unlock);
 }
 @media (max-width: 899px) {
   .ap-grid {
@@ -375,10 +382,16 @@ h3 {
   .ap-mark {
     font-size: 10px;
     gap: 0;
+    min-width: 100%;
+    padding: 0;
   }
   .ap-glyph {
-    width: 5px;
-    height: 5px;
+    width: 8px;
+    height: 8px;
+  }
+  .ap-glyph.unlock-glyph {
+    width: 12px;
+    height: 12px;
   }
 }
 
@@ -787,7 +800,9 @@ button.tile:hover {
     top: 12px;
   }
   .hero-card {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 24px);
     width: 100%;
     border-radius: var(--radius-md);
     background: var(--teal);
@@ -798,9 +813,10 @@ button.tile:hover {
   .hero-card img {
     display: block;
     width: 100%;
-    height: auto;
-    max-height: 62vh;
-    object-fit: contain;
+    flex: 1 1 0;
+    min-height: 0;
+    object-fit: cover;
+    object-position: 50% 0;
     background: var(--avatar-bg);
     border-radius: var(--radius-sm);
   }
@@ -814,9 +830,32 @@ button.tile:hover {
   .hero-card .hero-cue {
     display: flex;
     justify-content: center;
-    padding: 4px 16px 8px;
-    border-radius: 0;
-    background: transparent;
+    min-height: 40px;
+    margin: 4px 12px 12px;
+    font-size: 16px;
+    background: var(--pill);
+    box-shadow: var(--shadow-hard);
+  }
+  .row.abilities {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .ap-grid {
+    flex: 1;
+    /* rows share whatever height is left; the icon follows the row height */
+    container-type: size;
+    min-height: 140px;
+    grid-auto-rows: minmax(32px, 1fr);
+  }
+  .ap-row {
+    --ap-icon: clamp(32px, 25cqh, 56px);
+    height: auto;
+  }
+  .ap-icon {
+    width: var(--ap-icon);
+    height: var(--ap-icon);
+    justify-self: center;
   }
   .hero-avatar {
     display: none;

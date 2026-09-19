@@ -17,14 +17,11 @@ const PHASES: { key: Phase; label: string }[] = [
 const TIER_COST = { tier1: '1', tier2: '2', tier3: '5' } as const;
 const STEP_LABEL = { unlock: 'unlock', tier1: 'upgrade 1', tier2: 'upgrade 2', tier3: 'upgrade 3' } as const;
 
-const Diamond = () => (
-  <svg className="ap-glyph" viewBox="0 0 8 8" aria-hidden="true">
-    <path d="M4 0 8 4 4 8 0 4Z" />
-  </svg>
-);
-const UnlockGlyph = () => (
-  <svg className="ap-glyph unlock-glyph" viewBox="0 0 8 8" aria-hidden="true">
-    <path d="M5 0 1 4.5H3.6L3 8 7 3.3H4.4Z" />
+// in-game point glyph: a rounded diamond with a lightning bolt cut out of it (purple for unlock, grey for upgrades)
+const PointGlyph = ({ unlock }: { unlock: boolean }) => (
+  <svg className={['ap-glyph', unlock ? 'unlock-glyph' : null].filter(Boolean).join(' ')} viewBox="0 0 12 12" aria-hidden="true">
+    <path strokeWidth="1.5" strokeLinejoin="round" d="M6 1 11 6 6 11 1 6Z" />
+    <path className="ap-bolt" d="M7 2.4 3.6 6.7H5.6L5 9.6 8.4 5.3H6.4Z" />
   </svg>
 );
 export const SwapCue = () => (
@@ -175,7 +172,7 @@ export function BuildView({
                         style={{ gridColumn: s.index + 2 }}
                         aria-label={`${a.name} ${STEP_LABEL[s.kind]}, point ${s.index + 1}`}
                       >
-                        {s.kind === 'unlock' ? <UnlockGlyph /> : <Diamond />}
+                        <PointGlyph unlock={s.kind === 'unlock'} />
                         {s.kind === 'unlock' ? null : TIER_COST[s.kind]}
                       </span>
                     ))}

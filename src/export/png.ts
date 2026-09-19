@@ -21,7 +21,7 @@ const C = {
   rowHeadInk: '#f4ead3',
   rowBody: '#bfb08f',
   unlock: '#a06be0',
-  stepEdge: '#5b6485',
+  glyph: '#a9a39a',
   navy: '#2b3d70',
   navyTrack: '#1a2a58',
   navyInk: '#e9edf8',
@@ -229,27 +229,27 @@ export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob>
     const r = abilities.findIndex((a) => a.id === s.ability.id),
       cx = gx + AB + (s.index + 0.5) * colW,
       cy = gy + r * AP_ROW + AP_ROW / 2,
-      cw = Math.min(colW - 2, 44);
-    roundRect(g, cx - cw / 2, cy - 10, cw, 20, 4);
+      unlock = s.kind === 'unlock',
+      cw = Math.min(colW - 2, unlock ? 28 : 34);
+    roundRect(g, cx - cw / 2, cy - 11, cw, 22, 4);
     g.fillStyle = C.room;
     g.fill();
-    g.fillStyle = s.kind === 'unlock' ? C.unlock : C.stepEdge;
-    const dx = s.kind === 'unlock' ? cx : cx - (cw > 30 ? 6 : 4);
-    const sz = s.kind === 'unlock' ? 5 : 4;
+    // point glyph: rounded diamond with a bolt cut out, same shape as the screen's PointGlyph (12-unit box)
+    const u = (unlock ? 14 : 12) / 12,
+      dx = unlock ? cx : cx - 5,
+      sz = 6 * u,
+      P = (px: number, py: number): [number, number] => [dx + (px - 6) * u, cy + (py - 6) * u];
+    g.fillStyle = g.strokeStyle = unlock ? C.unlock : C.glyph;
+    g.lineWidth = 1.5 * u;
+    g.lineJoin = 'round';
     g.beginPath();
-    if (s.kind === 'unlock') {
-      g.moveTo(dx + 1.5, cy - 6);
-      g.lineTo(dx - 4, cy + 1);
-      g.lineTo(dx - 0.5, cy + 1);
-      g.lineTo(dx - 1.5, cy + 6);
-      g.lineTo(dx + 4, cy - 1);
-      g.lineTo(dx + 0.5, cy - 1);
-    } else {
-      g.moveTo(dx, cy - sz);
-      g.lineTo(dx + sz, cy);
-      g.lineTo(dx, cy + sz);
-      g.lineTo(dx - sz, cy);
-    }
+    [P(6, 1), P(11, 6), P(6, 11), P(1, 6)].forEach(([x, y2], i) => (i ? g.lineTo(x, y2) : g.moveTo(x, y2)));
+    g.closePath();
+    g.fill();
+    g.stroke();
+    g.fillStyle = C.room;
+    g.beginPath();
+    [P(7, 2.4), P(3.6, 6.7), P(5.6, 6.7), P(5, 9.6), P(8.4, 5.3), P(6.4, 5.3)].forEach(([x, y2], i) => (i ? g.lineTo(x, y2) : g.moveTo(x, y2)));
     g.closePath();
     g.fill();
     if (s.kind !== 'unlock') {
