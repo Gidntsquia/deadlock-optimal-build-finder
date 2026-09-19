@@ -14,8 +14,27 @@ const PHASES: { key: Phase; label: string }[] = [
   { key: 'mid', label: 'Mid Game' },
   { key: 'late', label: 'Late Game' },
 ];
-const TIER = { unlock: 0, tier1: 1, tier2: 2, tier3: 3 } as const;
+const TIER_COST = { tier1: '1', tier2: '2', tier3: '5' } as const;
 const STEP_LABEL = { unlock: 'unlock', tier1: 'upgrade 1', tier2: 'upgrade 2', tier3: 'upgrade 3' } as const;
+
+const Diamond = () => (
+  <svg className="ap-glyph" viewBox="0 0 8 8" aria-hidden="true">
+    <path d="M4 0 8 4 4 8 0 4Z" />
+  </svg>
+);
+const UnlockGlyph = () => (
+  <svg className="ap-glyph unlock-glyph" viewBox="0 0 8 8" aria-hidden="true">
+    <path d="M5 0 1 4.5H3.6L3 8 7 3.3H4.4Z" />
+  </svg>
+);
+export const SwapCue = () => (
+  <span className="hero-cue">
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M2 5h10L9.5 2.5M14 11H4l2.5 2.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+    <span className="hero-cue-text">Change Hero</span>
+  </span>
+);
 
 export function BuildView({
   build,
@@ -48,6 +67,7 @@ export function BuildView({
     setLastOpenIndex(i);
   };
   const title = `${hero.name} - ${build.name}`;
+  const abilities = [...new Map(build.abilityOrder.map((s) => [s.ability.id, s.ability])).values()];
   const sharePng = async () => {
     setBusy(true);
     const toastId = toast.loading('Saving image');
@@ -87,6 +107,7 @@ export function BuildView({
       <div className="frame-head">
         <button className="hero-avatar hero-btn" onClick={onOpenHeroes} aria-label={`${hero.name}, change hero`}>
           <img src={img(hero.images.small)} alt="" width={44} height={44} />
+          <SwapCue />
         </button>
         <h1>{title}</h1>
         {builds.length > 1 && (
@@ -132,21 +153,28 @@ export function BuildView({
           })}
           <section className="row abilities" aria-label="Ability Order">
             <h2 className="row-head">Ability Order</h2>
-            <ol className="steps">
-              {build.abilityOrder.map((s) => (
-                <li
-                  key={s.index}
-                  className={['step', s.kind].join(' ')}
-                  data-ability={s.ability.name}
-                  title={`${s.ability.name} ${STEP_LABEL[s.kind]}`}
-                  aria-label={`${s.ability.name} ${STEP_LABEL[s.kind]}`}
-                >
-                  <img src={img(s.ability.image_webp)} alt="" width={32} height={32} />
-                  <span className="pips" aria-hidden="true">
-                    {Array.from({ length: TIER[s.kind] }, (_, i) => (
-                      <i key={i} />
-                    ))}
+            <ol className="ap-grid" style={{ '--ap-cols': build.abilityOrder.length } as React.CSSProperties}>
+              {abilities.map((a) => (
+                <li key={a.id} className="ap-row" data-ability={a.name} aria-label={a.name}>
+                  <span className="ap-icon">
+                    <img src={img(a.image_webp)} alt="" width={32} height={32} />
                   </span>
+                  {build.abilityOrder
+                    .filter((s) => s.ability.id === a.id)
+                    .map((s) => (
+                      <span
+                        key={s.index}
+                        role="img"
+                        className={['ap-mark', s.kind].join(' ')}
+                        data-ability={a.name}
+                        data-index={s.index}
+                        style={{ gridColumn: s.index + 2 }}
+                        aria-label={`${a.name} ${STEP_LABEL[s.kind]}, point ${s.index + 1}`}
+                      >
+                        {s.kind === 'unlock' ? <UnlockGlyph /> : <Diamond />}
+                        {s.kind === 'unlock' ? null : TIER_COST[s.kind]}
+                      </span>
+                    ))}
                 </li>
               ))}
             </ol>

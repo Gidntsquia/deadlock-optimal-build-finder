@@ -1,7 +1,7 @@
 # UI Design Notes
 
-**Current design: the 2026-09-19 in-game redesign (next section). User verdict on it: not yet
-recorded.** Sections after it describe the earlier rounds; their token scales and lint rules still
+**Current design: the 2026-09-19 in-game redesign (next section). User verdict: see "User verdict"
+below.** Sections after it describe the earlier rounds; their token scales and lint rules still
 apply, their layout notes (top bar, side column, tabs, disclosure panels) do not.
 
 ## In-game redesign (2026-09-19)
@@ -20,8 +20,15 @@ nothing else.
 - Phone: same frame in one column, hero avatar in the frame head, Share and Details at the bottom
   right of the frame. Dialogs are bottom sheets.
 - Hero dialog: search box (type, Enter picks the first match, arrows move) over a portrait grid.
-- Ability order: one icon per point spent, in order. Outlined icon = unlock, diamonds under it =
-  upgrade level. Icons are forced white so dark glyphs show on navy.
+- Ability order: the in-game "Ability Point Order" grid (`docs/ui/reference/ability-order.png`).
+  One banded row per ability, dark glyph on a cream icon chip at the left, one column per point
+  spent. A dark chip sits in the ability's row at the column of each point: purple bolt = unlock,
+  diamond + 1, 2, 5 = the three upgrades (in-game point costs). The only digits are 1/2/5. Each
+  row and marker has an aria-label. Phone: same grid, columns shrink to fit, no sideways scroll.
+  The share PNG draws the same grid.
+- Hero cue: the hero control is always marked. Desktop: a teal "Change Hero" pill with a swap icon
+  under the portrait name. Phone: a round swap-arrows badge on the avatar corner. Both are visible
+  at rest, no hover needed; still one button named "<Hero>, change hero".
 - Item sheet: art, slot, tier, cost, stats, passive/active text. No ranking text.
 - Details (the single quiet control, closed by default): tagline, match count, rank floor, data
   window and date, soul totals, agreement with top players and the player table, method note,
@@ -36,8 +43,12 @@ nothing else.
 
 ### User verdict
 
-Not yet recorded. To be filled with the user's own words on: looks like the game, phone looks
-good, nothing superfluous or AI-made.
+Round-4 eval, user's words: "The ability upgrade order has regressed; it should look like this
+[reference/ability-order.png]. Also, it's not immediately obvious that you can click on the hero
+image to change which hero you have selected-- make that more intuitive." Mobile: "Works".
+Superfluous / AI-made: "Works". Overall: "Its good, but not quite there yet."
+
+Round 5 (grid + hero cue): user's verdict on the new shots is pending; run the evaluator.
 
 ## Sources read
 

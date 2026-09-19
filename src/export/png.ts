@@ -25,6 +25,7 @@ const C = {
   navy: '#2b3d70',
   navyTrack: '#1a2a58',
   navyInk: '#e9edf8',
+  iconBg: '#f3ead6',
 };
 const ROMAN = ['', 'I', 'II', 'III', 'IV'];
 const PHASES: { key: Phase; label: string }[] = [
@@ -32,7 +33,7 @@ const PHASES: { key: Phase; label: string }[] = [
   { key: 'mid', label: 'Mid Game' },
   { key: 'late', label: 'Late Game' },
 ];
-const TIER = { unlock: 0, tier1: 1, tier2: 2, tier3: 3 } as const;
+const TIER_COST = { tier1: '1', tier2: '2', tier3: '5' } as const;
 const FONT = 'Nunito, "Segoe UI", system-ui, sans-serif';
 
 const loadImg = (src?: string) =>
@@ -101,9 +102,9 @@ export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob>
   }
 
   const rowH = (n: number) => ROW_HEAD + 8 + Math.ceil(n / COLS) * (TILE_H + GAP);
-  const STEP_W = 40,
-    STEP_H = 48;
-  const apH = ROW_HEAD + 8 + STEP_H + 8;
+  const AB = 40,
+    AP_ROW = 40;
+  const apH = ROW_HEAD + 8 + abilities.length * AP_ROW + 8;
   const boardH = PAD + phases.reduce((a, p) => a + rowH(p.rows.length) + 8, 0) + apH + PAD;
   const H = HEAD + boardH + 8;
   const cv = document.createElement('canvas');
@@ -204,35 +205,59 @@ export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob>
     y += h + 8;
   }
 
-  // ability order: one icon per point spent, pips for the upgrade tier
+  // ability order: one row per ability, one column per point spent, chip markers (same grid as the screen)
   rowFrame('Ability Order', apH, C.navy, C.navyTrack, C.navyInk);
-  build.abilityOrder.forEach((s, i) => {
-    const x = rx + 8 + i * (STEP_W + 4),
-      sy = y + ROW_HEAD + 8;
-    roundRect(g, x, sy, STEP_W, STEP_H, 4);
-    g.fillStyle = C.navyTrack;
-    g.fill();
-    g.lineWidth = s.kind === 'unlock' ? 2 : 1;
-    g.strokeStyle = s.kind === 'unlock' ? C.unlock : C.stepEdge;
-    g.stroke();
-    const im = abImgs.get(s.ability.id);
+  const n = build.abilityOrder.length,
+    gx = rx + 8,
+    gy = y + ROW_HEAD + 8,
+    colW = (rw - 16 - AB) / n;
+  abilities.forEach((a, r) => {
+    const ry = gy + r * AP_ROW;
+    g.fillStyle = r % 2 ? C.navy : C.navyTrack;
+    g.fillRect(gx, ry, rw - 16, AP_ROW);
+    const im = abImgs.get(a.id);
     if (im) {
-      g.filter = 'brightness(0) invert(1)';
-      g.drawImage(im, x + 4, sy + 2, 32, 32);
+      roundRect(g, gx + 2, ry + 2, AB - 4, AP_ROW - 4, 4);
+      g.fillStyle = C.iconBg;
+      g.fill();
+      g.filter = 'brightness(0)';
+      g.drawImage(im, gx + 2, ry + 2, AB - 4, AP_ROW - 4);
       g.filter = 'none';
     }
-    const n = TIER[s.kind];
-    g.fillStyle = C.navyInk;
-    for (let k = 0; k < n; k++) {
-      const cx = x + STEP_W / 2 + (k - (n - 1) / 2) * 9,
-        cy = sy + 40;
-      g.beginPath();
-      g.moveTo(cx, cy - 4);
-      g.lineTo(cx + 4, cy);
-      g.lineTo(cx, cy + 4);
-      g.lineTo(cx - 4, cy);
-      g.closePath();
-      g.fill();
+  });
+  build.abilityOrder.forEach((s) => {
+    const r = abilities.findIndex((a) => a.id === s.ability.id),
+      cx = gx + AB + (s.index + 0.5) * colW,
+      cy = gy + r * AP_ROW + AP_ROW / 2,
+      cw = Math.min(colW - 2, 44);
+    roundRect(g, cx - cw / 2, cy - 10, cw, 20, 4);
+    g.fillStyle = C.room;
+    g.fill();
+    g.fillStyle = s.kind === 'unlock' ? C.unlock : C.stepEdge;
+    const dx = s.kind === 'unlock' ? cx : cx - (cw > 30 ? 6 : 4);
+    const sz = s.kind === 'unlock' ? 5 : 4;
+    g.beginPath();
+    if (s.kind === 'unlock') {
+      g.moveTo(dx + 1.5, cy - 6);
+      g.lineTo(dx - 4, cy + 1);
+      g.lineTo(dx - 0.5, cy + 1);
+      g.lineTo(dx - 1.5, cy + 6);
+      g.lineTo(dx + 4, cy - 1);
+      g.lineTo(dx + 0.5, cy - 1);
+    } else {
+      g.moveTo(dx, cy - sz);
+      g.lineTo(dx + sz, cy);
+      g.lineTo(dx, cy + sz);
+      g.lineTo(dx - sz, cy);
+    }
+    g.closePath();
+    g.fill();
+    if (s.kind !== 'unlock') {
+      g.fillStyle = C.navyInk;
+      g.font = `800 12px ${FONT}`;
+      g.textBaseline = 'middle';
+      g.fillText(TIER_COST[s.kind], dx + sz + 3, cy + 1);
+      g.textBaseline = 'alphabetic';
     }
   });
   return new Promise((res, rej) => cv.toBlob((b) => (b ? res(b) : rej(new Error('PNG encode failed'))), 'image/png'));

@@ -299,47 +299,123 @@ h3 {
   background: var(--navy-track);
   color: var(--navy-ink);
 }
-.steps {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 8px;
+/* ability point grid: one row per ability, one column per point spent, chip markers */
+.ap-grid {
+  --ap-icon: 32px;
   margin: 0;
+  padding: 4px 8px 8px;
   list-style: none;
+  display: grid;
+  gap: 0;
 }
-.step {
-  position: relative;
-  width: 40px;
-  height: 48px;
-  border-radius: var(--radius-sm);
-  background: var(--navy-track);
-  display: flex;
-  flex-direction: column;
+.ap-row {
+  display: grid;
+  grid-template-columns: var(--ap-icon) repeat(var(--ap-cols), minmax(0, 1fr));
   align-items: center;
-  box-shadow: inset 0 0 0 1px var(--ap-track-fill);
+  height: 32px;
+  background: var(--navy-track);
 }
-.step img {
+.ap-row:nth-child(even) {
+  background: var(--navy);
+  box-shadow: inset 0 0 0 1px var(--navy-track);
+}
+.ap-icon {
+  grid-column: 1;
   width: 32px;
   height: 32px;
-  margin-top: 2px;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--ap-icon-bg);
+}
+.ap-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  /* snapshot ability icons are a mix of white and black glyphs; draw them all white */
-  filter: brightness(0) invert(1);
+  /* icons are a mix of white and black glyphs; draw them all dark on the cream chip */
+  filter: brightness(0);
 }
-.step.unlock {
-  box-shadow: inset 0 0 0 2px var(--ap-track-unlock);
-}
-.step .pips {
+.ap-mark {
+  grid-row: 1;
+  justify-self: center;
   display: flex;
-  gap: 2px;
-  height: 8px;
   align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 100%;
+  max-width: 44px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  background: var(--room);
+  color: var(--navy-ink);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
 }
-.step .pips i {
-  width: 6px;
-  height: 6px;
-  background: var(--navy-ink);
-  transform: rotate(45deg);
+.ap-glyph {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  fill: var(--ap-track-fill);
+}
+.ap-glyph.unlock-glyph {
+  width: 10px;
+  height: 10px;
+  fill: var(--ap-track-unlock);
+}
+@media (max-width: 899px) {
+  .ap-grid {
+    --ap-icon: 28px;
+    padding: 8px 4px;
+  }
+  .ap-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .ap-mark {
+    font-size: 10px;
+    gap: 0;
+  }
+  .ap-glyph {
+    width: 5px;
+    height: 5px;
+  }
+}
+
+/* hero control cue: always visible, says this is how you change hero */
+.hero-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--teal-ink);
+  background: var(--teal);
+  font-size: 14px;
+  font-weight: 800;
+  border-radius: var(--radius-full);
+}
+.hero-cue svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.hero-avatar {
+  position: relative;
+  overflow: visible;
+}
+.hero-avatar img {
+  border-radius: var(--radius-full);
+}
+.hero-avatar .hero-cue {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 20px;
+  height: 20px;
+  justify-content: center;
+  border: 2px solid var(--pill);
+}
+.hero-avatar .hero-cue-text {
+  display: none;
 }
 
 /* item tile: slot-coloured art, tier flag in the corner, pale name plate */
@@ -717,14 +793,18 @@ button.tile:hover {
     max-height: 70vh;
     object-fit: contain;
   }
-  .hero-card span {
+  .hero-card .hero-name {
     display: block;
     font-size: 24px;
     font-weight: 900;
     padding: 8px 0;
   }
-  .hero-card:hover span {
+  .hero-card:hover .hero-name {
     color: var(--teal);
+  }
+  .hero-card .hero-cue {
+    padding: 8px 16px;
+    margin-bottom: 4px;
   }
   .hero-avatar {
     display: none;

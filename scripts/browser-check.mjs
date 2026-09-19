@@ -97,6 +97,35 @@ const BANNED = [
   /README/i,
 ];
 const bannedHit = (text) => BANNED.map((re) => re.exec(text)?.[0]).find(Boolean);
+// Ability grid probe: 4 rows, one marker per step, own column, left-to-right = point order, own row, tier text 1/2/5.
+const gridProbe = () =>
+  page.evaluate(() => {
+    const why = [];
+    const grid = document.querySelector('.ap-grid');
+    if (!grid) return ['no .ap-grid'];
+    const rows = [...grid.querySelectorAll('.ap-row')];
+    if (rows.length !== 4) why.push(`${rows.length} rows`);
+    const marks = [...grid.querySelectorAll('.ap-mark')];
+    const want = Number(grid.style.getPropertyValue('--ap-cols'));
+    if (marks.length !== want) why.push(`${marks.length} markers != ${want} steps`);
+    const byX = [...marks].sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left);
+    byX.forEach((m, k) => {
+      if (Number(m.dataset.index) !== k) why.push(`x-order ${k} has point ${m.dataset.index}`);
+    });
+    const cols = new Set(marks.map((m) => Math.round(m.getBoundingClientRect().left + m.getBoundingClientRect().width / 2)));
+    if (cols.size !== marks.length) why.push('two markers share a column');
+    const cost = { tier1: '1', tier2: '2', tier3: '5' };
+    for (const m of marks) {
+      const row = m.closest('.ap-row');
+      if (row.dataset.ability !== m.dataset.ability) why.push(`marker ${m.dataset.index} in wrong row`);
+      const kind = ['unlock', 'tier1', 'tier2', 'tier3'].find((k) => m.classList.contains(k));
+      const txt = m.textContent.trim();
+      if (kind === 'unlock' ? txt !== '' : txt !== cost[kind]) why.push(`marker ${m.dataset.index} ${kind} reads "${txt}"`);
+      if (!m.getAttribute('aria-label')) why.push('marker without name');
+    }
+    for (const r of rows) if (!r.getAttribute('aria-label')) why.push('row without name');
+    return why;
+  });
 const openDetails = async () => {
   await page.click('.details-btn');
   await page.waitForSelector('.details');
@@ -199,8 +228,8 @@ try {
     const totalsOk = costs.every((c, k) => (run += c) === totals[k]);
     const imgs = await page.$$eval('.tiles .tile img', (els) => els.map((e) => e.getAttribute('src')));
     const broken = await page.$$eval('.tiles .tile img', (els) => els.filter((e) => !e.complete || e.naturalWidth === 0).length);
-    const abil = await page.$$eval('.step', (els) => [...new Set(els.map((e) => e.dataset.ability))]);
-    const unlocks = await page.$$eval('.step.unlock', (els) => els.length);
+    const abil = await page.$$eval('.ap-row', (els) => [...new Set(els.map((e) => e.dataset.ability))]);
+    const unlocks = await page.$$eval('.ap-mark.unlock', (els) => els.length);
     await openDetails();
     const badges = await page.$$eval('.details .item-table tr[data-core]', (els) => els.length);
     const agreement = await page.textContent('.details .agreement');
@@ -284,7 +313,7 @@ try {
       { timeout: 15000 },
     );
     const rows = await page.$$eval('.tiles .tile', (els) => els.length);
-    const abil = await page.$$eval('.step', (els) => [...new Set(els.map((e) => e.dataset.ability))]);
+    const abil = await page.$$eval('.ap-row', (els) => [...new Set(els.map((e) => e.dataset.ability))]);
     check(`${n}: renders build + ability order`, rows >= 12 && abil.length === 4, `${rows} items, abilities ${abil.join(', ')}`);
     await noHScroll(n);
     await tapOk(n);
@@ -574,6 +603,7 @@ try {
       ['hero control', '.hero-btn:visible'],
       ['style switch', '.style-switch'],
       ['ability order', '.row.abilities'],
+      ['ability grid', '.ap-grid'],
       ['share', '.share-btn'],
       ['details control', '.details-btn'],
     ]) {
@@ -620,6 +650,8 @@ try {
     await page.waitForSelector('.hero-dialog', { state: 'detached' });
     check('hero list has every hero', allHeroes.length >= 30, `${allHeroes.length}`);
     let combos = 0;
+    let gridCombos = 0;
+    const gridBad = [];
     const bad = [];
     for (const name of allHeroes) {
       await page.setViewportSize({ width: 1440, height: 900 });
@@ -646,6 +678,11 @@ try {
         ]) {
           await page.setViewportSize(size);
           await page.waitForTimeout(60);
+          if (size.width === 1440) {
+            const gw = await gridProbe();
+            gridCombos++;
+            if (gw.length) gridBad.push(`${name}#${i}: ${gw.slice(0, 3).join('; ')}`);
+          }
           const f = await fitProbe();
           combos++;
           const why = [];
@@ -664,15 +701,32 @@ try {
       bad.slice(0, 8).join(' // '),
     );
 
-    // phone: no sideways scroll for any hero
+    check(
+      `ability grid: 4 rows, own row+column, point order, 1/2/5 markers (${gridCombos} hero x style at 1440x900)`,
+      gridBad.length === 0 && gridCombos >= allHeroes.length,
+      gridBad.slice(0, 6).join(' // '),
+    );
+
+    // phone: no sideways scroll for any hero; whole grid visible
     await page.setViewportSize({ width: 390, height: 844 });
     const wide = [];
+    const gridWide = [];
     for (const name of allHeroes) {
       await pickHero(name);
       await waitSettled(name);
       const w = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
       if (w[0] > w[1]) wide.push(`${name} ${w[0]}`);
+      const g = await page.evaluate(() => {
+        const grid = document.querySelector('.ap-grid');
+        const off = [...grid.querySelectorAll('.ap-mark')].filter((m) => {
+          const r = m.getBoundingClientRect();
+          return r.left < 0 || r.right > innerWidth || r.width < 12;
+        }).length;
+        return { sw: grid.scrollWidth, cw: grid.clientWidth, off };
+      });
+      if (g.sw > g.cw || g.off) gridWide.push(`${name} sw${g.sw}/cw${g.cw} off${g.off}`);
     }
+    check('phone 390x844: whole ability grid visible, no sideways scroll, markers inside viewport', gridWide.length === 0, gridWide.slice(0, 6).join(', '));
     check('phone 390x844: no sideways scroll for any hero', wide.length === 0, wide.join(', '));
 
     // pointer pick + back
@@ -688,6 +742,41 @@ try {
     check('back restores the previous hero', true);
   }
 
+  // hero control cue: visible at rest (pointer away, nothing focused), pressing it opens the hero dialog
+  for (const size of [
+    { width: 1440, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(size);
+    await page.mouse.move(size.width - 1, size.height - 1);
+    await page.evaluate(() => document.activeElement?.blur());
+    const cue = await page.evaluate(() => {
+      const btn = [...document.querySelectorAll('.hero-btn')].find((b) => b.getBoundingClientRect().width > 0);
+      const el = btn?.querySelector('.hero-cue');
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return {
+        w: r.width,
+        h: r.height,
+        o: Number(getComputedStyle(el).opacity),
+        v: getComputedStyle(el).visibility,
+        hovered: btn.matches(':hover'),
+        focused: btn.matches(':focus'),
+      };
+    });
+    check(
+      `hero cue visible at rest at ${size.width}x${size.height}`,
+      !!cue && cue.w > 0 && cue.h > 0 && cue.o === 1 && cue.v === 'visible' && !cue.hovered && !cue.focused,
+      JSON.stringify(cue),
+    );
+    await page.click('.hero-btn:visible');
+    await page.waitForSelector('.hero-dialog .hero-filter');
+    check(`pressing the hero control opens the hero dialog at ${size.width}x${size.height}`, true);
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('.hero-dialog', { state: 'detached' });
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+
   // item 6: Share button (no stub) yields a real PNG download
   {
     await page.evaluate(() => {
@@ -701,6 +790,7 @@ try {
     const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
     await page.click('.share-btn');
     const download = await downloadPromise;
+    await download.saveAs(shot('share-infernus.png'));
     const stream = await download.createReadStream();
     const bytes = await new Promise((resolve, reject) => {
       const chunks = [];

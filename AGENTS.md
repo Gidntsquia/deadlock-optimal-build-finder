@@ -19,7 +19,7 @@ Static React app that generates Deadlock hero builds in the browser from a local
   report 0 serious/critical violations.
   Logic checks: `npm run verify`. Typecheck: `npx tsc -b`. Format: `npx prettier --check/--write`.
 - Screen layout: one in-game style build window (`BuildView.tsx`): hero button, title, build
-  pills, Share, Details, three phase rows, Ability Order row. No top bar or footer. The hero
+  pills, Share, Details, three phase rows, Ability Order grid (`.ap-grid`, one row per ability, one chip per point). No top bar or footer. The hero
   picker is a dialog (`HeroPicker.tsx`). Every number, stat, data date, validation result and
   link lives in the Details dialog (`Details.tsx`) and nowhere else; `verify:browser` fails if
   banned words (%, match, win rate, README...) show on the main screen or in the share PNG, or

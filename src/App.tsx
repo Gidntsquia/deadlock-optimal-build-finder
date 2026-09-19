@@ -11,7 +11,7 @@ import {
   type HeldoutSet,
   type PanelValidation,
 } from './validation/heldout';
-import { BuildView } from './components/BuildView';
+import { BuildView, SwapCue } from './components/BuildView';
 import { HeroPicker } from './components/HeroPicker';
 import { slugify } from './slug';
 import { BoardSkeleton } from './components/BoardSkeleton';
@@ -217,7 +217,8 @@ export default function App() {
         <aside className="hero-side">
           <button className="hero-card hero-btn" onClick={() => setHeroesOpen(true)} aria-label={`${hero.name}, change hero`}>
             <img src={img(hero.images.card ?? hero.images.small)} alt="" width={260} height={380} />
-            <span>{hero.name}</span>
+            <span className="hero-name">{hero.name}</span>
+            <SwapCue />
           </button>
         </aside>
         <div className="frame">
