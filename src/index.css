@@ -1329,12 +1329,12 @@ button.tile:hover {
     padding: 4px 8px;
   }
   .tier-hero {
-    width: 72px;
+    width: 92px;
     padding: 2px;
   }
   .tier-hero img {
-    width: 52px;
-    height: 52px;
+    width: 80px;
+    height: 80px;
   }
   .tier-foot {
     position: relative;
