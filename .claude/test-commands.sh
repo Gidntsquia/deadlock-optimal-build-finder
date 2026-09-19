@@ -1,4 +1,4 @@
-FILE_CMD="STAGE=<stage> node scripts/browser-check.mjs  # needs vite preview on :4173"
+FILE_CMD="node scripts/browser-check.mjs  # one tour; starts its own preview on :4173"
 CHANGED_CMD="npm test"
 FAST_CMD="npm test"
 FULL_CMD="npm run test:full"

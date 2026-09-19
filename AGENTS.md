@@ -13,13 +13,11 @@ Static React app that generates Deadlock hero builds in the browser from a local
   rule (tsx + each CSS rule) and must report all of them caught.
 - Browser checks: Playwright, `npm run verify:browser` (`vite build` only, no tsc; run `npx tsc -b` separately. It serves `dist/` on
   :4173 and runs `scripts/browser-check.mjs` — port 4173 must be free; run in the foreground
-  and let it finish, don't background it). The script splits itself into ~18 independent stages (`STAGE=<name>` runs one; the hero x style loop is `fit-0..3`) run 6 at a time;
-  `STAGE_TIMES=1` prints per-stage seconds. A stage needs its server already up on :4173 when run alone. Set `SHOT_DIR=docs/ui/after` (or any dir) to control
-  where the check's screenshots land; default is `screenshots/` (gitignored).
-  Includes an `@axe-core/playwright` scan at desktop/phone × item-sheet open/closed — must
-  report 0 serious/critical violations.
-  `npm test` = fast tier (verify + stages main, arrows, fit-0; ~15s). `npm run test:full` = tsc + verify + all stages (~35s; CI/before merge).
-  `STAGE_ONLY=a,b npm run verify:browser` runs just those stages. A guard (`.claude/test-commands.sh`) blocks bare full-suite runs by agents; `TS_FULL=1` overrides.
+  and let it finish, don't background it). The script is one tour: it opens the app once (one browser, one page) and walks desktop build, details, item sheet, hero picker/arrows/styles, a
+  sampled fit check, share, error recovery, phone layout, axe (~49 checks, ~20s). It starts its own `vite preview`. Set `SHOT_DIR=docs/ui/after` (or any dir) to control
+  where screenshots land; default is `screenshots/` (gitignored). Add new checks as steps in that tour, not as new page loads.
+  Includes `@axe-core/playwright` scans (desktop, phone with item sheet open and closed) — must report 0 serious/critical violations.
+  `npm test` = verify + the tour (~25s). `npm run test:full` = tsc + the same (before merge). A guard (`.claude/test-commands.sh`) blocks bare full-suite runs by agents; `TS_FULL=1` overrides.
   Logic checks: `npm run verify`. Typecheck: `npx tsc -b`. Format: `npx prettier --check/--write`.
 - Screen layout: one in-game style build window (`BuildView.tsx`): hero button, title, build
   pills, Share, Details, three phase rows, Ability Order grid (`.ap-grid`, one row per ability, one chip per point). No top bar or footer. The hero
