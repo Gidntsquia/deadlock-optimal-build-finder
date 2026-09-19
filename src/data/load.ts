@@ -35,3 +35,10 @@ export const loadAnalytics = (heroId: number) => j<HeroAnalytics>(`analytics/${h
 
 /** Image fields in the snapshot are app-relative (img/...) after fetch-data; absolute URLs pass through. */
 export const img = (p?: string) => (!p ? undefined : /^https?:/.test(p) ? p : base + p);
+
+/** Portrait backdrop: same picture for every hero, a different, fixed crop per hero id. */
+export const heroBackdrop = (heroId: number) => ({
+  backgroundImage: `url(${img('hero-background.png')})`,
+  backgroundSize: 'auto 170%',
+  backgroundPosition: `${10 + ((heroId * 37) % 81)}% ${15 + ((heroId * 53) % 71)}%`,
+});

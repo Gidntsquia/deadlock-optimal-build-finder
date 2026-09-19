@@ -1036,8 +1036,8 @@ try {
         await page.waitForTimeout(50);
       }
       check('item 3: board-wrap has aria-busy="true" during hero switch', sawBusy);
-      check('item 3: board-wrap computed opacity dips below 1 during hero switch', minOpacity < 1, `min opacity=${minOpacity}`);
-      check('item 3: previous build stays mounted (>=12 tiles) while dimmed', minTiles >= 12, `min tiles=${minTiles}`);
+      check('item 3: board-wrap is not dimmed or flashed during hero switch (opacity stays 1)', minOpacity === 1, `min opacity=${minOpacity}`);
+      check('item 3: previous build stays mounted (>=12 tiles) during the switch', minTiles >= 12, `min tiles=${minTiles}`);
       await page.waitForFunction(() => document.querySelector('.frame-head h1')?.textContent.startsWith('Seven'), null, { timeout: 15000 });
       await page
         .waitForFunction(() => parseFloat(getComputedStyle(document.querySelector('.board-wrap')).opacity) === 1, null, { timeout: 5000 })

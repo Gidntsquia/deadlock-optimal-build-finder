@@ -1,4 +1,4 @@
-import { img } from '../data/load';
+import { heroBackdrop, img } from '../data/load';
 import { useRef, useState } from 'react';
 import type { Build, Hero, Phase } from '../types';
 import type { PanelValidation } from '../validation/heldout';
@@ -66,7 +66,7 @@ export function BuildView({
   onOpenHeroes: () => void;
   onStepHero: (d: -1 | 1) => void;
   panel: PanelValidation | null;
-  hero: Pick<Hero, 'name' | 'images'>;
+  hero: Pick<Hero, 'id' | 'name' | 'images'>;
   windowDays?: number;
   fetchedDate: string | null;
   stale: boolean;
@@ -122,7 +122,7 @@ export function BuildView({
         <div className="hero-mini">
           <HeroArrow dir={-1} onStep={onStepHero} />
           <button className="hero-avatar hero-btn" onClick={onOpenHeroes} aria-label={`${hero.name}, change hero`}>
-            <img src={img(hero.images.small)} alt="" width={44} height={44} />
+            <img src={img(hero.images.small)} alt="" width={44} height={44} style={heroBackdrop(hero.id)} />
             <SwapCue />
           </button>
           <HeroArrow dir={1} onStep={onStepHero} />

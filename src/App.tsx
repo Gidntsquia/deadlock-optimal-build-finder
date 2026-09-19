@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import type { Ability, Build, Hero, HeroAnalytics, Item } from './types';
-import { img, loadAnalytics, loadCore, type Manifest } from './data/load';
+import { heroBackdrop, img, loadAnalytics, loadCore, type Manifest } from './data/load';
 import { generateBuilds } from './generator';
 import {
   computeCoreSet,
@@ -222,7 +222,7 @@ export default function App() {
         <aside className="hero-side">
           <div className="hero-card">
             <button className="hero-face hero-btn" onClick={() => setHeroesOpen(true)} aria-label={`${hero.name}, change hero`}>
-              <img src={img(hero.images.card ?? hero.images.small)} alt="" width={280} height={380} />
+              <img src={img(hero.images.card ?? hero.images.small)} alt="" width={280} height={380} style={heroBackdrop(hero.id)} />
               <span className="hero-name">{hero.name}</span>
               <SwapCue />
             </button>

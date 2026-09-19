@@ -796,7 +796,7 @@ button.tile:hover {
   transition: opacity 150ms ease;
 }
 .board-wrap.stale {
-  opacity: 0.45;
+  /* no dimming: the old build stays fully drawn until the next one lands, so nothing flashes */
   pointer-events: none;
 }
 .sk-head {
