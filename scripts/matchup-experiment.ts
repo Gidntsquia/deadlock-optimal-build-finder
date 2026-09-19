@@ -28,7 +28,7 @@ const SCENARIOS: Scenario[] = [
   { label: 'Sinclair (low-pick hero) vs mixed team (Vindicta, Grey Talon, Ivy)', heroId: 60, enemies: [3, 17, 20] },
 ];
 
-const WEIGHTS_TO_TRY = [0.25, 0.5, 1];
+const WEIGHTS_TO_TRY = [0.25, 0.5, 1, 2, 4];
 const POPULATIONS: { key: string; suffix: string }[] = [
   { key: 'badge>=70', suffix: 'badge70' },
   { key: 'all-ranks', suffix: 'allranks' },

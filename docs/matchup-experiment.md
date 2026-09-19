@@ -1,4 +1,4 @@
-# Matchup-aware builds — experiment findings (2026-09-18, updated after K-scaling fix)
+# Matchup-aware builds — experiment findings (2026-09-18, updated: pick-rate divergence, weight 2)
 
 Implements plans/matchup-builds.md: a hard-coded, opt-in enemy-counter scoring term
 (`PARAMS.weights.matchup`, default 0, no UI). This doc is step 5 (evaluation).
@@ -137,3 +137,51 @@ the textbook case of a resist item against its matching damage type. Fixing this
 much more per-hero×enemy match volume than a single 30-day snapshot provides, or an estimator that
 controls for player skill directly (not available from this API — no per-match MMR/badge field to
 condition on), not further tuning of `K`, `MIN_VS_MATCHES`, or population width.
+
+## Second approach: pick-rate divergence instead of win-rate lift
+
+Whether an item was bought is known exactly for every match, unlike whether that match was won,
+so the same sample gives an order of magnitude more statistical power for "do players buy this
+item disproportionately more/less against enemy E" than for "does this item win more against enemy
+E". Replaced the scoring term's inner comparison accordingly: for each item and enemy, a
+two-proportion z-score of its pick-rate against that enemy (`pv = item matches vs E / total matches
+vs E`) versus its overall pick-rate (`pa = item matches overall / total matches overall`), squashed
+to `clamp(z / 30, -1, 1)` and averaged over enemies clearing `MIN_VS_MATCHES`. The old win-rate lift
+(`liftVs - liftAll`) is kept only as a veto on individual enemies: if an item's shrunk win-rate lift
+against a given enemy is below `-0.08` relative to its own baseline, that enemy's pick-rate spike is
+dropped from the average, on the theory that a pick spike with a demonstrably worse-than-usual
+outcome is a bad recommendation regardless of how popular the pick is. (First tried the veto at
+`-0.02`; that caught ordinary shrinkage noise on thin-sample items — e.g. it dropped `Divine
+Barrier` vs. Pocket, a 59σ pick-rate spike, over a `-0.031` delta smaller than the ~0.06 noise floor
+established above. `-0.08` only catches deltas clearly past that floor.)
+
+Ad hoc analysis of `6-allranks.json` (Abrams) found much stronger, cleaner separation than the
+win-rate approach ever did — z-scores of 5-98 with intuitive game-design matches: `Knockdown`/
+`Phantom Strike` spike vs. Vindicta (flies), `Rebuttal` spikes vs. Viscous (punch-vulnerable cube
+state), `Divine Barrier`/`Counterspell` spike vs. Pocket (blocks/dispels her ultimate), `Healbane`
+spikes (weakly, z≈6.6) vs. Kelvin. This is a fundamentally different feature framing than the
+original goal — "what do players choose against this enemy" (revealed preference, mixing real
+counters with meta/streamer-driven false narratives) rather than "what actually wins more"
+(causally cleaner but, per above, too noisy to measure at this sample size) — but it is usable
+crowd-sourced game knowledge, which the win-rate approach never produced at any usable weight.
+
+**Weight needed is higher than the plan's intended 0.25/0.5/1 range.** Re-ran
+`scripts/matchup-experiment.ts` (now trying `[0.25, 0.5, 1, 2, 4]`) after the pick-rate switch:
+
+| weight | result |
+| --- | --- |
+| 0.25 - 1 | no swap, or only the generic `Battle Vest`/`Grit` filler seen with the old term — the matchup term (max ±1 per item after squashing) is too small next to popularity/efficiency/kit terms, which score `1.5-2.6` for top items in a slot |
+| **2** | real, scenario-specific counters swap in across all 4 scenarios: `Divine Barrier` vs. the healing team (Ivy/Kelvin/Pocket), `Knockdown`/`Bullet Resilience`/`Plated Armor` vs. the gun team (Vindicta/Grey Talon/Holliday), `Counterspell`/`Rebuttal` vs. the spirit team (Lash/Viscous/Paradox), `Knockdown`/`Phantom Strike` for low-pick Sinclair |
+| 4 | mostly holds the same real picks as weight 2 |
+| 8 (tested, not recommended) | starts re-admitting `no per-enemy reason (lift <=0.1)` items — single-enemy pick spikes diluted by null enemies in the 3-enemy average, the same dilution failure mode as before, just re-appearing at a higher weight |
+
+**Recommended weight if this term is turned on: 2** (4 as an upper bound worth trying; not 8).
+`PARAMS.weights.matchup` still defaults to **0** — this doc records a recommendation for a future
+opt-in, not a change to shipped behavior. `npx tsc -b`, `npm run lint`, and `npm run verify` all
+still pass and `npm run verify` is still byte-identical at weight 0.
+
+**Caveat carried over unresolved:** the per-enemy total-matches denominator (`totalMatchesVsEnemy`)
+is summed from the same hero's own `vs[enemy]` item-stats rows, which undercounts if any items were
+excluded from the fetch; it has not been cross-checked against a true match-count total from
+`hero-counter-stats`. Close enough for this sanity check, but worth verifying before relying on the
+z-scores for a real feature.

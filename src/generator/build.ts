@@ -147,23 +147,48 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
       KvsByEnemy.set(e, Math.max(200, WIN_SHRINK_FRAC * maxMatchesVs));
     }
   }
-  // Mean over known enemies of (liftVs - liftAll) * 10, restricted to enemies whose vs-row for this
-  // item clears MIN_VS_MATCHES. Ported from ../deadlock-street-brawl-helper src/brawl/engine.ts.
+  // Pick-rate divergence: how much more (or less) often this item is bought against a given enemy
+  // than overall, as a two-proportion z-score. This is the signal, not win-rate lift — see
+  // docs/matchup-experiment.md "Pick-rate divergence" for why: at available sample sizes the
+  // win-rate delta between an item's performance vs. one enemy and its baseline is the same size as,
+  // or smaller than, sampling noise (largest observed lift ~0.045 against ~0.06 noise floor), while
+  // whether an item was bought is known exactly for every match, so the same sample gives an order of
+  // magnitude more statistical power. The win-rate delta is kept only as a veto: an item that is
+  // picked disproportionately against an enemy but demonstrably loses more when it is, is dropped.
+  const totalMatchesAll = [...wideStats.values()].reduce((a, s) => a + s.matches, 0);
+  const totalMatchesVsEnemy = new Map<number, number>();
+  if (matchupActive) {
+    for (const e of matchup!.enemies) {
+      const rows = matchup!.stats.vs[String(e)];
+      if (rows) totalMatchesVsEnemy.set(e, rows.reduce((a, r) => a + r.matches, 0));
+    }
+  }
+  // Loosened past the ~0.06 noise floor documented above: a veto at -0.02 was catching normal
+  // shrinkage noise on thin-sample items (e.g. it dropped Divine Barrier vs Pocket, a 59-sigma
+  // pick-rate spike, over a -0.031 win-rate delta that's smaller than the noise floor itself). Only
+  // a delta clearly past that floor should override a strong pick-rate signal.
+  const WIN_RATE_VETO = -0.08; // an item that clearly loses more against an enemy is dropped regardless of pick rate
   const matchupLiftFor = (itemId: number): { lift: number; enemies: number[] } => {
     if (!matchupActive) return { lift: 0, enemies: [] };
     const wideStat = wideStats.get(itemId);
-    if (!wideStat) return { lift: 0, enemies: [] };
+    if (!wideStat || !totalMatchesAll) return { lift: 0, enemies: [] };
+    const pa = wideStat.matches / totalMatchesAll;
     const liftAll = shrink(wideStat.wins, wideStat.matches, KAll, matchupMeanAll) - matchupMeanAll;
     let sum = 0, n = 0; const hit: number[] = [];
     for (const e of matchup!.enemies) {
       const rows = matchup!.stats.vs[String(e)];
       const mean = vsMean.get(e);
       const Kvs = KvsByEnemy.get(e);
-      if (!rows || mean === undefined || Kvs === undefined) continue;
+      const totalVsE = totalMatchesVsEnemy.get(e);
+      if (!rows || mean === undefined || Kvs === undefined || !totalVsE) continue;
       const r = rows.find((x) => x.item_id === itemId);
       if (!r || r.matches < MIN_VS_MATCHES) continue;
       const liftVs = shrink(r.wins, r.matches, Kvs, mean) - mean;
-      sum += (liftVs - liftAll) * 10;
+      if (liftVs - liftAll < WIN_RATE_VETO) continue; // picked more but performs clearly worse: not a real counter
+      const pv = r.matches / totalVsE;
+      const se = Math.sqrt((pa * (1 - pa)) / totalVsE);
+      const z = se > 0 ? (pv - pa) / se : 0;
+      sum += Math.max(-1, Math.min(1, z / 30)); // squash to roughly the old lift term's scale
       n++; hit.push(e);
     }
     return { lift: n ? sum / n : 0, enemies: hit };
@@ -269,7 +294,7 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
         if (s.eff > 0.6) reasons.push('high stat value per soul for this archetype');
         if (s.kit > 0.6) reasons.push(`scales ${hero.name}'s kit`);
         if (syn > 0.2) reasons.push('wins more alongside items already in the build');
-        if (matchupActive && s.matchupLift > 0.1) reasons.push(`wins more against enemy hero ${s.matchupEnemies.join(', ')}`);
+        if (matchupActive && s.matchupLift > 0.1) reasons.push(`commonly picked against enemy hero ${s.matchupEnemies.join(', ')}`);
         best = { s, score, reasons, inChain, chain };
       }
     }

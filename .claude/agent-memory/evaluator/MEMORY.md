@@ -1,0 +1,1 @@
+- [Eval check gotchas](eval-check-gotchas.md) — green checks missed off-screen dialog; worker self-approved for user; ui-lint holes; Playwright binary path; mutate in scratch copy
