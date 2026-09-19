@@ -14,7 +14,6 @@ import {
 import { BuildView } from './components/BuildView';
 import { HeroPicker } from './components/HeroPicker';
 import { slugify } from './slug';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { BoardSkeleton } from './components/BoardSkeleton';
 import { Toaster } from './components/ui/sonner';
 import { log } from './log';
@@ -165,18 +164,10 @@ export default function App() {
   const [lastGood, setLastGood] = useState<{
     build: Build;
     panel: PanelValidation | null;
-    heroName: string;
-    heroImage?: string;
-    fetchedAt?: string;
+    hero: Hero;
   } | null>(null);
-  if (build && lastGood?.build.key !== build.key) {
-    setLastGood({
-      build,
-      panel: validations[tab] ?? null,
-      heroName: hero?.name ?? '',
-      heroImage: hero ? img(hero.images.small) : undefined,
-      fetchedAt: manifest?.fetched_at.slice(0, 10),
-    });
+  if (build && hero && (lastGood?.build !== build || lastGood.panel !== (validations[tab] ?? null))) {
+    setLastGood({ build, panel: validations[tab] ?? null, hero });
   }
   const shownBuild = build ?? lastGood?.build;
   const isStale = !build && !!lastGood;
@@ -199,11 +190,7 @@ export default function App() {
       })()
     : null;
 
-  const styleTooltip = (b: Build) => {
-    const style = b.population.style;
-    if (!style) return undefined;
-    return style.seed ? `Games where ${style.seed.name} was bought.` : `Leaves out games built around ${style.exclude.map((i) => i.name).join(', ')}.`;
-  };
+  const [heroesOpen, setHeroesOpen] = useState(false);
 
   if (error)
     return (
@@ -211,83 +198,65 @@ export default function App() {
         {error}
       </div>
     );
-  if (!hero) return <BoardSkeleton />;
+  if (!hero)
+    return (
+      <main className="screen">
+        <aside className="hero-side" />
+        <div className="frame">
+          <div className="frame-head" />
+          <BoardSkeleton />
+        </div>
+      </main>
+    );
 
+  // while the next hero loads, the frame keeps showing the last build (dimmed) under its own hero
+  const shownHero = build || !lastGood ? hero : lastGood.hero;
   return (
     <>
-      <header className="app-header">
-        <img src={img(hero.images.small)} alt="" width={40} height={40} />
-        <div>
-          <h1>{hero.name} build</h1>
-          <div className="sub">
-            Last {manifest?.window_days} days{fetchedDate ? ` · data from ${fetchedDate}` : ''}
-          </div>
-        </div>
-      </header>
-      <HeroPicker heroes={heroes} heroId={heroId} onPick={selectHero} />
-      {analyticsState.status === 'error' && (
-        <div className="error" role="alert">
-          Couldn't load analytics for {hero.name}. {analyticsState.message}
-          <div style={{ marginTop: 8 }}>
-            <button className="btn" onClick={retry}>
-              Retry
-            </button>
-          </div>
-        </div>
-      )}
-      {(() => {
-        const boardArea = (
-          <>
-            {!shownBuild && analyticsState.status === 'loading' && <BoardSkeleton />}
-            {shownBuild && (
-              <div className={['board-wrap', 'fade', isStale ? 'stale' : null].filter(Boolean).join(' ')} aria-busy={isStale}>
-                <BuildView
-                  key={shownBuild.key}
-                  build={shownBuild}
-                  panel={build ? (validations[tab] ?? null) : (lastGood?.panel ?? null)}
-                  heroName={build ? hero.name : (lastGood?.heroName ?? hero.name)}
-                  heroImage={build ? img(hero.images.small) : lastGood?.heroImage}
-                  fetchedAt={build ? manifest?.fetched_at.slice(0, 10) : lastGood?.fetchedAt}
-                />
+      <main className="screen">
+        <aside className="hero-side">
+          <button className="hero-card hero-btn" onClick={() => setHeroesOpen(true)} aria-label={`${hero.name}, change hero`}>
+            <img src={img(hero.images.card ?? hero.images.small)} alt="" width={260} height={380} />
+            <span>{hero.name}</span>
+          </button>
+        </aside>
+        <div className="frame">
+          {analyticsState.status === 'error' && (
+            <div className="error" role="alert">
+              {hero.name} failed to load. {analyticsState.message}
+              <div>
+                <button className="pill" onClick={retry}>
+                  Retry
+                </button>{' '}
+                <button className="pill hero-retry-pick" onClick={() => setHeroesOpen(true)}>
+                  Select Hero
+                </button>
               </div>
-            )}
-          </>
-        );
-        if (builds.length <= 1) return boardArea;
-        return (
-          <Tabs
-            value={build?.key}
-            onValueChange={(key) => {
-              const picked = builds.find((b) => b.key === key);
-              if (picked) selectStyle(picked);
-            }}
-            className="style-tabs-wrap"
-          >
-            <TabsList className="style-tabs" aria-label="Build style">
-              {builds.map((b, i) => (
-                <TabsTrigger key={b.key} value={b.key} className="style-tab" title={styleTooltip(b)}>
-                  <span>{b.name}</span>
-                  <small>
-                    {b.population.style ? `${(b.population.style.share * 100).toFixed(0)}% of games` : ''}
-                    {validations[i] ? ` · ${(validations[i].agreement * 100).toFixed(0)}% match` : ''}
-                  </small>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            {/* forceMount: the board is the real content of the active tab, not remounted on
-                switch, so the dimmed "old build while loading" state (item 6) keeps working and
-                Radix's aria-controls on each trigger points at an element that actually exists
-                (fixes an axe aria-valid-attr-value violation from an unassociated TabsList). */}
-            <TabsContent value={build?.key ?? ''} forceMount>
-              {boardArea}
-            </TabsContent>
-          </Tabs>
-        );
-      })()}
-      <footer>
-        Data from <a href="https://deadlock-api.com">deadlock-api.com</a>. See the{' '}
-        <a href="https://github.com/Gidntsquia/deadlock-optimal-build-finder#readme">README</a> for how builds are put together.
-      </footer>
+            </div>
+          )}
+          {analyticsState.status !== 'error' && !shownBuild && (
+            <>
+              <div className="frame-head" />
+              <BoardSkeleton />
+            </>
+          )}
+          {analyticsState.status !== 'error' && shownBuild && (
+            <BuildView
+              key={shownBuild.key + shownHero.name}
+              build={shownBuild}
+              builds={build ? builds : [shownBuild]}
+              onPickStyle={selectStyle}
+              onOpenHeroes={() => setHeroesOpen(true)}
+              panel={build ? (validations[tab] ?? null) : (lastGood?.panel ?? null)}
+              hero={shownHero}
+              windowDays={manifest?.window_days}
+              fetchedDate={fetchedDate}
+              stale={isStale}
+            />
+          )}
+        </div>
+      </main>
+      <HeroPicker open={heroesOpen} onOpenChange={setHeroesOpen} heroes={heroes} heroId={heroId} onPick={selectHero} />
       <Toaster />
     </>
   );

@@ -64,31 +64,52 @@ function assertInsideViewport(check, label, rect, innerWidth, innerHeight) {
   check(`${label}: bottom <= innerHeight`, rect.bottom <= innerHeight + 0.5, `bottom=${rect.bottom} innerHeight=${innerHeight}`);
   check(`${label}: width >= 300`, rect.width >= 300, `width=${rect.width}`);
 }
-// HeroPicker: on phone, the trigger opens a sheet with a filter+grid; on desktop the grid is
-// always inline. `pickHero` opens the sheet if needed, types the name, and clicks the match.
+// Hero picker: the visible hero control (portrait on desktop, avatar on phone) opens one dialog
+// with a search box and grid. `pickHero` opens it, types the name, and clicks the match.
 const isPhone = () => page.viewportSize()?.width < 900;
+const openHeroes = async () => {
+  await page.click('.hero-btn:visible');
+  await page.waitForSelector('.hero-dialog .hero-filter');
+};
 const pickHero = async (name) => {
+  await openHeroes();
   if (isPhone()) {
-    await page.click('.hero-picker-trigger');
-    await page.waitForSelector('.hero-sheet .hero-filter');
-    {
-      const vp = page.viewportSize();
-      const r = await stableRect(page, '.hero-sheet');
-      assertInsideViewport(check, 'item 1 (phone hero sheet)', r, vp.width, vp.height);
-    }
-    await page.fill('.hero-sheet .hero-filter', name);
-    await page.click(`.hero-sheet .hero-opt:has-text("${name}")`);
-  } else {
-    await page.fill('.hero-picker-desktop .hero-filter', '');
-    await page.fill('.hero-picker-desktop .hero-filter', name);
-    await page.click(`.hero-picker-desktop .hero-opt:has-text("${name}")`);
+    const vp = page.viewportSize();
+    const r = await stableRect(page, '.hero-dialog');
+    assertInsideViewport(check, 'item 1 (phone hero sheet)', r, vp.width, vp.height);
   }
+  await page.fill('.hero-dialog .hero-filter', name);
+  await page.click(`.hero-dialog .hero-opt:has-text("${name}")`);
+  await page.waitForSelector('.hero-dialog', { state: 'detached' });
+};
+const BANNED = [
+  /%/,
+  /match/i,
+  /players/i,
+  /win rate/i,
+  /high-rank/i,
+  /Phantom/,
+  /souls by end/i,
+  /Last \d+ days/i,
+  /data from/i,
+  /Validation/i,
+  /measured/i,
+  /README/i,
+];
+const bannedHit = (text) => BANNED.map((re) => re.exec(text)?.[0]).find(Boolean);
+const openDetails = async () => {
+  await page.click('.details-btn');
+  await page.waitForSelector('.details');
+};
+const closeDetails = async () => {
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('.details', { state: 'detached' });
 };
 try {
   await page.goto('http://localhost:4173/');
   await page.waitForSelector('.tiles .tile', { timeout: 20000 });
-  check('opens on Infernus', (await page.textContent('.app-header h1')).startsWith('Infernus'));
-  const tabs = await page.$$('.board h2');
+  check('opens on Infernus', (await page.textContent('.frame-head h1')).startsWith('Infernus'));
+  const tabs = await page.$$('.frame-head h1');
   check('one named build', tabs.length === 1, `${(await Promise.all(tabs.map((t) => t.textContent()))).join(' | ')}`);
   const noHScroll = async (label) => {
     const w = await page.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
@@ -125,6 +146,7 @@ try {
     await page.route('**/data/analytics/2.json', (route) => route.abort());
     await pickHero('Seven');
     await page.waitForSelector('button:has-text("Retry")', { timeout: 15000 });
+    check('analytics failure: a hero control is still visible', (await page.$$('.hero-btn:visible, .hero-retry-pick:visible')).length >= 1);
     const parsed = consoleLines
       .map((l) => {
         try {
@@ -138,13 +160,15 @@ try {
     check('analytics fetch failure shows Retry + logs analytics_load_failed', loggedFail, JSON.stringify(parsed.slice(-3)));
     await page.unroute('**/data/analytics/2.json');
     page.off('console', onMsg);
-    await pickHero('Vindicta');
+    await page.click('.hero-retry-pick');
+    await page.fill('.hero-dialog .hero-filter', 'Vindicta');
+    await page.click('.hero-dialog .hero-opt:has-text("Vindicta")');
     await page.waitForFunction(() => document.querySelectorAll('.tiles .tile').length >= 12, null, { timeout: 15000 });
     const rows = await page.$$eval('.tiles .tile', (els) => els.length);
     check('after error, selecting another hero recovers: Vindicta renders >=12 tiles', rows >= 12, `${rows} tiles`);
     await pickHero('Infernus');
     await page.waitForFunction(
-      () => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus') && document.querySelectorAll('.tiles .tile').length >= 12,
+      () => document.querySelector('.frame-head h1')?.textContent.startsWith('Infernus') && document.querySelectorAll('.tiles .tile').length >= 12,
       null,
       { timeout: 15000 },
     );
@@ -168,17 +192,19 @@ try {
   await tapOk('Infernus');
   for (let i = 0; i < tabs.length; i++) {
     const rows = await page.$$('.tiles .tile');
-    const phases = await page.$$eval('.phase-head span:first-child', (els) => els.map((e) => e.textContent));
+    const phases = await page.$$eval('.row:not(.abilities) .row-head', (els) => els.map((e) => e.textContent));
     const totals = await page.$$eval('.tiles .tile', (els) => els.map((e) => Number(e.dataset.total)));
     const costs = await page.$$eval('.tiles .tile', (els) => els.map((e) => Number(e.dataset.cost)));
     let run = 0;
     const totalsOk = costs.every((c, k) => (run += c) === totals[k]);
     const imgs = await page.$$eval('.tiles .tile img', (els) => els.map((e) => e.getAttribute('src')));
     const broken = await page.$$eval('.tiles .tile img', (els) => els.filter((e) => !e.complete || e.naturalWidth === 0).length);
-    const badges = await page.$$eval('.tiles .tile[data-core]', (els) => els.length);
-    const abil = await page.$$eval('.ap-icon img', (els) => [...new Set(els.map((e) => e.getAttribute('alt')))]);
-    const unlocks = await page.$$eval('.ap-track .pt.unlock', (els) => els.length);
-    const agreement = await page.textContent('.big');
+    const abil = await page.$$eval('.step', (els) => [...new Set(els.map((e) => e.dataset.ability))]);
+    const unlocks = await page.$$eval('.step.unlock', (els) => els.length);
+    await openDetails();
+    const badges = await page.$$eval('.details .item-table tr[data-core]', (els) => els.length);
+    const agreement = await page.textContent('.details .agreement');
+    await closeDetails();
     check(
       `build ${i + 1}: >=12 items, 3 phases, running totals, images`,
       rows.length >= 12 && broken === 0 && phases.length === 3 && totalsOk && imgs.every((s) => s && /\/data\/img\/items\/\d+\.webp$/.test(s)),
@@ -200,7 +226,7 @@ try {
   const img = await page.$eval('.sheet-head img', (e) => e.getAttribute('src'));
   check(
     'item detail card: image, cost, tier, slot, stats',
-    !!img && chips.some((c) => /souls/.test(c)) && chips.some((c) => /^Tier \d/.test(c)) && chips.some((c) => /Weapon|Vitality|Spirit/.test(c)) && stats > 0,
+    !!img && chips.some((c) => /^[\d,]+$/.test(c)) && chips.some((c) => /^Tier \d/.test(c)) && chips.some((c) => /Weapon|Vitality|Spirit/.test(c)) && stats > 0,
     `${name}: ${chips.join(' | ')}, ${stats} stat lines`,
   );
   await noHScroll('item card open');
@@ -235,18 +261,30 @@ try {
   await page.tap('[data-slot="dialog-close"]');
   await page.waitForSelector('.sheet', { state: 'detached' });
   await page.screenshot({ path: shot('infernus-build-phone.png'), fullPage: true });
-  // hero picker view (phone): the trigger button before opening the sheet
-  await page.screenshot({ path: shot('hero-picker-phone.png'), fullPage: true });
+  await openHeroes();
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: shot('hero-picker-phone.png') });
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('.hero-dialog', { state: 'detached' });
+  await openDetails();
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: shot('details-phone.png') });
+  {
+    const vp = page.viewportSize();
+    const r = await stableRect(page, '.details');
+    assertInsideViewport(check, 'details sheet (phone)', r, vp.width, vp.height);
+  }
+  await closeDetails();
   // 3 other heroes via the picker
   for (const n of ['Seven', 'Vindicta', 'Warden']) {
     await pickHero(n);
     await page.waitForFunction(
-      (name) => document.querySelector('.app-header h1')?.textContent.startsWith(name) && document.querySelectorAll('.tiles .tile').length >= 12,
+      (name) => document.querySelector('.frame-head h1')?.textContent.startsWith(name) && document.querySelectorAll('.tiles .tile').length >= 12,
       n,
       { timeout: 15000 },
     );
     const rows = await page.$$eval('.tiles .tile', (els) => els.length);
-    const abil = await page.$$eval('.ap-icon img', (els) => [...new Set(els.map((e) => e.getAttribute('alt')))]);
+    const abil = await page.$$eval('.step', (els) => [...new Set(els.map((e) => e.dataset.ability))]);
     check(`${n}: renders build + ability order`, rows >= 12 && abil.length === 4, `${rows} items, abilities ${abil.join(', ')}`);
     await noHScroll(n);
     await tapOk(n);
@@ -254,7 +292,7 @@ try {
   // Warden: a hero with more than one build style — cover the style tabs
   await pickHero('Warden');
   await page.waitForFunction(
-    () => document.querySelector('.app-header h1')?.textContent.startsWith('Warden') && document.querySelectorAll('.tiles .tile').length >= 1,
+    () => document.querySelector('.frame-head h1')?.textContent.startsWith('Warden') && document.querySelectorAll('.tiles .tile').length >= 1,
     null,
     { timeout: 15000 },
   );
@@ -266,18 +304,21 @@ try {
     ['Kelvin', 'Yndio'],
   ]) {
     await pickHero(n);
-    await page.waitForFunction((w) => [...document.querySelectorAll('.panel-table')].some((t) => t.textContent.includes(w)), who, { timeout: 15000 });
-    const agreement = await page.textContent('.big');
-    const badges = await page.$$eval('.tiles .tile[data-core]', (els) => els.length);
+    await page.waitForFunction((h) => document.querySelector('.frame-head h1')?.textContent.startsWith(h) && !document.querySelector('.board-wrap.stale'), n, {
+      timeout: 15000,
+    });
+    await page.waitForTimeout(300); // the player files load after the build
+    await openDetails();
+    await page.waitForFunction((w) => [...document.querySelectorAll('.details .panel-table')].some((t) => t.textContent.includes(w)), who, { timeout: 15000 });
+    const agreement = await page.textContent('.details .agreement');
+    const badges = await page.$$eval('.details .item-table tr[data-core]', (els) => els.length);
+    await closeDetails();
     const rows = await page.$$eval('.tiles .tile', (els) => els.length);
     check(`${who}: validation panel + core badges`, /\d+% match/.test(agreement) && badges === rows, agreement);
   }
   // item 3: exactly one visible hero control at the current (phone) viewport
   {
-    const visibleControls = await page.evaluate(() => {
-      const vis = (el) => !!el && el.offsetParent !== null;
-      return [vis(document.querySelector('.hero-picker-trigger')), vis(document.querySelector('.hero-picker-desktop'))].filter(Boolean).length;
-    });
+    const visibleControls = (await page.$$('.hero-btn:visible')).length;
     check('exactly one visible hero control (390px)', visibleControls === 1, `${visibleControls} visible`);
   }
   // item 3: typing "las" leaves only Lash visible; Enter selects it; URL gets hero=lash; reload keeps it; back goes to Infernus
@@ -285,33 +326,31 @@ try {
   // rather than whichever hero this script happened to pick last.
   await page.goto('http://localhost:4173/');
   await page.waitForFunction(
-    () => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus') && document.querySelectorAll('.tiles .tile').length >= 1,
+    () => document.querySelector('.frame-head h1')?.textContent.startsWith('Infernus') && document.querySelectorAll('.tiles .tile').length >= 1,
     null,
     { timeout: 15000 },
   );
-  await page.click('.hero-picker-trigger');
-  await page.waitForSelector('.hero-sheet .hero-filter');
-  await page.fill('.hero-sheet .hero-filter', 'las');
-  const lasMatches = await page.$$eval('.hero-sheet .hero-opt', (els) => els.map((e) => e.textContent.trim()));
+  await openHeroes();
+  await page.fill('.hero-dialog .hero-filter', 'las');
+  const lasMatches = await page.$$eval('.hero-dialog .hero-opt', (els) => els.map((e) => e.textContent.trim()));
   check('filter "las" leaves only Lash visible', lasMatches.length === 1 && lasMatches[0].includes('Lash'), lasMatches.join(', '));
-  await page.press('.hero-sheet .hero-filter', 'Enter');
-  await page.waitForFunction(() => document.querySelector('.app-header h1')?.textContent.startsWith('Lash'), null, { timeout: 15000 });
+  await page.press('.hero-dialog .hero-filter', 'Enter');
+  await page.waitForFunction(() => document.querySelector('.frame-head h1')?.textContent.startsWith('Lash'), null, { timeout: 15000 });
   check('URL contains hero=lash after Enter-select', new URL(page.url()).searchParams.get('hero') === 'lash', page.url());
   await page.reload();
   await page.waitForFunction(
-    () => document.querySelector('.app-header h1')?.textContent.startsWith('Lash') && document.querySelectorAll('.tiles .tile').length >= 1,
+    () => document.querySelector('.frame-head h1')?.textContent.startsWith('Lash') && document.querySelectorAll('.tiles .tile').length >= 1,
     null,
     { timeout: 15000 },
   );
   check('reload still shows Lash', true);
   await page.goBack();
-  await page.waitForFunction(() => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus'), null, { timeout: 15000 });
+  await page.waitForFunction(() => document.querySelector('.frame-head h1')?.textContent.startsWith('Infernus'), null, { timeout: 15000 });
   check('goBack() returns to Infernus', true);
   // item 3: Escape closes the phone sheet
-  await page.click('.hero-picker-trigger');
-  await page.waitForSelector('.hero-sheet');
+  await openHeroes();
   await page.keyboard.press('Escape');
-  await page.waitForSelector('.hero-sheet', { state: 'detached', timeout: 5000 });
+  await page.waitForSelector('.hero-dialog', { state: 'detached', timeout: 5000 });
   check('Escape closes the hero sheet', true);
   // item 3: unknown hero slug falls back to Infernus with no console error
   {
@@ -323,7 +362,7 @@ try {
     // to log anything of its own.
     errors.length = 0;
     await page.waitForFunction(
-      () => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus') && document.querySelectorAll('.tiles .tile').length >= 1,
+      () => document.querySelector('.frame-head h1')?.textContent.startsWith('Infernus') && document.querySelectorAll('.tiles .tile').length >= 1,
       null,
       { timeout: 15000 },
     );
@@ -332,30 +371,35 @@ try {
   // desktop layout: the board and the side column sit next to each other and fill the window
   await page.setViewportSize({ width: 1440, height: 900 });
   {
-    const visibleControls = await page.evaluate(() => {
-      const vis = (el) => !!el && el.offsetParent !== null;
-      return [vis(document.querySelector('.hero-picker-trigger')), vis(document.querySelector('.hero-picker-desktop'))].filter(Boolean).length;
-    });
+    const visibleControls = (await page.$$('.hero-btn:visible')).length;
     check('exactly one visible hero control (1440px)', visibleControls === 1, `${visibleControls} visible`);
   }
   await pickHero('Infernus');
-  await page.waitForFunction(() => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus') && document.querySelector('.col-main'), null, {
+  await page.waitForFunction(() => document.querySelector('.frame-head h1')?.textContent.startsWith('Infernus') && document.querySelector('.board'), null, {
     timeout: 15000,
   });
   await tapOk('Infernus desktop');
   const [bb, sb] = await Promise.all([
-    page.$eval('.col-main', (e) => e.getBoundingClientRect().toJSON()),
-    page.$eval('.col-side', (e) => e.getBoundingClientRect().toJSON()),
+    page.$eval('.frame', (e) => e.getBoundingClientRect().toJSON()),
+    page.$eval('.hero-side', (e) => e.getBoundingClientRect().toJSON()),
   ]);
   // item 4 caps desktop content width to ~1200px (centered), so the board no longer spans
   // the full window; it must still be the wider, dominant column next to the side panel.
   check(
-    'desktop: two columns, board the more prominent (wider) one',
-    bb.right <= sb.left && bb.width > sb.width && bb.width > 500,
+    'desktop: hero on the left, board the more prominent (wider) column',
+    sb.right <= bb.left && bb.width > sb.width * 2 && bb.width > 900,
     `board ${Math.round(bb.width)}px, side ${Math.round(sb.width)}px`,
   );
   await page.screenshot({ path: shot('infernus-build-desktop.png') });
+  await openHeroes();
+  await page.waitForTimeout(400);
   await page.screenshot({ path: shot('hero-picker-desktop.png') });
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('.hero-dialog', { state: 'detached' });
+  await openDetails();
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: shot('details-desktop.png') });
+  await closeDetails();
   await (await page.$('.tiles .tile')).click();
   await page.waitForSelector('.sheet');
   {
@@ -387,7 +431,7 @@ try {
 
   // item 5: item detail dialog — focus trap, focus return, keyboard stepping, readable headings
   {
-    const firstTileName = await page.$eval('.tiles .tile', (el) => el.getAttribute('aria-label'));
+    const firstTileName = await page.$eval('.tiles .tile', (el) => el.textContent);
     const focusInDialog = await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]'));
     check('item 5: opening the dialog moves focus inside it', focusInDialog);
 
@@ -411,7 +455,7 @@ try {
 
     await page.keyboard.press('Escape');
     await page.waitForSelector('.sheet', { state: 'detached' });
-    const focusedLabel = await page.evaluate(() => document.activeElement?.getAttribute('aria-label'));
+    const focusedLabel = await page.evaluate(() => (document.activeElement?.classList.contains('tile') ? document.activeElement.textContent : null));
     check(
       'item 5: Escape closes and returns focus to the tile last shown (not the original opener)',
       focusedLabel !== null && focusedLabel !== firstTileName,
@@ -427,7 +471,7 @@ try {
     const stats = await page.$$eval('.sheet .stat-line', (els) => els.length);
     check(
       'item 5: item detail card still shows image, cost, tier, slot, stats',
-      chips.some((c) => /souls/.test(c)) && chips.some((c) => /^Tier \d/.test(c)) && chips.some((c) => /Weapon|Vitality|Spirit/.test(c)) && stats > 0,
+      chips.some((c) => /^[\d,]+$/.test(c)) && chips.some((c) => /^Tier \d/.test(c)) && chips.some((c) => /Weapon|Vitality|Spirit/.test(c)) && stats > 0,
       `${name}: ${chips.join(' | ')}, ${stats} stat lines`,
     );
     await page.click('[data-slot="dialog-close"]');
@@ -452,24 +496,24 @@ try {
   }
   await pickHero('Warden');
   await page.waitForFunction(
-    () => document.querySelector('.app-header h1')?.textContent.startsWith('Warden') && document.querySelectorAll('.tiles .tile').length >= 1,
+    () => document.querySelector('.frame-head h1')?.textContent.startsWith('Warden') && document.querySelectorAll('.tiles .tile').length >= 1,
     null,
     { timeout: 15000 },
   );
   await page.screenshot({ path: shot('warden-styles-desktop.png') });
   // item 3: clicking the second style tab on Warden changes the build and adds style= to the URL
   {
-    const tabs2 = await page.$$('.style-tab');
+    const tabs2 = await page.$$('.style-pill');
     if (tabs2.length >= 2) {
       const before = await page.evaluate(() => ({
         tile: document.querySelector('.tiles .tile')?.textContent,
-        heading: document.querySelector('.board h2')?.textContent,
+        heading: document.querySelector('.frame-head h1')?.textContent,
       }));
       await tabs2[1].click();
       await page.waitForFunction(
         (prev) => {
           const t = document.querySelector('.tiles .tile')?.textContent;
-          const h = document.querySelector('.board h2')?.textContent;
+          const h = document.querySelector('.frame-head h1')?.textContent;
           return t !== prev.tile || h !== prev.heading;
         },
         before,
@@ -482,61 +526,178 @@ try {
     }
   }
 
-  // item 4: layout, hierarchy, and copy
-  await pickHero('Infernus');
-  await page.waitForFunction(
-    () => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus') && document.querySelector('.panel-summary'),
-    null,
-    { timeout: 15000 },
-  );
-  await page.setViewportSize({ width: 1920, height: 1080 });
-  await page.waitForTimeout(100);
+  // Main screen rules at 1440x900 (desktop viewport is already set)
   {
-    const box = await page.$eval('#root', (e) => e.getBoundingClientRect().toJSON());
-    const leftGap = box.left;
-    const rightGap = 1920 - box.right;
-    check('item 4: desktop content width capped (<=1280px incl. padding)', box.width <= 1280, `${Math.round(box.width)}px`);
+    const mainText = () => page.evaluate(() => document.querySelector('main').innerText);
+    const fitProbe = () =>
+      page.evaluate(() => {
+        const scrollers = [...document.querySelectorAll('main *')]
+          .filter((el) => {
+            const cs = getComputedStyle(el);
+            const canY = /(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight + 1;
+            const canX = /(auto|scroll)/.test(cs.overflowX) && el.scrollWidth > el.clientWidth + 1;
+            return canY || canX;
+          })
+          .map((el) => el.className || el.tagName);
+        const tiles = [...document.querySelectorAll('.tiles .tile')];
+        const clipped = tiles.filter((t) => {
+          const r = t.getBoundingClientRect();
+          return r.bottom > innerHeight + 0.5 || r.right > innerWidth + 0.5 || r.top < 0 || r.left < 0;
+        }).length;
+        return {
+          sh: document.documentElement.scrollHeight,
+          ih: innerHeight,
+          sw: document.documentElement.scrollWidth,
+          iw: innerWidth,
+          scrollers,
+          tiles: tiles.length,
+          clipped,
+        };
+      });
+    const waitSettled = (name) =>
+      page.waitForFunction(
+        (h) => document.querySelector('.frame-head h1')?.textContent.startsWith(h + ' - ') && !document.querySelector('.board-wrap.stale'),
+        name,
+        {
+          timeout: 15000,
+        },
+      );
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await pickHero('Infernus');
+    await waitSettled('Infernus');
+    check('exactly one details control, closed by default', (await page.$$('.details-btn')).length === 1 && (await page.$$('.details')).length === 0);
+    check('no top bar: no header/nav/footer elements', (await page.$$('header, nav, footer, .app-header')).length === 0);
+    const rowTop = await page.$eval('.board .row', (e) => e.getBoundingClientRect().top);
+    check('first board row starts within 120px of the top at 1440x900', rowTop <= 120, `top=${rowTop}`);
+    for (const [label, sel] of [
+      ['hero control', '.hero-btn:visible'],
+      ['style switch', '.style-switch'],
+      ['ability order', '.row.abilities'],
+      ['share', '.share-btn'],
+      ['details control', '.details-btn'],
+    ]) {
+      const r = await page.locator(sel).first().boundingBox();
+      check(
+        `1440x900: ${label} is inside the viewport`,
+        !!r && r.x >= 0 && r.y >= 0 && r.x + r.width <= 1440 && r.y + r.height <= 900 && r.width > 0,
+        JSON.stringify(r),
+      );
+    }
+
+    // details: opens, holds the numbers, Escape closes and returns focus
+    await page.focus('.details-btn');
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('.details');
+    const dText = await page.$eval('.details', (e) => e.innerText);
+    check('details: agreement percentage', /\d+% match/.test(dText), dText.slice(0, 200));
+    check('details: top-player table', (await page.$$('.details .panel-table tbody tr')).length >= 1);
+    check('details: match count', /[\d,]+ matches/.test(dText));
+    check('details: win rate', /win rate/i.test(dText));
+    check('details: data date', /data from \d{1,2} \w{3} \d{4}/i.test(dText), dText.match(/data from.{0,30}/i)?.[0]);
+    await closeDetails();
+    check('details: Escape returns focus to the details control', await page.evaluate(() => document.activeElement?.classList.contains('details-btn')));
+
+    // banned words on the main screen, Infernus and Warden, desktop and phone
+    for (const size of [
+      { width: 1440, height: 900 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(size);
+      for (const name of ['Infernus', 'Warden']) {
+        await pickHero(name);
+        await waitSettled(name);
+        const hit = bannedHit(await mainText());
+        check(`main screen has no technical text: ${name} at ${size.width}x${size.height}`, !hit, `found "${hit}"`);
+      }
+    }
+
+    // every hero x every style fits at both desktop sizes with every item shown
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openHeroes();
+    const allHeroes = await page.$$eval('.hero-dialog .hero-opt', (els) => els.map((e) => e.textContent.trim()));
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('.hero-dialog', { state: 'detached' });
+    check('hero list has every hero', allHeroes.length >= 30, `${allHeroes.length}`);
+    let combos = 0;
+    const bad = [];
+    for (const name of allHeroes) {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await pickHero(name);
+      await waitSettled(name);
+      const nStyles = Math.max(1, (await page.$$('.style-pill')).length);
+      for (let i = 0; i < nStyles; i++) {
+        if (i > 0) {
+          await page.locator('.style-pill').nth(i).click();
+          await page.waitForFunction(
+            (k) => document.querySelectorAll('.style-pill')[k]?.getAttribute('aria-pressed') === 'true' && !document.querySelector('.board-wrap.stale'),
+            i,
+            {
+              timeout: 15000,
+            },
+          );
+        }
+        await openDetails();
+        const want = await page.$$eval('.details .item-table tbody tr', (els) => els.length);
+        await closeDetails();
+        for (const size of [
+          { width: 1440, height: 900 },
+          { width: 1920, height: 1080 },
+        ]) {
+          await page.setViewportSize(size);
+          await page.waitForTimeout(60);
+          const f = await fitProbe();
+          combos++;
+          const why = [];
+          if (f.sh > f.ih) why.push(`scrollHeight ${f.sh} > ${f.ih}`);
+          if (f.sw > f.iw) why.push(`scrollWidth ${f.sw} > ${f.iw}`);
+          if (f.scrollers.length) why.push(`scrollable: ${f.scrollers.join('|')}`);
+          if (f.tiles !== want || want === 0) why.push(`tiles ${f.tiles} != items ${want}`);
+          if (f.clipped) why.push(`${f.clipped} tiles outside viewport`);
+          if (why.length) bad.push(`${name}#${i}@${size.width}: ${why.join('; ')}`);
+        }
+      }
+    }
     check(
-      'item 4: desktop content centered at 1920 (left/right gaps within 2px)',
-      Math.abs(leftGap - rightGap) <= 2,
-      `left ${Math.round(leftGap)}px, right ${Math.round(rightGap)}px`,
+      `every hero x style fits with all items shown at 1440x900 and 1920x1080 (${combos} combos)`,
+      bad.length === 0 && combos >= allHeroes.length * 2,
+      bad.slice(0, 8).join(' // '),
     );
-  }
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.waitForTimeout(100);
-  await noHScroll('item 4: no horizontal scroll at 390px with new panel/disclosure markup');
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.waitForTimeout(100);
-  {
-    const summaryText = await page.$eval('.panel-summary', (e) => e.innerText);
-    const words = summaryText.trim().split(/\s+/).filter(Boolean);
-    check('item 4: validation summary is short (<=45 words)', words.length <= 45, `${words.length} words`);
-    check('item 4: validation summary still shows a percentage', /\d+%/.test(summaryText), summaryText.slice(0, 60));
-  }
-  {
-    await page.click('.disclosure-trigger');
-    await page.waitForFunction(
-      () => {
-        const el = document.querySelector('.disclosure-content');
-        return el && el.offsetParent !== null && el.textContent.includes('30%');
-      },
-      null,
-      { timeout: 5000 },
-    );
-    check('item 4: "How this is measured" disclosure reveals the 30% threshold on click', true);
-  }
-  {
-    const bodyText = await page.evaluate(() => document.body.innerText);
-    const jargonHit = /\bF1\b|\breps\b|held-?out|deterministic/i.exec(bodyText);
-    check('item 4: no jargon terms in visible page text', !jargonHit, jargonHit ? jargonHit[0] : '');
-  }
-  {
-    const subText = await page.$eval('.app-header .sub', (e) => e.textContent ?? '');
-    check('item 4: header shows a plain-language date', /\d{1,2} \w{3} \d{4}/.test(subText), subText);
+
+    // phone: no sideways scroll for any hero
+    await page.setViewportSize({ width: 390, height: 844 });
+    const wide = [];
+    for (const name of allHeroes) {
+      await pickHero(name);
+      await waitSettled(name);
+      const w = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
+      if (w[0] > w[1]) wide.push(`${name} ${w[0]}`);
+    }
+    check('phone 390x844: no sideways scroll for any hero', wide.length === 0, wide.join(', '));
+
+    // pointer pick + back
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await pickHero('Infernus');
+    await waitSettled('Infernus');
+    const urlA = page.url();
+    await pickHero('Haze');
+    await waitSettled('Haze');
+    check('pointer pick changes the URL', page.url() !== urlA && /hero=haze/i.test(page.url()), page.url());
+    await page.goBack();
+    await waitSettled('Infernus');
+    check('back restores the previous hero', true);
   }
 
   // item 6: Share button (no stub) yields a real PNG download
   {
+    await page.evaluate(() => {
+      window.__pngText = [];
+      const orig = CanvasRenderingContext2D.prototype.fillText;
+      CanvasRenderingContext2D.prototype.fillText = function (t, ...rest) {
+        window.__pngText.push(String(t));
+        return orig.call(this, t, ...rest);
+      };
+    });
     const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
     await page.click('.share-btn');
     const download = await downloadPromise;
@@ -549,7 +710,10 @@ try {
     });
     const pngSig = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
     check('item 6: Share (no stub) downloads a file starting with the PNG signature', bytes.equals(pngSig), bytes.toString('hex'));
-    await page.waitForSelector('text=Downloaded build image.', { timeout: 5000 });
+    const pngText = await page.evaluate(() => window.__pngText);
+    const pngHit = bannedHit(pngText.join('\n')) ?? pngText.find((t) => /\d{3,}/.test(t));
+    check('share PNG: text was drawn and none of it is technical', pngText.length > 5 && !pngHit, `found "${pngHit}" in ${pngText.length} strings`);
+    await page.waitForSelector('text=Image saved', { timeout: 5000 });
     check('item 6: Share success shows a visible message (not alert())', true);
   }
 
@@ -563,13 +727,13 @@ try {
     });
     for (const name of ['Seven', 'Vindicta', 'Warden']) {
       await pickHero(name);
-      await page.waitForFunction((n) => document.querySelector('.app-header h1')?.textContent.startsWith(n), name, { timeout: 15000 });
+      await page.waitForFunction((n) => document.querySelector('.frame-head h1')?.textContent.startsWith(n), name, { timeout: 15000 });
       await page.waitForSelector('.board-wrap:not(.stale)', { timeout: 15000 });
     }
     const cls = await page.evaluate(() => window.__cls);
     check('item 6: cumulative layout shift across 3 hero switches < 0.05', cls < 0.05, `${cls.toFixed(4)}`);
     await pickHero('Infernus');
-    await page.waitForFunction(() => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus'), null, { timeout: 15000 });
+    await page.waitForFunction(() => document.querySelector('.frame-head h1')?.textContent.startsWith('Infernus'), null, { timeout: 15000 });
   }
 
   // item 3: the previous build stays mounted and visibly dims (not just "same class name") while the
@@ -598,7 +762,7 @@ try {
     check('item 3: board-wrap has aria-busy="true" during hero switch', sawBusy);
     check('item 3: board-wrap computed opacity dips below 1 during hero switch', minOpacity < 1, `min opacity=${minOpacity}`);
     check('item 3: previous build stays mounted (>=12 tiles) while dimmed', minTiles >= 12, `min tiles=${minTiles}`);
-    await page.waitForFunction(() => document.querySelector('.app-header h1')?.textContent.startsWith('Seven'), null, { timeout: 15000 });
+    await page.waitForFunction(() => document.querySelector('.frame-head h1')?.textContent.startsWith('Seven'), null, { timeout: 15000 });
     await page
       .waitForFunction(() => parseFloat(getComputedStyle(document.querySelector('.board-wrap')).opacity) === 1, null, { timeout: 5000 })
       .catch(() => {});
@@ -606,7 +770,7 @@ try {
     check('item 3: board-wrap opacity returns to 1 once the new build loads', finalOpacity === 1, `${finalOpacity}`);
     await page.unroute('**/data/analytics/2.json');
     await pickHero('Infernus');
-    await page.waitForFunction(() => document.querySelector('.app-header h1')?.textContent.startsWith('Infernus'), null, { timeout: 15000 });
+    await page.waitForFunction(() => document.querySelector('.frame-head h1')?.textContent.startsWith('Infernus'), null, { timeout: 15000 });
   }
 
   // item 6: Share failure (toBlob stubbed to throw) shows a visible failure message, never a native dialog
@@ -625,7 +789,7 @@ try {
     await page2.goto('http://localhost:4173/');
     await page2.waitForSelector('.tiles .tile', { timeout: 20000 });
     await page2.click('.share-btn');
-    await page2.waitForSelector('text=PNG export failed', { timeout: 10000 });
+    await page2.waitForSelector('text=Image export failed', { timeout: 10000 });
     check('item 6: Share failure (toBlob throws) raises zero native dialogs and shows a visible failure message', dialogCount === 0);
     await page2.close();
   }
@@ -634,7 +798,19 @@ try {
   const runAxe = async (label) => {
     const results = await new AxeBuilder({ page }).analyze();
     const bad = results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
-    check(`item 7: axe scan (${label}) — 0 serious/critical violations`, bad.length === 0, bad.map((v) => `${v.id} (${v.impact})`).join(', '));
+    check(
+      `item 7: axe scan (${label}) — 0 serious/critical violations`,
+      bad.length === 0,
+      bad
+        .map(
+          (v) =>
+            `${v.id} (${v.impact}): ${v.nodes
+              .slice(0, 3)
+              .map((n) => `${n.target.join(' ')} [${n.any?.[0]?.message ?? ''}]`)
+              .join(' | ')}`,
+        )
+        .join(', '),
+    );
   };
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('http://localhost:4173/');

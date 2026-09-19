@@ -18,8 +18,15 @@ Static React app that generates Deadlock hero builds in the browser from a local
   Includes an `@axe-core/playwright` scan at desktop/phone × item-sheet open/closed — must
   report 0 serious/critical violations.
   Logic checks: `npm run verify`. Typecheck: `npx tsc -b`. Format: `npx prettier --check/--write`.
+- Screen layout: one in-game style build window (`BuildView.tsx`): hero button, title, build
+  pills, Share, Details, three phase rows, Ability Order row. No top bar or footer. The hero
+  picker is a dialog (`HeroPicker.tsx`). Every number, stat, data date, validation result and
+  link lives in the Details dialog (`Details.tsx`) and nowhere else; `verify:browser` fails if
+  banned words (%, match, win rate, README...) show on the main screen or in the share PNG, or
+  if any hero x style scrolls at 1440x900 / 1920x1080. Keep `<Toaster>` and dialogs outside
+  `<main className="screen">`: it is a CSS grid and extra children add a row that breaks the fit.
 - UI: Tailwind v4 (`@tailwindcss/vite`) + shadcn/ui, vendored under `src/components/ui/`
-  (Dialog, Tabs, Collapsible, Command, Button, Tooltip, Sonner toasts, Skeleton), themed to the
+  (Dialog, Button, Sonner toasts, Skeleton in use; Tabs, Collapsible, Command, Tooltip vendored but unused), themed to the
   in-game shop palette via CSS custom properties in `src/index.css` (`@theme inline` maps them
   onto the shadcn/Radix contract instead of stock neutral/indigo). Design tokens and the
   tell→fix table are in `docs/ui/DESIGN.md`.

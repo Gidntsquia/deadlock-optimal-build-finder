@@ -1,8 +1,7 @@
-// Draws a build board to a PNG for sharing: same parchment board, slot-tinted tiles, buy-order badges, tier tabs and
-// ability-point order as the on-screen BuildView. Item images are same-origin snapshot files, so the canvas is not
+// Draws a build board to a PNG for sharing: the same teal frame, parchment rows, slot-coloured tiles, tier flags and
+// ability order as the on-screen BuildView, and like it, no numbers. Item images are same-origin snapshot files, so the canvas is not
 // tainted and toBlob works.
 import type { Build, Phase } from '../types';
-import { fmtSouls } from '../text';
 
 const C = {
   room: '#0e1a19',
@@ -13,8 +12,16 @@ const C = {
   soft: '#6b5e46',
   teal: '#62b6c8',
   tealInk: '#1b3a44',
-  slot: { weapon: ['#c98a3a', '#e6ad5f'], vitality: ['#7fae47', '#a6cf6e'], spirit: ['#9a6fd0', '#b992e4'] } as Record<string, [string, string]>,
-  tier: ['', '', '#7f5d33', '#5a4630', '#2e2419'],
+  // [art, tier flag, name plate]
+  slot: { weapon: ['#e6ad5f', '#c98a3a', '#f1dcb4'], vitality: ['#a6cf6e', '#7fae47', '#dcebbf'], spirit: ['#b992e4', '#9a6fd0', '#e4d5f5'] } as Record<
+    string,
+    [string, string, string]
+  >,
+  rowHead: '#564d3d',
+  rowHeadInk: '#f4ead3',
+  rowBody: '#bfb08f',
+  unlock: '#a06be0',
+  stepEdge: '#5b6485',
   navy: '#2b3d70',
   navyTrack: '#1a2a58',
   navyInk: '#e9edf8',
@@ -25,7 +32,7 @@ const PHASES: { key: Phase; label: string }[] = [
   { key: 'mid', label: 'Mid Game' },
   { key: 'late', label: 'Late Game' },
 ];
-const AP_COST = { unlock: '', tier1: '1', tier2: '2', tier3: '5' } as const;
+const TIER = { unlock: 0, tier1: 1, tier2: 2, tier3: 3 } as const;
 const FONT = 'Nunito, "Segoe UI", system-ui, sans-serif';
 
 const loadImg = (src?: string) =>
@@ -66,21 +73,26 @@ export interface PngOptions {
   heroImage?: string;
   img: (p?: string) => string | undefined;
   scale?: number;
-  fetchedAt?: string;
 }
 
 export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob> {
   const scale = o.scale ?? 2,
-    W = 900,
-    COLS = 8,
-    PAD = 16,
-    TILE = (W - PAD * 2 - (COLS - 1) * 10) / COLS,
-    TILE_H = TILE + 36;
+    COLS = 11,
+    TILE = 80,
+    GAP = 8,
+    TILE_H = TILE + 34,
+    EDGE = 12,
+    PAD = 12,
+    HEAD = 56,
+    ROW_HEAD = 28,
+    inner = COLS * TILE + (COLS - 1) * GAP,
+    W = EDGE + PAD + 8 + inner + 8 + PAD + 8;
   const phases = PHASES.map((p) => ({ ...p, rows: build.items.filter((b) => b.phase === p.key) })).filter((p) => p.rows.length);
   const abilities = [...new Map(build.abilityOrder.map((s) => [s.ability.id, s.ability])).values()];
-  const steps = build.abilityOrder.length;
-  const tileImgs = await Promise.all(build.items.map((b) => loadImg(o.img(b.item.shop_image_webp || b.item.image_webp))));
-  const abImgs = await Promise.all(abilities.map((a) => loadImg(o.img(a.image_webp))));
+  const tileImgs = new Map(
+    await Promise.all(build.items.map(async (b) => [b.item.id, await loadImg(o.img(b.item.shop_image_webp || b.item.image_webp))] as const)),
+  );
+  const abImgs = new Map(await Promise.all(abilities.map(async (a) => [a.id, await loadImg(o.img(a.image_webp))] as const)));
   const heroImg = await loadImg(o.heroImage);
   try {
     await (document as unknown as { fonts?: { load: (f: string) => Promise<unknown> } }).fonts?.load(`800 16px ${FONT}`);
@@ -88,179 +100,140 @@ export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob>
     /* fallback font */
   }
 
-  const boardH = 64 + phases.reduce((a, p) => a + 34 + Math.ceil(p.rows.length / COLS) * (TILE_H + 10) + 6, 0) + 40;
-  const apH = 50 + abilities.length * 44 + 20;
-  const H = 70 + boardH + 12 + apH + 30;
+  const rowH = (n: number) => ROW_HEAD + 8 + Math.ceil(n / COLS) * (TILE_H + GAP);
+  const STEP_W = 40,
+    STEP_H = 48;
+  const apH = ROW_HEAD + 8 + STEP_H + 8;
+  const boardH = PAD + phases.reduce((a, p) => a + rowH(p.rows.length) + 8, 0) + apH + PAD;
+  const H = HEAD + boardH + 8;
   const cv = document.createElement('canvas');
   cv.width = W * scale;
   cv.height = H * scale;
   const g = cv.getContext('2d')!;
   g.scale(scale, scale);
-  g.fillStyle = C.room;
-  g.fillRect(0, 0, W, H);
 
-  // header
+  // teal frame with the build title
   g.fillStyle = C.teal;
-  g.fillRect(0, 0, W, 58);
+  g.fillRect(0, 0, W, H);
+  let tx = EDGE + 4;
   if (heroImg) {
     g.save();
     g.beginPath();
-    g.arc(36, 29, 20, 0, Math.PI * 2);
+    g.arc(tx + 20, HEAD / 2, 20, 0, Math.PI * 2);
     g.clip();
-    g.drawImage(heroImg, 16, 9, 40, 40);
+    g.fillStyle = C.room;
+    g.fill();
+    g.drawImage(heroImg, tx, HEAD / 2 - 20, 40, 40);
     g.restore();
+    tx += 52;
   }
   g.fillStyle = C.tealInk;
-  g.font = `800 20px ${FONT}`;
+  g.font = `800 22px ${FONT}`;
   g.textBaseline = 'middle';
-  g.fillText(`${o.heroName} build`, 68, 22);
-  g.font = `700 12px ${FONT}`;
-  g.globalAlpha = 0.8;
-  g.fillText(`Deadlock Optimal Build Finder${o.fetchedAt ? `, data fetched ${o.fetchedAt}` : ''}`, 68, 42);
-  g.globalAlpha = 1;
+  g.fillText(`${o.heroName} - ${build.name}`, tx, HEAD / 2 + 1);
+  g.textBaseline = 'alphabetic';
 
-  // board
-  let y = 70;
-  roundRect(g, 10, y, W - 20, boardH, 8);
+  // parchment board
+  const bx = EDGE,
+    bw = W - EDGE - 8;
+  let y = HEAD;
+  roundRect(g, bx, y, bw, boardH, 4);
   g.fillStyle = C.board;
   g.fill();
-  g.lineWidth = 2;
-  g.strokeStyle = C.edge;
-  g.stroke();
-  g.fillStyle = C.ink;
-  g.font = `800 18px ${FONT}`;
-  g.textBaseline = 'alphabetic';
-  g.fillText(build.name, PAD + 4, y + 26);
-  g.fillStyle = C.soft;
-  g.font = `700 12.5px ${FONT}`;
-  g.fillText(build.tagline, PAD + 4, y + 46);
-  y += 60;
-  let k = 0;
-  for (const p of phases) {
-    g.fillStyle = C.head;
-    g.fillRect(PAD, y, W - PAD * 2, 28);
-    g.fillStyle = C.ink;
+  y += PAD;
+  const rx = bx + PAD,
+    rw = bw - PAD * 2;
+  const rowFrame = (label: string, h: number, body: string, headBg: string, headInk: string) => {
+    g.save();
+    roundRect(g, rx, y, rw, h, 4);
+    g.clip();
+    g.fillStyle = body;
+    g.fillRect(rx, y, rw, h);
+    g.fillStyle = headBg;
+    g.fillRect(rx, y, rw, ROW_HEAD);
+    g.restore();
+    g.fillStyle = headInk;
     g.font = `800 15px ${FONT}`;
-    g.fillText(p.label, PAD + 10, y + 19);
-    const end = fmtSouls(p.rows[p.rows.length - 1].runningTotal) + ' souls by end';
-    g.fillStyle = C.soft;
-    g.font = `700 12px ${FONT}`;
-    g.fillText(end, W - PAD - 10 - g.measureText(end).width, y + 19);
-    y += 34;
+    g.fillText(label, rx + 12, y + 19);
+  };
+  for (const p of phases) {
+    const h = rowH(p.rows.length);
+    rowFrame(p.label, h, C.rowBody, C.rowHead, C.rowHeadInk);
     p.rows.forEach((b, i) => {
-      const x = PAD + (i % COLS) * (TILE + 10),
-        ty = y + Math.floor(i / COLS) * (TILE_H + 10);
-      const [deep, light] = C.slot[b.item.item_slot_type] ?? C.slot.weapon;
+      const x = rx + 8 + (i % COLS) * (TILE + GAP),
+        ty = y + ROW_HEAD + 8 + Math.floor(i / COLS) * (TILE_H + GAP);
+      const [art, flag, plate] = C.slot[b.item.item_slot_type] ?? C.slot.weapon;
       g.save();
-      roundRect(g, x, ty, TILE, TILE_H, 6);
+      roundRect(g, x, ty, TILE, TILE_H, 4);
       g.clip();
-      g.fillStyle = deep;
+      g.fillStyle = art;
       g.fillRect(x, ty, TILE, TILE);
-      g.fillStyle = light;
-      g.fillRect(x, ty + TILE, TILE, 36);
-      const im = tileImgs[k++];
+      g.fillStyle = plate;
+      g.fillRect(x, ty + TILE, TILE, TILE_H - TILE);
+      const im = tileImgs.get(b.item.id);
       if (im) {
-        const s = TILE * 0.82,
-          off = (TILE - s) / 2;
-        g.drawImage(im, x + off, ty + off, s, s);
+        g.drawImage(im, x, ty, TILE, TILE);
       }
-      // tier tab
-      g.fillStyle = b.item.item_tier >= 2 ? C.tier[b.item.item_tier] : light;
+      g.fillStyle = flag;
       g.beginPath();
-      g.moveTo(x + TILE - 26, ty);
+      g.moveTo(x + TILE - 28, ty);
       g.lineTo(x + TILE, ty);
-      g.lineTo(x + TILE, ty + 26);
+      g.lineTo(x + TILE, ty + 28);
       g.closePath();
       g.fill();
-      g.fillStyle = '#fff';
-      g.font = `900 9px ${FONT}`;
-      const rn = ROMAN[b.item.item_tier] ?? String(b.item.item_tier);
-      g.fillText(rn, x + TILE - 3 - g.measureText(rn).width, ty + 10);
-      // order badge
-      g.fillStyle = 'rgba(20,15,10,.7)';
-      roundRect(g, x + 3, ty + 3, 18, 16, 8);
-      g.fill();
-      g.fillStyle = '#fff';
+      g.fillStyle = C.ink;
       g.font = `900 10px ${FONT}`;
+      const rn = ROMAN[b.item.item_tier] ?? String(b.item.item_tier);
+      g.fillText(rn, x + TILE - 3 - g.measureText(rn).width, ty + 11);
       g.textAlign = 'center';
-      g.fillText(String(b.order), x + 12, ty + 15);
       if (b.item.is_active_item) {
         g.fillStyle = '#2d2418';
-        roundRect(g, x + TILE / 2 - 22, ty + TILE - 16, 44, 13, 3);
+        roundRect(g, x + TILE / 2 - 24, ty + TILE - 12, 48, 16, 4);
         g.fill();
         g.fillStyle = '#f2e7cf';
-        g.font = `900 8px ${FONT}`;
-        g.fillText('ACTIVE', x + TILE / 2, ty + TILE - 6);
+        g.font = `900 9px ${FONT}`;
+        g.fillText('ACTIVE', x + TILE / 2, ty + TILE - 2);
       }
-      // name plate
       g.fillStyle = C.ink;
       g.font = `800 11px ${FONT}`;
       const lines = wrap(g, b.item.name, TILE - 6).slice(0, 2);
-      lines.forEach((l, j) => g.fillText(l, x + TILE / 2, ty + TILE + (lines.length === 1 ? 22 : 15 + j * 13)));
+      lines.forEach((l, j) => g.fillText(l, x + TILE / 2, ty + TILE + (lines.length === 1 ? 21 : 14 + j * 12)));
       g.textAlign = 'left';
       g.restore();
     });
-    y += Math.ceil(p.rows.length / COLS) * (TILE_H + 10) + 6;
+    y += h + 8;
   }
-  g.fillStyle = C.ink;
-  g.font = `800 13px ${FONT}`;
-  g.fillText(`${build.items.length} items`, PAD + 4, y + 18);
-  const tot = fmtSouls(build.totalCost) + ' souls';
-  g.fillText(tot, W - PAD - 4 - g.measureText(tot).width, y + 18);
-  g.fillStyle = C.soft;
-  g.font = `700 11px ${FONT}`;
-  const src =
-    build.population.kind === 'top'
-      ? `High-rank lobbies (badge ${build.population.minBadge}+), ${build.population.matches.toLocaleString()} matches. Numbers are buy order.`
-      : `All ranks, ${build.population.matches.toLocaleString()} matches. Numbers are buy order.`;
-  g.fillText(src, PAD + 4, y + 34);
-  y = 70 + boardH + 12;
 
-  // ability point order
-  roundRect(g, 10, y, W - 20, apH, 8);
-  g.fillStyle = C.navy;
-  g.fill();
-  g.fillStyle = C.navyInk;
-  g.font = `800 16px ${FONT}`;
-  g.fillText('Ability Point Order', PAD + 4, y + 24);
-  g.font = `700 11px ${FONT}`;
-  g.globalAlpha = 0.8;
-  g.fillText(
-    build.abilityOrderSupport
-      ? `${build.abilityOrderSupport.matches.toLocaleString()} matches, ${(build.abilityOrderSupport.winRate * 100).toFixed(1)}% win rate`
-      : 'Default unlock order',
-    PAD + 4,
-    y + 40,
-  );
-  g.globalAlpha = 1;
-  const trackX = PAD + 230,
-    trackW = W - PAD - trackX,
-    cell = trackW / Math.max(1, steps);
-  abilities.forEach((a, i) => {
-    const ay = y + 52 + i * 44;
-    const im = abImgs[i];
-    if (im) g.drawImage(im, PAD + 4, ay, 34, 34);
-    g.fillStyle = C.navyInk;
-    g.font = `800 12px ${FONT}`;
-    g.fillText(a.name, PAD + 44, ay + 21);
+  // ability order: one icon per point spent, pips for the upgrade tier
+  rowFrame('Ability Order', apH, C.navy, C.navyTrack, C.navyInk);
+  build.abilityOrder.forEach((s, i) => {
+    const x = rx + 8 + i * (STEP_W + 4),
+      sy = y + ROW_HEAD + 8;
+    roundRect(g, x, sy, STEP_W, STEP_H, 4);
     g.fillStyle = C.navyTrack;
-    roundRect(g, trackX, ay + 6, trackW, 22, 4);
     g.fill();
-    for (const s of build.abilityOrder)
-      if (s.ability.id === a.id) {
-        const cx = trackX + s.index * cell + cell / 2;
-        g.fillStyle = s.kind === 'unlock' ? C.teal : '#e9edf8';
-        g.beginPath();
-        g.arc(cx, ay + 17, Math.min(9, cell / 2 - 1), 0, Math.PI * 2);
-        g.fill();
-        if (AP_COST[s.kind]) {
-          g.fillStyle = C.navy;
-          g.font = `900 10px ${FONT}`;
-          g.textAlign = 'center';
-          g.fillText(AP_COST[s.kind], cx, ay + 21);
-          g.textAlign = 'left';
-        }
-      }
+    g.lineWidth = s.kind === 'unlock' ? 2 : 1;
+    g.strokeStyle = s.kind === 'unlock' ? C.unlock : C.stepEdge;
+    g.stroke();
+    const im = abImgs.get(s.ability.id);
+    if (im) {
+      g.filter = 'brightness(0) invert(1)';
+      g.drawImage(im, x + 4, sy + 2, 32, 32);
+      g.filter = 'none';
+    }
+    const n = TIER[s.kind];
+    g.fillStyle = C.navyInk;
+    for (let k = 0; k < n; k++) {
+      const cx = x + STEP_W / 2 + (k - (n - 1) / 2) * 9,
+        cy = sy + 40;
+      g.beginPath();
+      g.moveTo(cx, cy - 4);
+      g.lineTo(cx + 4, cy);
+      g.lineTo(cx, cy + 4);
+      g.lineTo(cx - 4, cy);
+      g.closePath();
+      g.fill();
+    }
   });
   return new Promise((res, rej) => cv.toBlob((b) => (b ? res(b) : rej(new Error('PNG encode failed'))), 'image/png'));
 }

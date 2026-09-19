@@ -4,41 +4,28 @@ import type { Item } from '../types';
 
 const ROMAN = ['', 'I', 'II', 'III', 'IV'];
 
-// One shop-style item card: slot-tinted art, roman tier tab top-right, name plate below.
+// One shop-style item card: slot-coloured art, roman tier flag top-right, name plate below.
 export const ItemTile = forwardRef<
   HTMLButtonElement | HTMLDivElement,
   {
     item: Item;
-    order?: number;
-    isCore?: boolean;
     onClick?: () => void;
-    ariaLabel?: string;
     total?: number;
     cost?: number;
   }
->(function ItemTile({ item, order, isCore, onClick, ariaLabel, total, cost }, ref) {
+>(function ItemTile({ item, onClick, total, cost }, ref) {
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag
-      ref={ref as never}
-      className={`tile ${item.item_slot_type}`}
-      onClick={onClick}
-      aria-label={ariaLabel}
-      data-cost={cost ?? item.cost}
-      data-total={total}
-      data-core={isCore === undefined ? undefined : String(isCore)}
-    >
+    <Tag ref={ref as never} className={`tile ${item.item_slot_type}`} onClick={onClick} data-cost={cost ?? item.cost} data-total={total}>
       <span className="art">
         <img src={img(item.shop_image_webp || item.image_webp)} alt="" loading="lazy" width={96} height={96} />
       </span>
-      <span className={`tier t${item.item_tier}`}>
+      <span className="tier">
         <span>{ROMAN[item.item_tier] ?? item.item_tier}</span>
       </span>
-      {order !== undefined && <span className="order">{order}</span>}
-      {item.is_active_item && <span className="active-tag">ACTIVE</span>}
-      {isCore && (
-        <span className="mark core" title="In the top player's core set">
-          ✓
+      {item.is_active_item && (
+        <span className="active-tag">
+          <b>ACTIVE</b>
         </span>
       )}
       <span className="plate">{item.name}</span>

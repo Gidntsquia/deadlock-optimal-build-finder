@@ -1,17 +1,13 @@
 import { Skeleton } from './ui/skeleton';
 
-// Shaped like the real board (`.board` > 3x `.phase` > `.tiles` grid) so the first paint reserves
-// the same space the real build occupies instead of a bare "Loading…" line that collapses layout.
+// Same frame and rows as the real board, so the first paint holds the space the build will take.
 export function BoardSkeleton() {
   return (
-    <div className="board board-skeleton" aria-hidden="true">
-      <div className="board-head">
-        <Skeleton className="sk-title" />
-      </div>
-      {[8, 8, 6].map((count, phase) => (
-        <div className="phase" key={phase}>
-          <div className="phase-head">
-            <Skeleton className="sk-phase-label" />
+    <div className="board" aria-hidden="true">
+      {[6, 10, 5].map((count, row) => (
+        <div className="row" key={row}>
+          <div className="row-head">
+            <Skeleton className="sk-head" />
           </div>
           <div className="tiles">
             {Array.from({ length: count }, (_, i) => (

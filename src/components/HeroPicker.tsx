@@ -1,24 +1,10 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Hero } from '../types';
 import { img } from '../data/load';
+import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 
-function Grid({
-  heroes,
-  activeId,
-  filter,
-  onFilter,
-  onPick,
-  gridRef,
-  listboxId,
-}: {
-  heroes: Hero[];
-  activeId: number;
-  filter: string;
-  onFilter: (v: string) => void;
-  onPick: (h: Hero) => void;
-  gridRef: React.RefObject<HTMLDivElement | null>;
-  listboxId: string;
-}) {
+function Grid({ heroes, activeId, onPick }: { heroes: Hero[]; activeId: number; onPick: (h: Hero) => void }) {
+  const [filter, setFilter] = useState('');
   const matches = useMemo(() => {
     const q = filter.trim().toLowerCase();
     return q ? heroes.filter((h) => h.name.toLowerCase().includes(q)) : heroes;
@@ -27,104 +13,85 @@ function Grid({
   // computed for and deriving during render avoids a synchronous setState in an effect.
   const [focusState, setFocusState] = useState({ filter, idx: 0 });
   const focusIdx = focusState.filter === filter ? focusState.idx : 0;
-  const setFocusIdx = (updater: (i: number) => number) => setFocusState({ filter, idx: updater(focusState.filter === filter ? focusState.idx : 0) });
+  const move = (d: number) => setFocusState({ filter, idx: Math.max(0, Math.min(focusIdx + d, matches.length - 1)) });
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       const pick = matches[focusIdx] ?? matches[0];
       if (pick) onPick(pick);
-      return;
-    }
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault();
-      setFocusIdx((i) => Math.min(i + 1, matches.length - 1));
+      move(1);
     } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
       e.preventDefault();
-      setFocusIdx((i) => Math.max(i - 1, 0));
+      move(-1);
     }
   };
 
   return (
-    <div className="hero-picker-body">
+    <>
       <input
         className="hero-filter"
-        placeholder="Search heroes…"
+        placeholder="Search"
+        aria-label="Search heroes"
         value={filter}
-        onChange={(e) => onFilter(e.target.value)}
+        onChange={(e) => setFilter(e.target.value)}
         onKeyDown={onKeyDown}
         role="combobox"
         aria-expanded="true"
-        aria-controls={listboxId}
+        aria-controls="hero-listbox"
         aria-activedescendant={matches[focusIdx] ? `hero-opt-${matches[focusIdx].id}` : undefined}
         autoFocus
       />
-      <div className="hero-grid" role="listbox" aria-label="Heroes" id={listboxId} ref={gridRef}>
+      <div className="hero-grid" role="listbox" aria-label="Heroes" id="hero-listbox">
         {matches.map((h, i) => (
           <button
             key={h.id}
             id={`hero-opt-${h.id}`}
             role="option"
             aria-selected={h.id === activeId}
-            className={`hero-opt ${h.id === activeId ? 'active' : ''} ${i === focusIdx ? 'focus' : ''}`}
+            className={['hero-opt', h.id === activeId ? 'active' : null, i === focusIdx ? 'focus' : null].filter(Boolean).join(' ')}
             onClick={() => onPick(h)}
           >
-            <img src={img(h.images.small)} alt="" loading="lazy" width={36} height={36} />
+            <img src={img(h.images.small)} alt="" loading="lazy" width={48} height={48} />
             <span>{h.name}</span>
           </button>
         ))}
-        {matches.length === 0 && <div className="hero-empty muted">No heroes match "{filter}"</div>}
+        {matches.length === 0 && <div className="hero-empty">No heroes found</div>}
       </div>
-    </div>
+    </>
   );
 }
 
-/** Replaces the old chip-strip + <select> pair: one control per viewport, same filter+grid underneath. */
-export function HeroPicker({ heroes, heroId, onPick }: { heroes: Hero[]; heroId: number; onPick: (h: Hero) => void }) {
-  const active = heroes.find((h) => h.id === heroId);
-  const [open, setOpen] = useState(false);
-  const [filter, setFilter] = useState('');
-  const gridRef = useRef<HTMLDivElement>(null);
-
-  const pick = (h: Hero) => {
-    onPick(h);
-    setOpen(false);
-    setFilter('');
-  };
-
+export function HeroPicker({
+  open,
+  onOpenChange,
+  heroes,
+  heroId,
+  onPick,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  heroes: Hero[];
+  heroId: number;
+  onPick: (h: Hero) => void;
+}) {
   return (
-    <>
-      {/* phone: header button opens a full-height sheet */}
-      <button className="hero-picker-trigger" onClick={() => setOpen(true)} aria-haspopup="dialog">
-        {active && <img src={img(active.images.small)} alt="" width={28} height={28} />}
-        <span>{active?.name ?? 'Choose hero'}</span>
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-          <path d="M6 9l6 6 6-6" />
-        </svg>
-      </button>
-      {open && (
-        <div
-          className="hero-sheet-backdrop"
-          onClick={() => setOpen(false)}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') setOpen(false);
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sheet sheet-content hero-dialog max-[899px]:translate-none" aria-describedby={undefined}>
+        <DialogTitle asChild>
+          <h2 className="sheet-title">Select Hero</h2>
+        </DialogTitle>
+        <Grid
+          heroes={heroes}
+          activeId={heroId}
+          onPick={(h) => {
+            onPick(h);
+            onOpenChange(false);
           }}
-        >
-          <div className="hero-sheet" role="dialog" aria-modal="true" aria-label="Choose hero" onClick={(e) => e.stopPropagation()}>
-            <div className="hero-sheet-head">
-              <h2>Choose hero</h2>
-              <button className="sheet-close" onClick={() => setOpen(false)} aria-label="Close">
-                ×
-              </button>
-            </div>
-            <Grid heroes={heroes} activeId={heroId} filter={filter} onFilter={setFilter} onPick={pick} gridRef={gridRef} listboxId="hero-listbox-phone" />
-          </div>
-        </div>
-      )}
-      {/* desktop: inline compact grid, always visible */}
-      <div className="hero-picker-desktop">
-        <Grid heroes={heroes} activeId={heroId} filter={filter} onFilter={setFilter} onPick={pick} gridRef={gridRef} listboxId="hero-listbox-desktop" />
-      </div>
-    </>
+        />
+      </DialogContent>
+    </Dialog>
   );
 }

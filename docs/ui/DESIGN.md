@@ -1,7 +1,43 @@
 # UI Design Notes
 
-**User approval: recorded for this round, 2026-09-18.** See the "Approval" section at the bottom
-of this file.
+**Current design: the 2026-09-19 in-game redesign (next section). User verdict on it: not yet
+recorded.** Sections after it describe the earlier rounds; their token scales and lint rules still
+apply, their layout notes (top bar, side column, tabs, disclosure panels) do not.
+
+## In-game redesign (2026-09-19)
+
+Reference: `docs/ui/reference/in-game-build.png`. The main screen is the in-game build window and
+nothing else.
+
+- Desktop (>=900px): hero portrait and name on the left (one button, opens the hero dialog), teal
+  frame on the right filling the viewport. Frame head: `Hero - Build name`, build pills, then
+  Share and Details on the right. Parchment board: Early / Mid / Late Game rows with dark title
+  bars, then a navy Ability Order row. No top bar, footer, side column or tabs.
+- Tiles: full-bleed item art, slot-coloured name plate, slot-coloured corner flag with the tier
+  numeral, ACTIVE tag on actives. No order numbers, no check badges.
+- Fit: `--tile: clamp(72px, min(5.5vw, 9.2vh), 112px)`. Worst case in the data (14 items in one
+  phase, 22 total) wraps to four tile rows and still fits 1440x900 with no scrolling.
+- Phone: same frame in one column, hero avatar in the frame head, Share and Details at the bottom
+  right of the frame. Dialogs are bottom sheets.
+- Hero dialog: search box (type, Enter picks the first match, arrows move) over a portrait grid.
+- Ability order: one icon per point spent, in order. Outlined icon = unlock, diamonds under it =
+  upgrade level. Icons are forced white so dark glyphs show on navy.
+- Item sheet: art, slot, tier, cost, stats, passive/active text. No ranking text.
+- Details (the single quiet control, closed by default): tagline, match count, rank floor, data
+  window and date, soul totals, agreement with top players and the player table, method note,
+  ability-order support, per-item table (buy order, cost, pick rate, win rate, score, core),
+  deadlock-api.com credit and README link. Anything numeric or methodological goes here.
+- Share PNG (`src/export/png.ts`) draws the same frame, rows, tiles and ability row. It draws
+  no numbers.
+- New tokens: `--weapon-plate`, `--vitality-plate`, `--spirit-plate`, `--row-head`,
+  `--row-head-ink`, `--row-body`, `--pill`, `--frame-edge`. The old background gradient is gone.
+- Before/after: `docs/ui/before/` is the UI as it stood before this redesign; `docs/ui/after/`
+  has the same 8 names plus `details-desktop.png` and `details-phone.png`.
+
+### User verdict
+
+Not yet recorded. To be filled with the user's own words on: looks like the game, phone looks
+good, nothing superfluous or AI-made.
 
 ## Sources read
 
