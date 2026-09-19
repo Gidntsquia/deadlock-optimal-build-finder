@@ -12,7 +12,7 @@
     "generate": "npx tsx scripts/generate-cli.ts",
     "matchup-experiment": "npx tsx scripts/matchup-experiment.ts",
     "verify": "npx tsx scripts/verify.ts",
-    "verify:browser": "npm run build && node scripts/browser-check.mjs",
+    "verify:browser": "vite build && node scripts/browser-check.mjs",
     "preview": "vite preview",
     "prepare": "husky"
   },

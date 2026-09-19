@@ -855,12 +855,20 @@ button.tile:hover {
     border-radius: var(--radius-sm);
   }
   .hero-face .hero-name {
-    display: block;
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    margin: 8px 8px 0;
+    padding: 0 64px;
     font-size: 32px;
     font-weight: 900;
-    padding: 16px 0;
-    margin: auto 0;
-    color: var(--teal-ink);
+    line-height: 1.1;
+    background: var(--navy);
+    color: var(--navy-ink);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-hard);
   }
   .hero-face .hero-cue {
     display: flex;
@@ -875,13 +883,14 @@ button.tile:hover {
   .hero-side .hero-arrow {
     display: inline-flex;
     position: absolute;
-    top: calc(var(--side-w) * 0.688 - 22px);
+    /* centre of the name plate: below the portrait, above the Change Hero button */
+    top: calc((4px + (var(--side-w) - 8px) * 0.5 * 380 / 140 + 8px + 100dvh - 24px - 4px - 60px) / 2 - 22px);
   }
   .hero-arrow.prev {
-    left: 12px;
+    left: 20px;
   }
   .hero-arrow.next {
-    right: 12px;
+    right: 20px;
   }
   .hero-mini {
     display: none;
@@ -908,9 +917,10 @@ button.tile:hover {
     justify-self: center;
   }
   .ap-mark {
-    height: clamp(28px, 16cqh, 52px);
+    height: clamp(26px, 13.5cqh, 44px);
     min-width: 0;
     width: calc(100% - 8px);
+    max-width: 46px;
     font-size: clamp(14px, 4.5cqh, 20px);
     gap: 4px;
     padding: 0;

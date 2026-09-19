@@ -11,9 +11,10 @@ Static React app that generates Deadlock hero builds in the browser from a local
   hex/rgb(a) colors outside the `:root`/`@theme inline` token block. Violations are reported as
   `file:line: rule — snippet`. `node scripts/ui-lint.mjs --self-test` plants one known-bad case per
   rule (tsx + each CSS rule) and must report all of them caught.
-- Browser checks: Playwright, `npm run verify:browser` (builds first, then serves `dist/` on
+- Browser checks: Playwright, `npm run verify:browser` (`vite build` only, no tsc; run `npx tsc -b` separately. It serves `dist/` on
   :4173 and runs `scripts/browser-check.mjs` — port 4173 must be free; run in the foreground
-  and let it finish, don't background it). Set `SHOT_DIR=docs/ui/after` (or any dir) to control
+  and let it finish, don't background it). The script splits itself into ~18 independent stages (`STAGE=<name>` runs one; the hero x style loop is `fit-0..3`) run 6 at a time;
+  `STAGE_TIMES=1` prints per-stage seconds. A stage needs its server already up on :4173 when run alone. Set `SHOT_DIR=docs/ui/after` (or any dir) to control
   where the check's screenshots land; default is `screenshots/` (gitignored).
   Includes an `@axe-core/playwright` scan at desktop/phone × item-sheet open/closed — must
   report 0 serious/critical violations.
