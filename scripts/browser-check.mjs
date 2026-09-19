@@ -9,7 +9,10 @@ import AxeBuilder from '@axe-core/playwright';
 
 // The checks are split into independent stages. With no STAGE set this file is the coordinator: it serves dist/,
 // runs every stage as its own process (own browser, so they cannot disturb each other) and prints their lines in order.
-const STAGE = process.env.STAGE;
+// A worker process (STAGES=a,b,c) runs its stages one after another in this process, re-importing this file per stage
+// (fresh module state, shared browser). A single STAGE=x run is the same thing with one stage.
+const STAGE = globalThis.__stage ?? (process.env.STAGES ? undefined : process.env.STAGE);
+const WORKER = process.env.STAGES && !globalThis.__stage;
 const S = (...names) => names.includes(STAGE);
 // the hero x style loop is cut into FIT_PARTS stages, hero i going to stage i % FIT_PARTS
 const FIT_PARTS = 2;
@@ -31,6 +34,17 @@ const STAGES = [
   'cls-busy',
   'axe',
 ];
+if (WORKER) {
+  globalThis.__fails = 0;
+  for (const st of process.env.STAGES.split(',')) {
+    const t = Date.now();
+    globalThis.__stage = st;
+    await import(import.meta.url + '?' + st);
+    if (process.env.STAGE_TIMES) console.log(`(stage ${st}: ${((Date.now() - t) / 1000).toFixed(1)}s)`);
+  }
+  await globalThis.__browser?.close();
+  process.exit(globalThis.__fails ? 1 : 0);
+}
 if (!STAGE) {
   const t0 = Date.now();
   const srv = spawn('node', ['node_modules/vite/bin/vite.js', 'preview', '--port', '4173', '--strictPort'], { stdio: 'ignore' });
@@ -44,37 +58,37 @@ if (!STAGE) {
       break;
     await new Promise((r) => setTimeout(r, 100));
   }
-  const runStage = (st) =>
-    new Promise((resolve) => {
-      const started = Date.now();
-      const c = spawn('node', [process.argv[1]], { env: { ...process.env, STAGE: st }, stdio: ['ignore', 'pipe', 'pipe'] });
-      let out = '';
-      c.stdout.on('data', (d) => (out += d));
-      c.stderr.on('data', (d) => (out += d));
-      c.on('close', (code) => resolve({ st, out, code, secs: ((Date.now() - started) / 1000).toFixed(1) }));
-    });
-  // a few stages at a time: more browsers than cores just makes every stage slower
   // STAGE_ONLY=a,b runs just those stages (the fast tier); unset runs all
   const only = process.env.STAGE_ONLY?.split(',').filter(Boolean);
   const run = only ? STAGES.filter((s) => only.includes(s)) : STAGES;
   if (only && run.length !== only.length) throw new Error('unknown stage in STAGE_ONLY: ' + only.filter((s) => !STAGES.includes(s)));
-  const queue = [...run];
-  const done = {};
-  const JOBS = Number(process.env.STAGE_JOBS) || 6;
-  await Promise.all(
-    Array.from({ length: JOBS }, async () => {
-      for (let st; (st = queue.shift());) done[st] = await runStage(st);
-    }),
-  );
-  const results = run.map((st) => done[st]);
+  // Stages are packed into a few worker processes (each: one node + playwright import, one browser, stages back to back).
+  // More browsers than cores just makes every stage slower, and every extra process repeats ~0.7s of startup.
+  const JOBS = Math.min(Number(process.env.STAGE_JOBS) || 6, run.length);
+  // rough solo cost in seconds; longest first onto the emptiest worker
+  const COST = { axe: 8.5, 'phone-b': 6, 'phone-d': 6, 'phone-e': 6, 'fit-0': 5, 'fit-1': 5, main: 5, wide: 5 };
+  const groups = Array.from({ length: JOBS }, () => ({ sts: [], load: 0 }));
+  for (const st of [...run].sort((x, y) => (COST[y] ?? 4) - (COST[x] ?? 4))) {
+    const g = groups.reduce((m, c) => (c.load < m.load ? c : m));
+    g.sts.push(st);
+    g.load += COST[st] ?? 4;
+  }
+  const runGroup = (g) =>
+    new Promise((resolve) => {
+      const c = spawn('node', [process.argv[1]], { env: { ...process.env, STAGES: g.sts.join(',') }, stdio: ['ignore', 'pipe', 'pipe'] });
+      let out = '';
+      c.stdout.on('data', (d) => (out += d));
+      c.stderr.on('data', (d) => (out += d));
+      c.on('close', (code) => resolve({ st: g.sts.join('+'), out, code }));
+    });
+  const results = await Promise.all(groups.map(runGroup));
   srv.kill();
   let bad = 0;
   for (const r of results) {
     process.stdout.write(r.out);
-    if (process.env.STAGE_TIMES) console.log(`(stage ${r.st}: ${r.secs}s)`);
     if (r.code !== 0) {
       bad++;
-      console.log(`FAIL  stage ${r.st} exited ${r.code}`);
+      console.log(`FAIL  stages ${r.st} exited ${r.code}`);
     }
   }
   const all = results.map((r) => r.out).join('\n');
@@ -94,7 +108,7 @@ const exe =
     .sort()
     .map((d) => process.env.HOME + '/.cache/ms-playwright/' + d + '/chrome-headless-shell-linux64/chrome-headless-shell')
     .find((p) => require('node:fs').existsSync(p));
-const browser = await chromium.launch({ executablePath: exe });
+const browser = (globalThis.__browser ??= await chromium.launch({ executablePath: exe }));
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
 const page = await ctx.newPage();
 const errors = [];
@@ -1142,5 +1156,10 @@ if (S('share')) {
 }
 check('no console errors (network disabled) [' + STAGE + ']', errors.length === 0, errors.slice(0, 3).join(' | '));
 console.log(`(blocked ${imgBlocked.length} external requests, e.g. images — expected offline)`);
-await browser.close();
-process.exit(fails ? 1 : 0);
+if (globalThis.__stage) {
+  await ctx.close();
+  globalThis.__fails += fails;
+} else {
+  await browser.close();
+  process.exit(fails ? 1 : 0);
+}
