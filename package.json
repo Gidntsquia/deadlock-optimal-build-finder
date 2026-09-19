@@ -14,7 +14,7 @@
     "verify": "npx tsx scripts/verify.ts",
     "verify:browser": "vite build && node scripts/browser-check.mjs",
     "preview": "vite preview",
-    "test": "npx tsx scripts/verify.ts && npm run verify:browser",
+    "test": "node scripts/test.mjs",
     "test:full": "npx tsc -b && npx tsx scripts/verify.ts && npm run verify:browser",
     "prepare": "husky"
   },

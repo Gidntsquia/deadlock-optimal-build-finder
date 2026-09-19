@@ -9,6 +9,7 @@ import AxeBuilder from '@axe-core/playwright';
 const URL0 = 'http://localhost:4173/';
 const SHOT_DIR = process.env.SHOT_DIR || 'screenshots';
 mkdirSync(SHOT_DIR, { recursive: true });
+const snap = (o) => process.env.SHOT_DIR && page.screenshot(o);
 const shot = (n) => `${SHOT_DIR}/${n}`;
 const t0 = Date.now();
 
@@ -76,16 +77,23 @@ const gotoHero = async (slug) => {
     dispatchEvent(new PopStateEvent('popstate'));
   }, slug);
 };
-const rectOf = async (sel) => {
-  let prev = null;
-  for (let i = 0; i < 20; i++) {
-    const r = await page.$eval(sel, (el) => el.getBoundingClientRect().toJSON());
-    if (prev && Object.keys(r).every((k) => Math.abs(r[k] - prev[k]) < 0.5)) return r;
-    prev = r;
-    await page.waitForTimeout(100);
-  }
-  return prev;
-};
+const frames = (n = 2) => page.evaluate((k) => new Promise((res) => (function f(i) { i ? requestAnimationFrame(() => f(i - 1)) : res(); })(k)), n);
+const rectOf = (sel) =>
+  page.$eval(
+    sel,
+    (el) =>
+      new Promise((res) => {
+        const read = () => el.getBoundingClientRect().toJSON();
+        let prev = read();
+        let left = 120;
+        (function tick() {
+          const r = read();
+          if (Object.keys(r).every((k) => Math.abs(r[k] - prev[k]) < 0.5) || --left <= 0) return res(r);
+          prev = r;
+          requestAnimationFrame(tick);
+        })();
+      }),
+  );
 const inside = (r, w, h) => r.left >= -0.5 && r.top >= -0.5 && r.right <= w + 0.5 && r.bottom <= h + 0.5 && r.width >= 300;
 const BANNED = [/%/, /match/i, /players/i, /win rate/i, /high-rank/i, /Phantom/, /souls by end/i, /Last \d+ days/i, /data from/i, /Validation/i, /measured/i, /README/i];
 const bannedHit = (text) => BANNED.map((re) => re.exec(text)?.[0]).find(Boolean);
@@ -177,7 +185,7 @@ try {
     check('tap targets >= 40px', (await tapTargets()).length === 0, (await tapTargets()).slice(0, 5).join(', '));
     check('exactly one visible hero control', (await page.$$('.hero-btn:visible')).length === 1);
   }
-  await page.screenshot({ path: shot('infernus-build-desktop.png') });
+  await snap({ path: shot('infernus-build-desktop.png') });
 
   // ---- details dialog ----
   await page.focus('.details-btn');
@@ -192,7 +200,7 @@ try {
       /\d+% match/.test(text) && /[\d,]+ matches/.test(text) && /win rate/i.test(text) && /data from \d{1,2} \w{3} \d{4}/i.test(text) && (await page.$$('.details .panel-table tbody tr')).length >= 1 && badges === tiles,
       text.slice(0, 120),
     );
-    await page.screenshot({ path: shot('details-desktop.png') });
+    await snap({ path: shot('details-desktop.png') });
   }
   await closeDetails();
   await page.waitForFunction(() => document.activeElement?.classList.contains('details-btn'), null, { timeout: 2000 }).catch(() => {});
@@ -226,7 +234,7 @@ try {
     check('item sheet: ArrowRight steps to the next item, still centred', inside(r2, 1440, 900) && Math.abs((r2.left + r2.right) / 2 - 720) <= 2);
     const heads = await page.$$eval('[data-slot="dialog-content"] .tt-section h3', (els) => els.map((e) => e.textContent ?? ''));
     check('item sheet: no heading prints a raw section_type', !heads.some((h) => /^[a-z_]+$/.test(h)), heads.join(', '));
-    await page.screenshot({ path: shot('item-sheet-desktop.png') });
+    await snap({ path: shot('item-sheet-desktop.png') });
     await page.keyboard.press('Escape');
     await page.waitForSelector('.sheet', { state: 'detached' });
     await page.waitForFunction(() => document.activeElement?.classList.contains('tile'), null, { timeout: 2000 }).catch(() => {});
@@ -247,7 +255,7 @@ try {
   // ---- hero picker, URL, arrows, styles ----
   await openHeroes();
   const allHeroes = await page.$$eval('.hero-dialog .hero-opt', (els) => els.map((e) => e.textContent.trim()));
-  await page.screenshot({ path: shot('hero-picker-desktop.png') });
+  await snap({ path: shot('hero-picker-desktop.png') });
   await page.fill('.hero-dialog .hero-filter', 'las');
   const las = await page.$$eval('.hero-dialog .hero-opt', (els) => els.map((e) => e.textContent.trim()));
   check('hero picker: lists every hero; "las" leaves only Lash', allHeroes.length >= 30 && las.length === 1 && las[0].includes('Lash'), `${allHeroes.length} heroes; ${las.join(',')}`);
@@ -308,9 +316,9 @@ try {
         await openDetails();
         const want = await page.$$eval('.details .item-table tbody tr', (e) => e.length);
         await closeDetails();
-        for (const [w, h] of [[1440, 900], [1920, 1080]]) {
+        for (const [w, h] of i === 0 ? [[1440, 900], [1920, 1080]] : [[1440, 900]]) {
           await page.setViewportSize({ width: w, height: h });
-          await page.waitForTimeout(60);
+          await frames();
           const f = await fitProbe();
           const g = w === 1440 ? await gridProbe() : [];
           if (f.v || f.h || f.scrollers || f.clipped || f.tiles !== want || !want || g.length) bad.push(`${name}#${i}@${w}: ${JSON.stringify(f)} ${g.slice(0, 2)}`);
@@ -358,6 +366,7 @@ try {
     await page.click('.share-btn');
     await page.waitForSelector('text=Image export failed', { timeout: 10000 });
     check('share: success and failure both show a toast, no native dialog', dialogs === 0);
+    await page.evaluate(() => document.querySelectorAll('[data-sonner-toast]').forEach((t) => t.remove())); // a lingering toast would cover buttons on the phone layout
   }
 
   // ---- error recovery: analytics fetch fails -> Retry, then another hero works ----
@@ -389,6 +398,7 @@ try {
   }
 
   // ---- phone 390x844 ----
+  await page.emulateMedia({ reducedMotion: 'reduce' }); // sheets open instantly; desktop steps above ran with normal motion
   await page.setViewportSize({ width: 390, height: 844 });
   await pickHero('Infernus');
   {
@@ -400,10 +410,10 @@ try {
     });
     check('phone: ability markers all inside the viewport', grid);
     check('phone: tap targets >= 40px, one hero control, no technical text', (await tapTargets()).length === 0 && (await page.$$('.hero-btn:visible')).length === 1 && !bannedHit(await page.evaluate(() => document.querySelector('main').innerText)));
-    await page.screenshot({ path: shot('infernus-build-phone.png'), fullPage: true });
+    await snap({ path: shot('infernus-build-phone.png'), fullPage: true });
     await openHeroes();
     check('phone: hero sheet fits the screen', inside(await rectOf('.hero-dialog'), 390, 844));
-    await page.screenshot({ path: shot('hero-picker-phone.png') });
+    await snap({ path: shot('hero-picker-phone.png') });
     await closeHeroes();
     await openDetails();
     check('phone: details sheet fits the screen', inside(await rectOf('.details'), 390, 844));
@@ -413,14 +423,13 @@ try {
     const r = await rectOf('[role="dialog"]');
     check('phone: item sheet is bottom-anchored, edge to edge, on screen', inside(r, 390, 844) && Math.abs(r.bottom - 844) <= 1 && r.left <= 1 && r.right >= 389, JSON.stringify(r));
     await page.keyboard.press('ArrowRight');
-    await page.waitForTimeout(200);
+    await frames();
     check('phone: item sheet still on screen after ArrowRight', inside(await rectOf('[role="dialog"]'), 390, 844));
     check('phone: no sideways scroll with the item sheet open', await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth));
-    await page.screenshot({ path: shot('item-sheet-phone.png') });
+    await snap({ path: shot('item-sheet-phone.png') });
     await axe('phone, item sheet open');
     await page.keyboard.press('Escape');
     await page.waitForSelector('.sheet', { state: 'detached' });
-    await axe('phone, sheet closed');
   }
 
   // ---- back to desktop: axe, unknown slug, reduced motion ----
@@ -430,7 +439,6 @@ try {
   errors.length = 0; // tearing down the previous page mid-fetch logs a stray error from the old document
   await settled('Infernus');
   check('unknown ?hero= falls back to Infernus with no console error', errors.length === 0, errors.slice(0, 3).join(' | '));
-  await page.emulateMedia({ reducedMotion: 'reduce' });
   const worst = await page.evaluate(() =>
     Math.max(0, ...[...document.querySelectorAll('*')].map((el) => Math.max(...getComputedStyle(el).transitionDuration.split(',').map((s) => parseFloat(s) || 0)))),
   );

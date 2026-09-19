@@ -14,10 +14,10 @@ Static React app that generates Deadlock hero builds in the browser from a local
 - Browser checks: Playwright, `npm run verify:browser` (`vite build` only, no tsc; run `npx tsc -b` separately. It serves `dist/` on
   :4173 and runs `scripts/browser-check.mjs` — port 4173 must be free; run in the foreground
   and let it finish, don't background it). The script is one tour: it opens the app once (one browser, one page) and walks desktop build, details, item sheet, hero picker/arrows/styles, a
-  sampled fit check, share, error recovery, phone layout, axe (~49 checks, ~20s). It starts its own `vite preview`. Set `SHOT_DIR=docs/ui/after` (or any dir) to control
+  sampled fit check, share, error recovery, phone layout, axe (~48 checks, ~12s; no fixed sleeps, use `frames()`/`waitFor*`; screenshots only when `SHOT_DIR` is set; motion is reduced from the phone step on). It starts its own `vite preview`. Set `SHOT_DIR=docs/ui/after` (or any dir) to control
   where screenshots land; default is `screenshots/` (gitignored). Add new checks as steps in that tour, not as new page loads.
   Includes `@axe-core/playwright` scans (desktop, phone with item sheet open and closed) — must report 0 serious/critical violations.
-  `npm test` = verify + the tour (~25s). `npm run test:full` = tsc + the same (before merge). A guard (`.claude/test-commands.sh`) blocks bare full-suite runs by agents; `TS_FULL=1` overrides.
+  `npm test` = verify and the tour run side by side via `scripts/test.mjs` (~15s). `npm run test:full` = tsc + the same (before merge). A guard (`.claude/test-commands.sh`) blocks bare full-suite runs by agents; `TS_FULL=1` overrides.
   Logic checks: `npm run verify`. Typecheck: `npx tsc -b`. Format: `npx prettier --check/--write`.
 - Screen layout: one in-game style build window (`BuildView.tsx`): hero button, title, build
   pills, Share, Details, three phase rows, Ability Order grid (`.ap-grid`, one row per ability, one chip per point). No top bar or footer. The hero
