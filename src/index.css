@@ -815,8 +815,8 @@ button.tile:hover {
     width: 100%;
     flex: 1 1 0;
     min-height: 0;
-    object-fit: cover;
-    object-position: 50% 0;
+    object-fit: contain;
+    object-position: 50% 50%;
     background: var(--avatar-bg);
     border-radius: var(--radius-sm);
   }
@@ -856,6 +856,22 @@ button.tile:hover {
     width: var(--ap-icon);
     height: var(--ap-icon);
     justify-self: center;
+  }
+  .ap-mark {
+    height: clamp(28px, 16cqh, 52px);
+    min-width: 0;
+    width: calc(100% - 8px);
+    font-size: clamp(14px, 4.5cqh, 20px);
+    gap: 4px;
+    padding: 0;
+  }
+  .ap-glyph {
+    width: clamp(12px, 8cqh, 20px);
+    height: clamp(12px, 8cqh, 20px);
+  }
+  .ap-glyph.unlock-glyph {
+    width: clamp(14px, 10cqh, 24px);
+    height: clamp(14px, 10cqh, 24px);
   }
   .hero-avatar {
     display: none;
