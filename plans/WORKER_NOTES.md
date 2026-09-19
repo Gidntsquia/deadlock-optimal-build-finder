@@ -45,3 +45,6 @@ Launch: `npm run dev` (or `npm run build && npx vite preview`); tier list at `/t
 ## Round 13 pass 7
 - Phase rows same height/y for every hero: MET. Desktop item plates are a fixed 40px (three lines), so a "Spirit Shredder Bullets" name no longer grows a row. Tour check compares row y/height for Calico, Infernus, Wraith, Abrams, Grey Talon (includes long names): PASS; with the old CSS it FAILS. Tour 70 PASS, 0 FAIL, 19s. Fit checks pass.
 - Launch: `npm run build && npx vite preview`.
+
+## Round 13 pass 8
+- Fixed flaky 'Back from the tier list' check: it now starts the two-frame clock at popstate (history.back() fires it async, 30-50ms later). 3/3 tour runs: 70 PASS, 0 FAIL. Check still requires no skeleton/stale/animation.
