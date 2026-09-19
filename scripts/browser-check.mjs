@@ -486,6 +486,32 @@ try {
     await page.setViewportSize({ width: 1440, height: 900 });
   }
 
+  // ---- phase rows and ability block: same y/height for every hero, even with a three-line item name ----
+  {
+    const seen = new Map();
+    let longName = false;
+    for (const name of ['Calico', 'Infernus', 'Wraith', 'Abrams', 'Grey Talon']) {
+      await gotoHero(name.toLowerCase().replace(' ', '-'));
+      await settled(name);
+      const r = await page.evaluate(() => ({
+        rows: [...document.querySelectorAll('.board .row')]
+          .map((e) => {
+            const b = e.getBoundingClientRect();
+            return `${Math.round(b.y)}:${Math.round(b.height)}`;
+          })
+          .join(' '),
+        long: [...document.querySelectorAll('.tile .plate')].some((p) => p.scrollHeight > p.clientHeight + 1 || p.textContent.length > 20),
+      }));
+      longName ||= r.long;
+      seen.set(name, r.rows);
+    }
+    check(
+      'phase rows and ability order: same y and height for every hero (incl. long item names)',
+      new Set(seen.values()).size === 1 && longName,
+      JSON.stringify([...seen]),
+    );
+  }
+
   // ---- share: real PNG, then the failure path ----
   await pickHero('Infernus');
   await page.evaluate(() => {

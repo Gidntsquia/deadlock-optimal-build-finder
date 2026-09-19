@@ -978,6 +978,13 @@ button.tile:hover {
   .hero-avatar {
     display: none;
   }
+  /* every plate is three lines tall, so no item name can change a row's height */
+  .tiles .tile .plate {
+    flex: none;
+    height: 40px;
+    min-height: 0;
+    overflow: hidden;
+  }
   .frame {
     padding: 0 8px 8px 12px;
     border-radius: var(--radius-md) 0 0 var(--radius-md);
