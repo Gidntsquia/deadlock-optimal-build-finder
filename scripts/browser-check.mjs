@@ -789,19 +789,25 @@ try {
     const r = await page.evaluate(
       () =>
         new Promise((res) => {
-          history.back();
-          requestAnimationFrame(() =>
-            requestAnimationFrame(() =>
-              res({
-                title: document.querySelector('.frame-head h1')?.textContent ?? '',
-                visible: !!document.querySelector('.frame-head h1')?.getClientRects().length,
-                skeleton: !!document.querySelector('.sk-head'),
-                stale: !!document.querySelector('.board-wrap.stale'),
-                tiles: document.querySelectorAll('.tiles .tile').length,
-                anims: document.getAnimations().filter((a) => a.playState === 'running').length,
-              }),
-            ),
+          // history.back() is async: the browser fires popstate a few ms later, so time from that event
+          addEventListener(
+            'popstate',
+            () =>
+              requestAnimationFrame(() =>
+                requestAnimationFrame(() =>
+                  res({
+                    title: document.querySelector('.frame-head h1')?.textContent ?? '',
+                    visible: !!document.querySelector('.frame-head h1')?.getClientRects().length,
+                    skeleton: !!document.querySelector('.sk-head'),
+                    stale: !!document.querySelector('.board-wrap.stale'),
+                    tiles: document.querySelectorAll('.tiles .tile').length,
+                    anims: document.getAnimations().filter((a) => a.playState === 'running').length,
+                  }),
+                ),
+              ),
+            { once: true },
           );
+          history.back();
         }),
     );
     check(
