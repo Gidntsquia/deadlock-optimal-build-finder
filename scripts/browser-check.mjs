@@ -106,11 +106,14 @@ const gridProbe = () =>
     const rows = [...grid.querySelectorAll('.ap-row')];
     if (rows.length !== 4) why.push(`${rows.length} rows`);
     const marks = [...grid.querySelectorAll('.ap-mark')];
-    const want = Number(grid.style.getPropertyValue('--ap-cols'));
-    if (marks.length !== want) why.push(`${marks.length} markers != ${want} steps`);
+    // expected sequence is the build's own abilityOrder (serialized from Build.abilityOrder, not from the markup)
+    const order = JSON.parse(grid.dataset.order || '[]');
+    if (marks.length !== order.length) why.push(`${marks.length} markers != ${order.length} build steps`);
     const byX = [...marks].sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left);
     byX.forEach((m, k) => {
-      if (Number(m.dataset.index) !== k) why.push(`x-order ${k} has point ${m.dataset.index}`);
+      const kind = ['unlock', 'tier1', 'tier2', 'tier3'].find((c) => m.classList.contains(c));
+      if (!order[k] || m.dataset.ability !== order[k][0] || kind !== order[k][1])
+        why.push(`x-order ${k}: drawn ${m.dataset.ability}/${kind}, build has ${order[k]?.join('/')}`);
     });
     const cols = new Set(marks.map((m) => Math.round(m.getBoundingClientRect().left + m.getBoundingClientRect().width / 2)));
     if (cols.size !== marks.length) why.push('two markers share a column');

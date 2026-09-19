@@ -48,7 +48,10 @@ Round-4 eval, user's words: "The ability upgrade order has regressed; it should 
 image to change which hero you have selected-- make that more intuitive." Mobile: "Works".
 Superfluous / AI-made: "Works". Overall: "Its good, but not quite there yet."
 
-Round 5 (grid + hero cue): user's verdict on the new shots is pending; run the evaluator.
+Round-5 eval, user's words: ability grid "Works"; hero cue: "Put the hero image in a portrait or something
+to make it clear that it is changeable and not a static part of the page"; overall "Works".
+Round 6 answer: the hero is now framed as a portrait (teal frame, name plate and "Change Hero" strip inside
+it on desktop; square framed portrait with a swap badge on phone).
 
 ## Sources read
 

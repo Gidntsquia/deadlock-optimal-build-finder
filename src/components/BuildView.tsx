@@ -153,7 +153,11 @@ export function BuildView({
           })}
           <section className="row abilities" aria-label="Ability Order">
             <h2 className="row-head">Ability Order</h2>
-            <ol className="ap-grid" style={{ '--ap-cols': build.abilityOrder.length } as React.CSSProperties}>
+            <ol
+              className="ap-grid"
+              data-order={JSON.stringify(build.abilityOrder.map((s) => [s.ability.name, s.kind]))}
+              style={{ '--ap-cols': build.abilityOrder.length } as React.CSSProperties}
+            >
               {abilities.map((a) => (
                 <li key={a.id} className="ap-row" data-ability={a.name} aria-label={a.name}>
                   <span className="ap-icon">

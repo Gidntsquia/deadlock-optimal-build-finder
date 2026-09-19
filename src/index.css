@@ -401,14 +401,19 @@ h3 {
 .hero-avatar {
   position: relative;
   overflow: visible;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  border: 4px solid var(--teal-ink);
+  box-shadow: var(--shadow-hard);
 }
 .hero-avatar img {
-  border-radius: var(--radius-full);
+  border-radius: 4px;
 }
 .hero-avatar .hero-cue {
   position: absolute;
-  right: -4px;
-  bottom: -4px;
+  right: -8px;
+  bottom: -8px;
   width: 20px;
   height: 20px;
   justify-content: center;
@@ -785,26 +790,33 @@ button.tile:hover {
     display: block;
     width: 100%;
     border-radius: var(--radius-md);
+    background: var(--teal);
+    border: 4px solid var(--teal);
+    overflow: hidden;
+    box-shadow: var(--shadow-hard-lg);
   }
   .hero-card img {
     display: block;
     width: 100%;
     height: auto;
-    max-height: 70vh;
+    max-height: 62vh;
     object-fit: contain;
+    background: var(--avatar-bg);
+    border-radius: var(--radius-sm);
   }
   .hero-card .hero-name {
     display: block;
     font-size: 24px;
     font-weight: 900;
-    padding: 8px 0;
-  }
-  .hero-card:hover .hero-name {
-    color: var(--teal);
+    padding: 8px 0 4px;
+    color: var(--teal-ink);
   }
   .hero-card .hero-cue {
-    padding: 8px 16px;
-    margin-bottom: 4px;
+    display: flex;
+    justify-content: center;
+    padding: 4px 16px 8px;
+    border-radius: 0;
+    background: transparent;
   }
   .hero-avatar {
     display: none;
