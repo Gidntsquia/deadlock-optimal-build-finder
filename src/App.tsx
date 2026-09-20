@@ -11,12 +11,14 @@ import {
   type HeldoutSet,
   type PanelValidation,
 } from './validation/heldout';
-import { BuildView, HeroArrow, SwapCue } from './components/BuildView';
+import { BuildView, HeroArrow } from './components/BuildView';
 import { HeroPicker } from './components/HeroPicker';
 import { slugify } from './slug';
 import { pageFromPath } from './route';
 import { BoardSkeleton } from './components/BoardSkeleton';
 import { Toaster } from './components/ui/sonner';
+import { Button } from './components/ui/button';
+import { ArrowLeftRight } from 'lucide-react';
 import { log } from './log';
 
 const INFERNUS = 1;
@@ -332,8 +334,24 @@ export default function App({ active = true }: { active?: boolean }) {
             <button className="hero-face hero-btn" onClick={() => setHeroesOpen(true)} aria-label={`${hero.name}, change hero`}>
               <HeroPortrait hero={hero} dir={slide.dir} n={slide.n} />
               <span className="hero-name">{hero.name}</span>
-              <SwapCue />
             </button>
+            <Button
+              variant="secondary"
+              size="lg"
+              className="hero-change"
+              onClick={(e) => {
+                // the press animation is a keyframe run, so it finishes even though the dialog opens at once
+                const el = e.currentTarget;
+                el.classList.remove('pressed');
+                void el.offsetWidth;
+                el.classList.add('pressed');
+                setHeroesOpen(true);
+              }}
+              onAnimationEnd={(e) => e.currentTarget.classList.remove('pressed')}
+            >
+              <ArrowLeftRight aria-hidden="true" />
+              Change Hero
+            </Button>
             <HeroArrow dir={-1} onStep={stepHero} />
             <HeroArrow dir={1} onStep={stepHero} />
           </div>
@@ -360,7 +378,7 @@ export default function App({ active = true }: { active?: boolean }) {
           )}
           {analyticsState.status !== 'error' && shownBuild && (
             <BuildView
-              key={shownBuild.key + shownHero.name}
+              key={shownHero.name}
               build={shownBuild}
               builds={build ? builds : [shownBuild]}
               onPickStyle={selectStyle}

@@ -252,15 +252,38 @@ h3 {
   background: var(--teal-ink);
   box-shadow: var(--shadow-hard);
 }
+.style-switch {
+  position: relative;
+}
+/* sliding highlight: moves under whichever build pill is chosen */
+.style-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: var(--thumb-w, 0);
+  transform: translateX(var(--thumb-x, 0));
+  border-radius: var(--radius-full);
+  background: var(--pill);
+  opacity: 0;
+}
+.style-switch[data-ready] .style-thumb {
+  opacity: 1;
+  transition:
+    transform 220ms ease,
+    width 220ms ease;
+}
 .style-switch .pill {
+  position: relative;
   background: none;
   color: var(--navy-ink);
+  transition: color 220ms ease;
 }
 .style-switch .pill:hover {
   background: var(--navy);
 }
 .style-switch .pill[aria-pressed='true'] {
-  background: var(--pill);
+  background: none;
   color: var(--teal-ink);
 }
 .pill[aria-pressed='true'] {
@@ -457,6 +480,38 @@ h3 {
 }
 .hero-avatar .hero-cue-text {
   display: none;
+}
+/* desktop Change Hero is a shadcn Button; hover/press feedback comes from these */
+.hero-change {
+  /* the global button reset is unlayered, so it beats Tailwind's utilities: set the look here */
+  background: var(--pill);
+  color: var(--teal-ink);
+  padding: 0 24px;
+  margin: 4px 12px 12px;
+  min-height: 44px;
+  font-size: 16px;
+  font-weight: 800;
+  box-shadow: var(--shadow-hard);
+  transition:
+    transform 150ms ease,
+    filter 150ms ease;
+}
+.hero-change:hover {
+  transform: scale(1.02);
+}
+.hero-change:active {
+  transform: scale(0.95);
+  filter: brightness(0.8);
+}
+/* click feedback that runs to the end even when the dialog opens over the button */
+.hero-change.pressed {
+  animation: hero-press 200ms ease;
+}
+@keyframes hero-press {
+  40% {
+    transform: scale(0.95);
+    filter: brightness(0.8);
+  }
 }
 
 /* prev / next hero arrows */
@@ -911,16 +966,6 @@ button.tile:hover {
     color: var(--navy-ink);
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-hard);
-  }
-  .hero-face .hero-cue {
-    display: flex;
-    justify-content: center;
-    min-height: 44px;
-    margin: 4px 12px 12px;
-    font-size: 16px;
-    background: var(--pill);
-    box-shadow: var(--shadow-hard);
-    align-items: center;
   }
   .hero-side .hero-arrow {
     display: inline-flex;

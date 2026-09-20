@@ -1,5 +1,5 @@
 import { heroBackdrop, img } from '../data/load';
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { Build, Hero, Phase } from '../types';
 import type { PanelValidation } from '../validation/heldout';
 import { ItemCard } from './ItemCard';
@@ -24,12 +24,12 @@ const PointGlyph = ({ unlock }: { unlock: boolean }) => (
     <path className="ap-bolt" d="M7 2.4 3.6 6.7H5.6L5 9.6 8.4 5.3H6.4Z" />
   </svg>
 );
-export const SwapCue = () => (
-  <span className="hero-cue">
-    <svg viewBox="0 0 16 16" aria-hidden="true">
+// small badge on the phone avatar; the avatar button itself is the click target
+const SwapBadge = () => (
+  <span className="hero-cue" aria-hidden="true">
+    <svg viewBox="0 0 16 16">
       <path d="M2 5h10L9.5 2.5M14 11H4l2.5 2.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
-    <span className="hero-cue-text">Change Hero</span>
   </span>
 );
 
@@ -73,6 +73,21 @@ export function BuildView({
 }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const switchRef = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => {
+    const el = switchRef.current;
+    if (!el) return;
+    const place = () => {
+      const on = el.querySelector<HTMLElement>('.style-pill[aria-pressed="true"]');
+      if (!on) return;
+      el.style.setProperty('--thumb-x', `${on.offsetLeft}px`);
+      el.style.setProperty('--thumb-w', `${on.offsetWidth}px`);
+      el.dataset.ready = '1';
+    };
+    place();
+    window.addEventListener('resize', place);
+    return () => window.removeEventListener('resize', place);
+  }, [build.key, builds.length]);
   const tileRefs = useRef<Record<number, HTMLButtonElement | HTMLDivElement | null>>({});
   // The dialog stays mounted so its close transition has content; lastOpenIndex keeps that content valid while it closes.
   const [lastOpenIndex, setLastOpenIndex] = useState(0);
@@ -123,13 +138,14 @@ export function BuildView({
           <HeroArrow dir={-1} onStep={onStepHero} />
           <button className="hero-avatar hero-btn" onClick={onOpenHeroes} aria-label={`${hero.name}, change hero`}>
             <img src={img(hero.images.small)} alt="" width={44} height={44} style={heroBackdrop(hero.id)} />
-            <SwapCue />
+            <SwapBadge />
           </button>
           <HeroArrow dir={1} onStep={onStepHero} />
         </div>
         <h1 title={title}>{title}</h1>
         {builds.length > 1 && (
-          <div className="pills style-switch" role="group" aria-label="Build">
+          <div className="pills style-switch" role="group" aria-label="Build" ref={switchRef}>
+            <span className="style-thumb" aria-hidden="true" />
             {builds.map((b) => (
               <button key={b.key} className="pill style-pill" aria-pressed={b.key === build.key} onClick={() => onPickStyle(b)}>
                 {b.name.replace(/ build$/, '')}
