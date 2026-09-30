@@ -29,7 +29,7 @@ import path from 'node:path';
 
 const API = 'https://api.deadlock-api.com';
 import { detectStyles, usageOf, STYLE } from './styles.mjs';
-const ASSETS = 'https://assets.deadlock-api.com';
+const ASSETS = `${API}/v1/assets`; // assets.deadlock-api.com was retired (NXDOMAIN) by 2026-09
 const OUT = path.resolve('public/data');
 // Held-out validation sets: for every active hero, VALIDATION_PLAYERS_PER_HERO top players chosen
 // automatically by selectValidationPlayers(). Never read by the generator.
@@ -454,7 +454,7 @@ async function main() {
   const manifest = { fetched_at: new Date().toISOString(), min_unix_timestamp: MIN_TS, window_days: WINDOW_DAYS, counts: {} };
 
   console.log('1/5 item catalog');
-  const items = (await getJson(`${ASSETS}/v2/items/by-type/upgrade`)).map(slimItem);
+  const items = (await getJson(`${ASSETS}/items/by-type/upgrade`)).map(slimItem);
   console.log(`   downloading ${items.length} item images`);
   for (const it of items) {
     it.remote_shop_image = it.shop_image_webp;
@@ -466,7 +466,7 @@ async function main() {
   manifest.counts.shopable_items = items.filter((i) => i.shopable && !i.disabled).length;
 
   console.log('2/5 heroes');
-  const heroesRaw = await getJson(`${ASSETS}/v2/heroes`);
+  const heroesRaw = await getJson(`${ASSETS}/heroes`);
   const active = heroesRaw.filter((h) => h.player_selectable && !h.disabled && !h.in_development);
   const heroes = active.map(slimHero);
   for (const h of heroes) {
@@ -477,7 +477,7 @@ async function main() {
   manifest.counts.heroes = heroes.length;
 
   console.log('3/5 abilities');
-  const abilitiesRaw = await getJson(`${ASSETS}/v2/items/by-type/ability`);
+  const abilitiesRaw = await getJson(`${ASSETS}/items/by-type/ability`);
   const activeIds = new Set(active.map((h) => h.id));
   const abilities = abilitiesRaw.filter((a) => activeIds.has(a.hero)).map(slimAbility);
   const sigNames = new Set(heroes.flatMap((h) => h.abilities));

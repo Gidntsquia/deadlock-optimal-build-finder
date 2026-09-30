@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { img, loadTierData } from '../data/load';
 import { buildTierRows, TIERS, type HeroStats } from '../tiers';
 import { slugify } from '../slug';
@@ -51,7 +51,7 @@ export function TierList({ onPickHero }: { onPickHero: (slug: string) => void })
         </div>
       )}
       {data && (
-        <div className="tier-rows">
+        <div className="tier-rows" style={{ '--n': Math.max(1, ...rows.map((r) => r.heroes.length)) } as CSSProperties}>
           {rows
             .filter((r) => r.heroes.length)
             .map((r) => (
