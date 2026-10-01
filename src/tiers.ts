@@ -62,7 +62,7 @@ export const MIN_ITEM_MATCHES = 300;
 
 export interface ItemTierRow {
   tier: (typeof TIERS)[number];
-  items: { item: Item; rate: number; edge: number }[];
+  items: { item: Item; rate: number; edge: number; matches: number }[];
 }
 
 /**
@@ -82,7 +82,7 @@ export function buildItemTierRows(items: Item[], stats: ItemStats['items']): Ite
   for (const { s, item } of listed) {
     const rate = winRate(s);
     const edge = rate - winRate(pool.get(item.cost)!);
-    rows.find((r) => r.tier === tierOf(50 + edge))!.items.push({ item, rate, edge });
+    rows.find((r) => r.tier === tierOf(50 + edge))!.items.push({ item, rate, edge, matches: s.matches });
   }
   for (const r of rows) r.items.sort((a, b) => b.edge - a.edge || a.item.name.localeCompare(b.item.name));
   return rows;

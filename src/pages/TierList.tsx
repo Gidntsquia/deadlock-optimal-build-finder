@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { img, loadItemTierData, loadTierData } from '../data/load';
 import { buildItemTierRows, buildTierRows, MIN_ITEM_MATCHES, TIERS, type HeroStats, type ItemStats, type ItemTierRow } from '../tiers';
 import { slugify } from '../slug';
@@ -7,6 +7,8 @@ import type { Hero, Item } from '../types';
 import { log } from '../log';
 import { CREDIT_URL, GithubMark } from '../components/NavBar';
 import { CORRUPT_FRAME } from '../export/png';
+import { ItemCard } from '../components/ItemCard';
+import { fmtSouls } from '../text';
 
 function fmtDate(iso: string) {
   const d = new Date(iso);
@@ -27,12 +29,65 @@ const listFromUrl = (): List => {
 };
 const BANDS = 'S+ is 4 points or more above that average, S 2–4 above, A 0–2 above, B 0–2 below, C 2–4 below, D more than 4 below.';
 
+const pct = (n: number) => `${n.toFixed(1)}%`;
+
+/**
+ * Largest icon size (px) at which every row's icons, wrapped, fit the list's height. Desktop only: the list fills
+ * the screen and never scrolls. Reads the gaps and paddings from the rendered rows so CSS stays the one source.
+ */
+function fitIconSize(list: HTMLElement, counts: number[]) {
+  const row = list.querySelector<HTMLElement>('.tier-row');
+  const ul = row?.querySelector<HTMLElement>('.tier-items');
+  if (!row || !ul) return null;
+  const rs = getComputedStyle(row);
+  const us = getComputedStyle(ul);
+  const px = (v: string) => parseFloat(v) || 0;
+  const gap = px(us.columnGap);
+  const rowGap = px(getComputedStyle(list).rowGap);
+  const width = ul.clientWidth - px(us.paddingLeft) - px(us.paddingRight);
+  const chrome = px(us.paddingTop) + px(us.paddingBottom) + px(rs.borderTopWidth) + px(rs.borderBottomWidth);
+  const height = list.clientHeight - rowGap * (counts.length - 1);
+  for (let size = 120; size > 32; size--) {
+    const per = Math.max(1, Math.floor((width + gap) / (size + gap)));
+    const used = counts.reduce((h, c) => h + Math.ceil(c / per) * (size + gap) - gap + chrome, 0);
+    if (used <= height) return size;
+  }
+  return 32;
+}
+
 function ItemRows({ rows, corrupted }: { rows: ItemTierRow[]; corrupted: boolean }) {
+  const shown = rows.filter((r) => r.items.length);
+  const flat = shown.flatMap((r) => r.items.map((e) => ({ ...e, tier: r.tier })));
+  const [open, setOpen] = useState<number | null>(null);
+  const [last, setLast] = useState(0);
+  const buttons = useRef(new Map<number, HTMLButtonElement>());
+  const listRef = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState<number | null>(null);
+  const counts = shown.map((r) => r.items.length).join();
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const wide = window.matchMedia('(min-width: 900px)');
+    const fit = () => setSize(wide.matches ? fitIconSize(list, counts.split(',').map(Number)) : null);
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(list);
+    wide.addEventListener('change', fit);
+    return () => {
+      ro.disconnect();
+      wide.removeEventListener('change', fit);
+    };
+  }, [counts]);
+  const show = (i: number) => {
+    setOpen(i);
+    setLast(i);
+  };
+  const cur = flat[open ?? last];
+  const avg = cur ? cur.rate - cur.edge : 0;
   return (
-    <div className="tier-rows items">
-      {rows
-        .filter((r) => r.items.length)
-        .map((r) => (
+    <>
+      <div className="tier-rows items" ref={listRef} style={size ? ({ '--icon': `${size}px` } as CSSProperties) : undefined}>
+        {shown.map((r) => (
           <section key={r.tier.key} className="tier-row" data-tier={r.tier.key} aria-label={`${r.tier.key} tier, ${r.tier.name}`}>
             <h2 className="tier-tag">
               <b>{r.tier.key}</b>
@@ -40,15 +95,75 @@ function ItemRows({ rows, corrupted }: { rows: ItemTierRow[]; corrupted: boolean
             </h2>
             <ul className="tier-items">
               {r.items.map(({ item }) => (
-                <li key={item.id} className={['tier-item', item.item_slot_type, corrupted ? 'corrupted' : null].filter(Boolean).join(' ')} title={item.name}>
-                  <img src={img(item.shop_image_webp || item.image_webp)} alt={item.name} width={48} height={48} loading="lazy" />
-                  {corrupted && <img className="corrupt-frame" src={img(CORRUPT_FRAME)} alt="" width={48} height={48} />}
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    ref={(el) => {
+                      if (el) buttons.current.set(item.id, el);
+                      else buttons.current.delete(item.id);
+                    }}
+                    className={['tier-item', item.item_slot_type, corrupted ? 'corrupted' : null].filter(Boolean).join(' ')}
+                    title={item.name}
+                    aria-haspopup="dialog"
+                    onClick={() => show(flat.findIndex((e) => e.item.id === item.id))}
+                  >
+                    <img src={img(item.shop_image_webp || item.image_webp)} alt={item.name} width={48} height={48} />
+                    {corrupted && <img className="corrupt-frame" src={img(CORRUPT_FRAME)} alt="" width={48} height={48} />}
+                  </button>
                 </li>
               ))}
             </ul>
           </section>
         ))}
-    </div>
+      </div>
+      {cur && (
+        <ItemCard
+          open={open !== null}
+          items={flat}
+          index={open ?? last}
+          corrupted={corrupted}
+          onClose={() => setOpen(null)}
+          onNavigate={show}
+          returnFocus={(id) => buttons.current.get(id)?.focus()}
+          extra={
+            <div className="tt-section tier-stats" data-tier={cur.tier.key}>
+              <h3>Tier list</h3>
+              <div className="tier-stats-head">
+                <b className="tier-badge">{cur.tier.key}</b>
+                <p>
+                  {cur.tier.name}: wins {cur.edge >= 0 ? 'more' : 'less'} often than the average {corrupted ? 'corrupted ' : ''}item at{' '}
+                  {fmtSouls(cur.item.cost)} souls.
+                </p>
+              </div>
+              <div className="stat-line">
+                <span>Win rate</span>
+                <b>{pct(cur.rate)}</b>
+              </div>
+              <div className="stat-line">
+                <span>
+                  Average for {corrupted ? 'corrupted ' : ''}items at {fmtSouls(cur.item.cost)} souls
+                </span>
+                <b>{pct(avg)}</b>
+              </div>
+              <div className="stat-line">
+                <span>Difference</span>
+                <b>
+                  {cur.edge >= 0 ? '+' : ''}
+                  {cur.edge.toFixed(1)} points
+                </b>
+              </div>
+              <div className="stat-line">
+                <span>Games</span>
+                <b>{fmtSouls(cur.matches)}</b>
+              </div>
+              <p className="tier-stats-rank">
+                Number {(open ?? last) + 1} of {flat.length} on this list.
+              </p>
+            </div>
+          }
+        />
+      )}
+    </>
   );
 }
 

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { BuildItem } from '../types';
 import { cleanText, fmtSouls, labelFor } from '../text';
 import { ItemTile } from './ItemTile';
@@ -19,13 +20,17 @@ export function ItemCard({
   onClose,
   onNavigate,
   returnFocus,
+  corrupted,
+  extra,
 }: {
   open: boolean;
-  items: BuildItem[];
+  items: Pick<BuildItem, 'item' | 'sellFor' | 'corrupt'>[];
   index: number;
   onClose: () => void;
   onNavigate: (index: number) => void;
   returnFocus: (itemId: number) => void;
+  corrupted?: boolean; // every item is a corrupted copy: framed tile, no swap order
+  extra?: ReactNode; // shown under the head, before the item's own text
 }) {
   const bi = items[index];
   const it = bi.item;
@@ -67,7 +72,7 @@ export function ItemCard({
         }}
       >
         <div className="sheet-head">
-          <ItemTile item={it} sell={bi.sellFor?.name} corrupt={bi.corrupt?.rank} />
+          <ItemTile item={it} sell={bi.sellFor?.name} corrupt={corrupted ? true : bi.corrupt?.rank} />
           <div>
             <DialogTitle asChild>
               <h2>{it.name}</h2>
@@ -79,6 +84,8 @@ export function ItemCard({
             </div>
           </div>
         </div>
+
+        {extra}
 
         {bi.sellFor && (
           <div className="tt-section">

@@ -14,7 +14,7 @@ export const ItemTile = forwardRef<
     total?: number;
     cost?: number;
     sell?: string; // bought early and sold later to free the slot: the name of the item it makes room for
-    corrupt?: number; // swap for the corrupted copy at the Broker, in this order (1 first)
+    corrupt?: number | true; // swap for the corrupted copy at the Broker, in this order (1 first); true = the corrupted frame alone
   }
 >(function ItemTile({ item, onClick, total, cost, sell, corrupt }, ref) {
   const Tag = onClick ? 'button' : 'div';
@@ -34,7 +34,7 @@ export const ItemTile = forwardRef<
       <span className="tier">
         <span>{ROMAN[item.item_tier] ?? item.item_tier}</span>
       </span>
-      {corrupt !== undefined && (
+      {typeof corrupt === 'number' && (
         <span className="corrupt-tag">
           <b>
             <span className="sr-only">corrupt </span>

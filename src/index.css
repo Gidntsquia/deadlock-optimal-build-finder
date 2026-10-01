@@ -1429,13 +1429,31 @@ button.tile:hover {
   padding: 4px 8px;
   list-style: none;
 }
+.tier-items li {
+  display: block;
+}
 .tier-item {
   position: relative;
+  display: block;
   width: 48px;
   height: 48px;
+  padding: 0;
+  border: 0;
   border-radius: var(--radius-sm);
   overflow: hidden;
   box-shadow: var(--shadow-hard);
+  cursor: pointer;
+}
+.tier-item:hover {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+.tier-item:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+}
+.tier-item:active {
+  translate: 0 1px;
 }
 .tier-item img {
   position: absolute;
@@ -1455,6 +1473,52 @@ button.tile:hover {
 }
 .tier-item.corrupted {
   background: var(--corrupt-dark);
+}
+/* tier block inside the item sheet: tier letter in its row colour, then the numbers behind it */
+.tier-stats-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.tier-stats-head p {
+  margin: 0;
+}
+.tier-badge {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--tier-color, var(--board-head));
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 900;
+  box-shadow: var(--shadow-hard);
+}
+.tier-stats[data-tier='S+'] {
+  --tier-color: var(--weapon);
+}
+.tier-stats[data-tier='S'] {
+  --tier-color: var(--vitality);
+}
+.tier-stats[data-tier='A'] {
+  --tier-color: var(--teal);
+}
+.tier-stats[data-tier='B'] {
+  --tier-color: var(--spirit);
+}
+.tier-stats[data-tier='C'] {
+  --tier-color: var(--board-head);
+}
+.tier-stats[data-tier='D'] .tier-badge {
+  background: var(--row-head);
+  color: var(--row-head-ink);
+}
+.tier-stats .tier-stats-rank {
+  color: var(--ink-soft);
+  font-size: 13px;
 }
 .tier-rule {
   margin-top: 16px;
@@ -1498,12 +1562,17 @@ button.tile:hover {
     padding: 0 8px;
     font-size: 13px;
   }
+  /* icons stretch so each row of the grid fills the tier's width */
   .tier-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    align-content: start;
     padding: 4px;
   }
   .tier-item {
-    width: 40px;
-    height: 40px;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
   }
 }
 
@@ -1512,7 +1581,7 @@ button.tile:hover {
     display: flex;
     flex-direction: column;
     height: calc(100dvh - var(--nav-h));
-    max-width: 1280px;
+    max-width: none;
     padding: 8px 16px;
     overflow: hidden;
   }
@@ -1540,9 +1609,9 @@ button.tile:hover {
     width: 96px;
     padding: 4px;
   }
-  /* one line per tier: portraits shrink so the longest tier (--n heroes) fits the row */
+  /* one line per tier: portraits are as big as the row allows, by height and by the longest tier (--n heroes) */
   .tier-heroes {
-    container-type: inline-size;
+    container-type: size;
     flex-wrap: nowrap;
     align-content: center;
     align-items: flex-start;
@@ -1550,29 +1619,29 @@ button.tile:hover {
     padding: 4px 8px;
   }
   .tier-hero {
-    width: min(92px, calc((100cqw - (var(--n, 11) - 1) * 4px) / var(--n, 11)));
+    width: min(148px, calc((100cqw - (var(--n, 11) - 1) * 4px) / var(--n, 11)), calc(100cqh - 36px));
     padding: 2px;
+    font-size: 13px;
   }
   .tier-hero img {
     width: 100%;
-    max-width: 80px;
     height: auto;
     aspect-ratio: 1;
   }
-  /* item lists have far more entries than heroes: rows take their own height and wrap */
+  /* item lists wrap; --icon is the largest size at which every row still fits (set by the page), spare height is shared */
   .tier-rows.items {
-    overflow-y: auto;
+    overflow: hidden;
   }
   .tier-rows.items .tier-row {
-    flex: 0 0 auto;
+    flex: 1 1 auto;
   }
   .tier-switch {
     margin: 0 0 0 12px;
     vertical-align: middle;
   }
   .tier-item {
-    width: 52px;
-    height: 52px;
+    width: var(--icon, 52px);
+    height: var(--icon, 52px);
   }
   .tier-foot {
     position: relative;

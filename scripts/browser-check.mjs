@@ -901,6 +901,47 @@ try {
       await page.setViewportSize({ width: 1440, height: 900 });
       await frames();
       await snap({ path: shot(`tier-list-${key}-desktop.png`) });
+      {
+        // clicking an item opens its sheet with the tier numbers; arrows step in list order; closing returns focus
+        const first = idom.find((r) => r.items.length);
+        await page.click('.tier-item');
+        await page.waitForSelector('.tier-stats', T);
+        const sheet = async () =>
+          page.evaluate(() => ({
+            name: document.querySelector('[data-slot="dialog-content"] h2')?.textContent,
+            tier: document.querySelector('.tier-stats')?.dataset.tier,
+            badge: document.querySelector('.tier-badge')?.textContent,
+            lines: [...document.querySelectorAll('.tier-stats .stat-line')].map((e) => e.textContent),
+            corrupt: !!document.querySelector('.sheet-head .tile.corrupted'),
+            stats: document.querySelectorAll('.sheet .stat-line').length,
+          }));
+        const s1 = await sheet();
+        const rate = (n) => {
+          const r = rows.find((x) => shop.get(x.item_id)?.name === n);
+          return r ? ((100 * r.wins) / r.matches).toFixed(1) + '%' : null;
+        };
+        await page.keyboard.press('ArrowRight');
+        await frames();
+        const s2 = await sheet();
+        const second = idom.flatMap((r) => r.items)[1].name;
+        await page.keyboard.press('Escape');
+        await page.waitForSelector('[role="dialog"]', { state: 'detached', ...T });
+        const back = await page.evaluate(() => document.activeElement?.querySelector('img')?.alt);
+        check(
+          `tier list (${label}): an item opens a sheet with its tier, win rate and games; arrows step; Escape returns focus`,
+          s1.name === first.items[0].name &&
+            s1.tier === first.tier &&
+            s1.badge === first.tier &&
+            s1.lines.some((l) => l.startsWith('Win rate') && l.endsWith(rate(s1.name))) &&
+            s1.lines.some((l) => /^Games[\d,]+$/.test(l)) &&
+            s1.stats > s1.lines.length &&
+            s1.corrupt === (key === 'corrupted') &&
+            s2.name === second &&
+            back === second,
+          JSON.stringify({ s1, s2: s2.name, back }),
+        );
+        if (key === 'items') await axe('desktop, tier list item sheet');
+      }
       await axe(`desktop, tier list ${label}`);
     }
     await page.click('.tier-switch button:text-is("Heroes")');
