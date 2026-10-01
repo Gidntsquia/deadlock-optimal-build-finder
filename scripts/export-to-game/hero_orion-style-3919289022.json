@@ -1,40 +1,40 @@
 {
-  "hero_id": 64,
-  "hero_class_name": "hero_drifter",
-  "name": "Monclan Vitality Drifter",
+  "hero_id": 17,
+  "hero_class_name": "hero_orion",
+  "name": "Monclan Mercurial Magnum Grey Talon",
   "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
       "description": "",
-      "width": 960,
+      "width": 720,
       "height": 175,
       "item_ids": [
-        1437614329,
+        3077079169,
+        2064029594,
         1998374645,
-        98582110,
-        1342610602,
-        465043967,
-        3399065363,
-        3074274290,
-        4139877411
+        668299740,
+        3331811235,
+        4104549924
       ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1080,
+      "width": 1320,
       "height": 175,
       "item_ids": [
-        3977876567,
         1235347618,
-        3633614685,
-        668299740,
-        393974127,
-        3190916303,
-        3585132399,
-        2481177645,
-        3696726732
+        2152872419,
+        3776945997,
+        380806748,
+        4139877411,
+        968099481,
+        334300056,
+        2121044373,
+        7409189,
+        787198704,
+        84321454
       ]
     },
     {
@@ -43,79 +43,79 @@
       "width": 600,
       "height": 175,
       "item_ids": [
-        3791587546,
         2739107182,
-        499683006,
-        1055679805,
-        1113837674
+        2519598785,
+        876563814,
+        3919289022,
+        2226497419
       ]
     }
   ],
   "ability_order": [
     {
-      "ability_id": 3120550633,
+      "ability_id": 3452399392,
       "kind": "unlock"
     },
     {
-      "ability_id": 3120550633,
+      "ability_id": 3452399392,
       "kind": "tier1"
     },
     {
-      "ability_id": 1264175662,
+      "ability_id": 548943648,
       "kind": "unlock"
     },
     {
-      "ability_id": 1264175662,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 1033019133,
+      "ability_id": 512733154,
       "kind": "unlock"
     },
     {
-      "ability_id": 1264175662,
+      "ability_id": 3452399392,
       "kind": "tier2"
     },
     {
-      "ability_id": 1168182161,
+      "ability_id": 3242902780,
       "kind": "unlock"
     },
     {
-      "ability_id": 3120550633,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1033019133,
+      "ability_id": 3242902780,
       "kind": "tier1"
     },
     {
-      "ability_id": 1264175662,
+      "ability_id": 3242902780,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 3242902780,
       "kind": "tier3"
     },
     {
-      "ability_id": 3120550633,
-      "kind": "tier3"
-    },
-    {
-      "ability_id": 1033019133,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1168182161,
+      "ability_id": 548943648,
       "kind": "tier1"
     },
     {
-      "ability_id": 1168182161,
+      "ability_id": 548943648,
       "kind": "tier2"
     },
     {
-      "ability_id": 1168182161,
+      "ability_id": 548943648,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 512733154,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 512733154,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 512733154,
       "kind": "tier3"
     }
   ],
   "tags": [
-    3120550633,
-    1264175662,
-    499683006
+    3452399392,
+    548943648,
+    3919289022
   ]
 }

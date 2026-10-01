@@ -1,39 +1,40 @@
 {
   "hero_id": 8,
   "hero_class_name": "hero_forge",
-  "name": "Monclan Weapon McGinnis",
+  "name": "Monclan Quicksilver Reload McGinnis",
   "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
       "description": "",
-      "width": 720,
+      "width": 480,
       "height": 175,
       "item_ids": [
         1009965641,
-        1548066885,
         2407033488,
-        2829638276,
-        668299740,
-        4104549924
+        1548066885,
+        668299740
       ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1320,
+      "width": 1680,
       "height": 175,
       "item_ids": [
+        811521119,
+        4104549924,
         1235347618,
-        4139877411,
-        2356412290,
+        1672893796,
         3399065363,
+        2356412290,
         84321454,
-        3403085434,
+        4139877411,
         2447176615,
-        499683006,
         112198670,
-        3791587546,
+        3403085434,
+        2603935618,
+        499683006,
         3919289022
       ]
     },
@@ -44,9 +45,9 @@
       "height": 175,
       "item_ids": [
         2463960640,
-        1414319208,
+        876563814,
         2163598980,
-        1055679805
+        2226497419
       ]
     }
   ],
@@ -60,11 +61,11 @@
       "kind": "tier1"
     },
     {
-      "ability_id": 2142734020,
+      "ability_id": 1725685134,
       "kind": "unlock"
     },
     {
-      "ability_id": 1725685134,
+      "ability_id": 2142734020,
       "kind": "unlock"
     },
     {
@@ -72,7 +73,7 @@
       "kind": "tier2"
     },
     {
-      "ability_id": 2142734020,
+      "ability_id": 1725685134,
       "kind": "tier1"
     },
     {
@@ -80,7 +81,7 @@
       "kind": "unlock"
     },
     {
-      "ability_id": 1725685134,
+      "ability_id": 2142734020,
       "kind": "tier1"
     },
     {
@@ -114,7 +115,7 @@
   ],
   "tags": [
     3133377790,
-    2142734020,
+    1725685134,
     84321454
   ]
 }

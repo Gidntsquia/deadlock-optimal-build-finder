@@ -43,8 +43,8 @@
       "height": 175,
       "item_ids": [
         787198704,
-        3261353684,
         2951612397,
+        3261353684,
         1193964439,
         2717651715,
         915014646
@@ -61,61 +61,61 @@
       "kind": "tier1"
     },
     {
+      "ability_id": 3054993162,
+      "kind": "unlock"
+    },
+    {
       "ability_id": 604448162,
       "kind": "unlock"
     },
     {
-      "ability_id": 3054993162,
+      "ability_id": 604448162,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 604448162,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1841901343,
       "kind": "unlock"
+    },
+    {
+      "ability_id": 604448162,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 3054993162,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 3054993162,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1841901343,
+      "kind": "tier1"
     },
     {
       "ability_id": 3553292912,
       "kind": "tier2"
     },
     {
-      "ability_id": 3054993162,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 1841901343,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 1841901343,
-      "kind": "tier1"
-    },
-    {
       "ability_id": 3553292912,
       "kind": "tier3"
     },
     {
+      "ability_id": 3054993162,
+      "kind": "tier3"
+    },
+    {
       "ability_id": 1841901343,
       "kind": "tier2"
-    },
-    {
-      "ability_id": 3054993162,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 604448162,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 604448162,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 604448162,
-      "kind": "tier3"
-    },
-    {
-      "ability_id": 3054993162,
-      "kind": "tier3"
     }
   ],
   "tags": [
     3553292912,
-    604448162,
+    3054993162,
     3077079169
   ]
 }

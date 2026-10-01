@@ -1,121 +1,121 @@
 {
-  "hero_id": 31,
-  "hero_class_name": "hero_lash",
-  "name": "Monclan Weapon Lash",
+  "hero_id": 25,
+  "hero_class_name": "hero_warden",
+  "name": "Monclan Kinetic Dash Warden",
   "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
       "description": "",
-      "width": 480,
+      "width": 720,
       "height": 175,
       "item_ids": [
-        2010028405,
+        3077079169,
+        2829638276,
+        1009965641,
+        2064029594,
         84321454,
-        1998374645,
-        4053935515
+        4139877411
       ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 840,
+      "width": 1560,
       "height": 175,
       "item_ids": [
-        3776945997,
+        1235347618,
+        3977876567,
+        2407033488,
+        1548066885,
+        3399065363,
         2971868509,
-        1763073141,
-        2059712766,
-        4139877411,
-        2603935618,
-        334300056
+        2356412290,
+        3403085434,
+        2447176615,
+        968099481,
+        1292979587,
+        499683006,
+        3919289022
       ]
     },
     {
       "name": "Late Game",
       "description": "",
-      "width": 1320,
+      "width": 360,
       "height": 175,
       "item_ids": [
-        3731635960,
-        1282141666,
-        3331811235,
-        3077079169,
-        2121044373,
-        2152872419,
-        1770441818,
-        1047818222,
-        3884003354,
-        3357231760,
-        3919289022
+        2163598980,
+        876563814,
+        2226497419
       ]
     }
   ],
   "ability_order": [
     {
-      "ability_id": 519124136,
+      "ability_id": 2656490109,
       "kind": "unlock"
     },
     {
-      "ability_id": 519124136,
+      "ability_id": 2656490109,
       "kind": "tier1"
     },
     {
-      "ability_id": 3561817145,
+      "ability_id": 2751689917,
       "kind": "unlock"
     },
     {
-      "ability_id": 2670099061,
+      "ability_id": 1656913918,
       "kind": "unlock"
     },
     {
-      "ability_id": 519124136,
+      "ability_id": 2656490109,
       "kind": "tier2"
     },
     {
-      "ability_id": 397010810,
+      "ability_id": 2702908623,
       "kind": "unlock"
     },
     {
-      "ability_id": 519124136,
+      "ability_id": 2656490109,
       "kind": "tier3"
     },
     {
-      "ability_id": 2670099061,
+      "ability_id": 2751689917,
       "kind": "tier1"
     },
     {
-      "ability_id": 2670099061,
+      "ability_id": 2751689917,
       "kind": "tier2"
     },
     {
-      "ability_id": 2670099061,
+      "ability_id": 2751689917,
       "kind": "tier3"
     },
     {
-      "ability_id": 397010810,
+      "ability_id": 2702908623,
       "kind": "tier1"
     },
     {
-      "ability_id": 397010810,
+      "ability_id": 2702908623,
       "kind": "tier2"
     },
     {
-      "ability_id": 3561817145,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 397010810,
+      "ability_id": 2702908623,
       "kind": "tier3"
     },
     {
-      "ability_id": 3561817145,
+      "ability_id": 1656913918,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1656913918,
       "kind": "tier2"
     }
   ],
   "tags": [
-    519124136,
-    3561817145,
-    84321454
+    2656490109,
+    2751689917,
+    3977876567
   ]
 }

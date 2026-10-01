@@ -1,7 +1,7 @@
 {
-  "hero_id": 27,
-  "hero_class_name": "hero_yamato",
-  "name": "Monclan Yamato",
+  "hero_id": 15,
+  "hero_class_name": "hero_bebop",
+  "name": "Monclan Surge of Power Bebop",
   "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
@@ -10,13 +10,13 @@
       "width": 840,
       "height": 175,
       "item_ids": [
-        3862866912,
-        1437614329,
-        465043967,
         2829638276,
+        2010028405,
+        1998374645,
+        465043967,
+        3399065363,
         98582110,
-        968099481,
-        395867183
+        3074274290
       ]
     },
     {
@@ -25,96 +25,97 @@
       "width": 1200,
       "height": 175,
       "item_ids": [
-        2603935618,
-        1763073141,
-        2059712766,
-        1998374645,
+        4053935515,
+        1813726886,
+        968099481,
+        865958998,
+        811521119,
+        2447176615,
         7409189,
         2566692615,
-        3190916303,
-        2971868509,
-        395944548,
-        2481177645
+        1292979587,
+        3190916303
       ]
     },
     {
       "name": "Late Game",
       "description": "",
-      "width": 480,
+      "width": 600,
       "height": 175,
       "item_ids": [
+        710436191,
         2121044373,
-        3577481646,
+        2163598980,
         2519598785,
-        3261353684
+        3028234315
       ]
     }
   ],
   "ability_order": [
     {
-      "ability_id": 2366960452,
+      "ability_id": 2521902222,
       "kind": "unlock"
     },
     {
-      "ability_id": 3255651252,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 2566573207,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 2566573207,
+      "ability_id": 2521902222,
       "kind": "tier1"
     },
     {
-      "ability_id": 2566573207,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 3319782965,
+      "ability_id": 1928108461,
       "kind": "unlock"
     },
     {
-      "ability_id": 2566573207,
+      "ability_id": 3089858203,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2521902222,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 3089858203,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 3832675871,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1928108461,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1928108461,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 3089858203,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 3089858203,
       "kind": "tier3"
     },
     {
-      "ability_id": 2366960452,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 2366960452,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 2366960452,
+      "ability_id": 1928108461,
       "kind": "tier3"
     },
     {
-      "ability_id": 3319782965,
+      "ability_id": 3832675871,
       "kind": "tier1"
     },
     {
-      "ability_id": 3319782965,
+      "ability_id": 3832675871,
       "kind": "tier2"
     },
     {
-      "ability_id": 3319782965,
+      "ability_id": 2521902222,
       "kind": "tier3"
-    },
-    {
-      "ability_id": 3255651252,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 3255651252,
-      "kind": "tier2"
     }
   ],
   "tags": [
-    2366960452,
-    3255651252,
-    465043967
+    2521902222,
+    1928108461,
+    1292979587
   ]
 }

@@ -7,31 +7,31 @@
     {
       "name": "Early Game",
       "description": "",
-      "width": 480,
+      "width": 600,
       "height": 175,
       "item_ids": [
         2829638276,
         3776945997,
         1439347412,
-        465043967
+        465043967,
+        2947183272
       ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1200,
+      "width": 1080,
       "height": 175,
       "item_ids": [
-        2947183272,
         1925087134,
         2603935618,
         2059712766,
         2566692615,
         3970837787,
         3144988365,
-        395944548,
+        2081037738,
         3731635960,
-        2081037738
+        395944548
       ]
     },
     {
@@ -79,36 +79,36 @@
       "kind": "tier3"
     },
     {
-      "ability_id": 1835738020,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 1835738020,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1458044103,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 1458044103,
-      "kind": "tier2"
-    },
-    {
       "ability_id": 1537272748,
       "kind": "tier1"
+    },
+    {
+      "ability_id": 1835738020,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1835738020,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1458044103,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1458044103,
+      "kind": "tier2"
     },
     {
       "ability_id": 1458044103,
       "kind": "tier3"
     },
     {
-      "ability_id": 1537272748,
-      "kind": "tier2"
-    },
-    {
       "ability_id": 1835738020,
       "kind": "tier3"
+    },
+    {
+      "ability_id": 1537272748,
+      "kind": "tier2"
     }
   ],
   "tags": [

@@ -25,15 +25,15 @@
       "height": 175,
       "item_ids": [
         2603935618,
-        1925087134,
+        84321454,
         3776945997,
         876563814,
         2356412290,
+        2081037738,
         2951612397,
         787198704,
-        2081037738,
+        1144549437,
         3696726732,
-        2447176615,
         3731635960
       ]
     },
@@ -61,61 +61,61 @@
       "kind": "tier1"
     },
     {
-      "ability_id": 3516947824,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 3516947824,
-      "kind": "tier1"
-    },
-    {
       "ability_id": 491391007,
       "kind": "unlock"
-    },
-    {
-      "ability_id": 3516947824,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1142270357,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 3516947824,
-      "kind": "tier3"
     },
     {
       "ability_id": 491391007,
       "kind": "tier1"
     },
     {
-      "ability_id": 1142270357,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 1142270357,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1142270357,
-      "kind": "tier3"
-    },
-    {
-      "ability_id": 491391007,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 491391007,
-      "kind": "tier3"
+      "ability_id": 3516947824,
+      "kind": "unlock"
     },
     {
       "ability_id": 1593133799,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1142270357,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1593133799,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 491391007,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 491391007,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 3516947824,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1142270357,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1142270357,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1142270357,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 3516947824,
       "kind": "tier2"
     }
   ],
   "tags": [
     1593133799,
-    3516947824,
-    876563814
+    491391007,
+    7409189
   ]
 }

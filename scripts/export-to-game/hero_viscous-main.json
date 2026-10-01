@@ -1,7 +1,7 @@
 {
   "hero_id": 35,
   "hero_class_name": "hero_viscous",
-  "name": "Monclan Viscous",
+  "name": "Monclan Weapon Viscous",
   "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
@@ -20,17 +20,16 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1440,
+      "width": 1320,
       "height": 175,
       "item_ids": [
         3399065363,
         3074274290,
         865958998,
-        465043967,
-        3776945997,
+        2603935618,
         968099481,
+        465043967,
         754480263,
-        26002154,
         7409189,
         2121044373,
         380806748,
@@ -40,13 +39,14 @@
     {
       "name": "Late Game",
       "description": "",
-      "width": 600,
+      "width": 720,
       "height": 175,
       "item_ids": [
         3261353684,
         1193964439,
-        343572757,
+        3577481646,
         915014646,
+        343572757,
         2519598785
       ]
     }
@@ -85,14 +85,6 @@
       "kind": "tier1"
     },
     {
-      "ability_id": 1020817390,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1020817390,
-      "kind": "tier3"
-    },
-    {
       "ability_id": 3788152387,
       "kind": "tier1"
     },
@@ -102,6 +94,14 @@
     },
     {
       "ability_id": 3788152387,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1020817390,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1020817390,
       "kind": "tier3"
     },
     {

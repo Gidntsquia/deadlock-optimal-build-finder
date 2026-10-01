@@ -1,13 +1,13 @@
 {
   "hero_id": 17,
   "hero_class_name": "hero_orion",
-  "name": "Monclan Spirit Grey Talon",
+  "name": "Monclan Grey Talon",
   "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
       "description": "",
-      "width": 840,
+      "width": 720,
       "height": 175,
       "item_ids": [
         3077079169,
@@ -15,27 +15,27 @@
         1998374645,
         668299740,
         3776945997,
-        3331811235,
         4104549924
       ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1320,
+      "width": 1440,
       "height": 175,
       "item_ids": [
-        3970837787,
+        3331811235,
         968099481,
+        3970837787,
         395867183,
         380806748,
-        2152872419,
-        4139877411,
         7409189,
-        1763073141,
+        4139877411,
+        2152872419,
         787198704,
-        334300056,
-        2121044373
+        1763073141,
+        2121044373,
+        334300056
       ]
     },
     {

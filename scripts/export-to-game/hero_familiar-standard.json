@@ -13,17 +13,17 @@
         3077079169,
         2064029594,
         3776945997,
-        1998374645,
         3399065363,
-        1672893796,
+        1998374645,
         3074274290,
+        1672893796,
         4139877411
       ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1080,
+      "width": 960,
       "height": 175,
       "item_ids": [
         1150006784,
@@ -32,20 +32,20 @@
         968099481,
         2566692615,
         754480263,
-        7409189,
         787198704,
-        380806748
+        7409189
       ]
     },
     {
       "name": "Late Game",
       "description": "",
-      "width": 600,
+      "width": 720,
       "height": 175,
       "item_ids": [
+        380806748,
         2951612397,
+        2617435668,
         2717651715,
-        1662311306,
         3261353684,
         1193964439
       ]
@@ -53,14 +53,6 @@
   ],
   "ability_order": [
     {
-      "ability_id": 3692321247,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 3692321247,
-      "kind": "tier1"
-    },
-    {
       "ability_id": 1568845221,
       "kind": "unlock"
     },
@@ -73,7 +65,15 @@
       "kind": "unlock"
     },
     {
+      "ability_id": 536278136,
+      "kind": "tier1"
+    },
+    {
       "ability_id": 3692321247,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 536278136,
       "kind": "tier2"
     },
     {
@@ -81,45 +81,41 @@
       "kind": "unlock"
     },
     {
-      "ability_id": 536278136,
+      "ability_id": 1568845221,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1568845221,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 3692321247,
       "kind": "tier1"
+    },
+    {
+      "ability_id": 536278136,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 3692321247,
+      "kind": "tier2"
     },
     {
       "ability_id": 3692321247,
       "kind": "tier3"
     },
     {
-      "ability_id": 1568845221,
-      "kind": "tier2"
-    },
-    {
       "ability_id": 2396527575,
       "kind": "tier1"
     },
     {
-      "ability_id": 536278136,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1568845221,
-      "kind": "tier3"
-    },
-    {
       "ability_id": 2396527575,
       "kind": "tier2"
-    },
-    {
-      "ability_id": 536278136,
-      "kind": "tier3"
-    },
-    {
-      "ability_id": 2396527575,
-      "kind": "tier3"
     }
   ],
   "tags": [
-    3692321247,
     1568845221,
+    536278136,
     3776945997
   ]
 }

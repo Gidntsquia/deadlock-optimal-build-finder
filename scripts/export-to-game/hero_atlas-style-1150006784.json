@@ -1,38 +1,38 @@
 {
-  "hero_id": 10,
-  "hero_class_name": "hero_chrono",
-  "name": "Monclan Spirit Paradox",
+  "hero_id": 6,
+  "hero_class_name": "hero_atlas",
+  "name": "Monclan Spirit Abrams",
   "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
       "description": "",
-      "width": 840,
+      "width": 720,
       "height": 175,
       "item_ids": [
-        3862866912,
-        2010028405,
+        2829638276,
         1009965641,
-        3077079169,
+        1342610602,
         4139877411,
         1150006784,
-        3399065363
+        465043967
       ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1080,
+      "width": 1200,
       "height": 175,
       "item_ids": [
         968099481,
-        4053935515,
-        395867183,
-        2951612397,
+        26002154,
         754480263,
-        865958998,
-        1813726886,
-        334300056,
+        2566692615,
+        2951612397,
+        2059712766,
+        2603935618,
+        3190916303,
+        3731635960,
         380806748
       ]
     },
@@ -42,80 +42,80 @@
       "width": 720,
       "height": 175,
       "item_ids": [
-        630839635,
         2717651715,
+        2163598980,
         3261353684,
-        1193964439,
-        1152158042,
-        915014646
+        1371725689,
+        3028234315,
+        1193964439
       ]
     }
   ],
   "ability_order": [
     {
-      "ability_id": 58655583,
+      "ability_id": 715762406,
       "kind": "unlock"
     },
     {
-      "ability_id": 58655583,
+      "ability_id": 2824119765,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2824119765,
       "kind": "tier1"
     },
     {
-      "ability_id": 1128670012,
+      "ability_id": 4072270083,
       "kind": "unlock"
     },
     {
-      "ability_id": 1128670012,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 1366719170,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 1128670012,
+      "ability_id": 2824119765,
       "kind": "tier2"
     },
     {
-      "ability_id": 2917891787,
+      "ability_id": 509856396,
       "kind": "unlock"
     },
     {
-      "ability_id": 2917891787,
+      "ability_id": 2824119765,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 715762406,
       "kind": "tier1"
     },
     {
-      "ability_id": 2917891787,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1366719170,
+      "ability_id": 509856396,
       "kind": "tier1"
     },
     {
-      "ability_id": 1366719170,
+      "ability_id": 509856396,
       "kind": "tier2"
     },
     {
-      "ability_id": 1128670012,
+      "ability_id": 509856396,
       "kind": "tier3"
     },
     {
-      "ability_id": 2917891787,
+      "ability_id": 715762406,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 715762406,
       "kind": "tier3"
     },
     {
-      "ability_id": 1366719170,
-      "kind": "tier3"
+      "ability_id": 4072270083,
+      "kind": "tier1"
     },
     {
-      "ability_id": 58655583,
+      "ability_id": 4072270083,
       "kind": "tier2"
     }
   ],
   "tags": [
-    58655583,
-    1128670012,
-    754480263
+    715762406,
+    2824119765,
+    1150006784
   ]
 }

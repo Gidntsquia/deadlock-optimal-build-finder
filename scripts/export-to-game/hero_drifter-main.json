@@ -1,7 +1,7 @@
 {
   "hero_id": 64,
   "hero_class_name": "hero_drifter",
-  "name": "Monclan Spirit Drifter",
+  "name": "Monclan Vitality Drifter",
   "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
@@ -14,23 +14,22 @@
         98582110,
         465043967,
         1998374645,
-        3074274290,
-        3399065363
+        3399065363,
+        3074274290
       ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1200,
+      "width": 1080,
       "height": 175,
       "item_ids": [
-        3977876567,
-        2603935618,
+        1976391348,
         968099481,
         3190916303,
+        2603935618,
         1813726886,
-        2971868509,
-        1770441818,
+        26002154,
         865958998,
         2481177645,
         2121044373
@@ -39,13 +38,15 @@
     {
       "name": "Late Game",
       "description": "",
-      "width": 480,
+      "width": 720,
       "height": 175,
       "item_ids": [
-        1414025773,
         2951612397,
+        1414025773,
         2717651715,
-        343572757
+        343572757,
+        3812615317,
+        2163598980
       ]
     }
   ],
@@ -83,6 +84,10 @@
       "kind": "tier2"
     },
     {
+      "ability_id": 3120550633,
+      "kind": "tier3"
+    },
+    {
       "ability_id": 1033019133,
       "kind": "tier1"
     },
@@ -91,12 +96,12 @@
       "kind": "tier3"
     },
     {
-      "ability_id": 3120550633,
-      "kind": "tier3"
+      "ability_id": 1033019133,
+      "kind": "tier2"
     },
     {
       "ability_id": 1033019133,
-      "kind": "tier2"
+      "kind": "tier3"
     },
     {
       "ability_id": 1168182161,
@@ -105,10 +110,6 @@
     {
       "ability_id": 1168182161,
       "kind": "tier2"
-    },
-    {
-      "ability_id": 1168182161,
-      "kind": "tier3"
     }
   ],
   "tags": [

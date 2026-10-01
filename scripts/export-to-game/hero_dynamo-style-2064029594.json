@@ -1,119 +1,121 @@
 {
-  "hero_id": 20,
-  "hero_class_name": "hero_tengu",
-  "name": "Monclan Fleetfoot Ivy",
+  "hero_id": 11,
+  "hero_class_name": "hero_dynamo",
+  "name": "Monclan Weapon Dynamo",
   "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
       "description": "",
-      "width": 600,
+      "width": 720,
       "height": 175,
       "item_ids": [
-        1548066885,
-        1009965641,
-        2356412290,
-        2010028405,
-        811521119
+        3077079169,
+        2064029594,
+        2829638276,
+        668299740,
+        3776945997,
+        4104549924
       ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1080,
+      "width": 1320,
       "height": 175,
       "item_ids": [
-        2829638276,
-        3633614685,
-        4139877411,
+        3399065363,
         3403085434,
-        2603935618,
+        1150006784,
+        2447176615,
+        1763073141,
         2971868509,
-        710436191,
-        381961617,
-        334300056
+        84321454,
+        754480263,
+        787198704,
+        3270001687,
+        3919289022
       ]
     },
     {
       "name": "Late Game",
       "description": "",
-      "width": 720,
+      "width": 600,
       "height": 175,
       "item_ids": [
-        754480263,
-        380806748,
         2163598980,
-        3261353684,
-        2037039379,
-        1282141666
+        2951612397,
+        1047818222,
+        3357231760,
+        2226497419
       ]
     }
   ],
   "ability_order": [
     {
-      "ability_id": 1531378655,
+      "ability_id": 3760705623,
       "kind": "unlock"
     },
     {
-      "ability_id": 3642273386,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 3642273386,
+      "ability_id": 3760705623,
       "kind": "tier1"
     },
     {
-      "ability_id": 4111222521,
+      "ability_id": 492030745,
       "kind": "unlock"
     },
     {
-      "ability_id": 3642273386,
+      "ability_id": 2031714424,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 3760705623,
       "kind": "tier2"
     },
     {
-      "ability_id": 1247583368,
+      "ability_id": 249410288,
       "kind": "unlock"
     },
     {
-      "ability_id": 1247583368,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 1531378655,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 1531378655,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1531378655,
+      "ability_id": 3760705623,
       "kind": "tier3"
     },
     {
-      "ability_id": 1247583368,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1247583368,
-      "kind": "tier3"
-    },
-    {
-      "ability_id": 4111222521,
+      "ability_id": 249410288,
       "kind": "tier1"
     },
     {
-      "ability_id": 4111222521,
+      "ability_id": 249410288,
       "kind": "tier2"
     },
     {
-      "ability_id": 4111222521,
+      "ability_id": 492030745,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 492030745,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 492030745,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 2031714424,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2031714424,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 249410288,
       "kind": "tier3"
     }
   ],
   "tags": [
-    1531378655,
-    3642273386,
-    811521119
+    3760705623,
+    492030745,
+    2064029594
   ]
 }

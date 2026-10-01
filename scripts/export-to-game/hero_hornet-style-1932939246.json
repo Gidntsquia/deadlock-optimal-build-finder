@@ -11,8 +11,8 @@
       "height": 175,
       "item_ids": [
         3077079169,
-        1998374645,
         2064029594,
+        1998374645,
         3776945997,
         3399065363,
         968099481,
@@ -22,7 +22,7 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1080,
+      "width": 1200,
       "height": 175,
       "item_ids": [
         787198704,
@@ -33,21 +33,21 @@
         4104549924,
         1932939246,
         1414025773,
-        2951612397
+        2951612397,
+        2081037738
       ]
     },
     {
       "name": "Late Game",
       "description": "",
-      "width": 720,
+      "width": 600,
       "height": 175,
       "item_ids": [
-        2081037738,
-        2152872419,
-        2121044373,
         2717651715,
+        2121044373,
         2519598785,
-        3005970438
+        3005970438,
+        343572757
       ]
     }
   ],
@@ -57,6 +57,14 @@
       "kind": "unlock"
     },
     {
+      "ability_id": 1796564033,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1796564033,
+      "kind": "tier1"
+    },
+    {
       "ability_id": 537527508,
       "kind": "unlock"
     },
@@ -65,39 +73,35 @@
       "kind": "tier1"
     },
     {
-      "ability_id": 1796564033,
+      "ability_id": 775377419,
       "kind": "unlock"
     },
     {
-      "ability_id": 1796564033,
+      "ability_id": 775377419,
       "kind": "tier1"
+    },
+    {
+      "ability_id": 775377419,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 537527508,
+      "kind": "tier2"
     },
     {
       "ability_id": 2048438176,
       "kind": "tier1"
     },
     {
-      "ability_id": 775377419,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 775377419,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 775377419,
+      "ability_id": 2048438176,
       "kind": "tier2"
     },
     {
       "ability_id": 537527508,
-      "kind": "tier2"
+      "kind": "tier3"
     },
     {
       "ability_id": 1796564033,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 2048438176,
       "kind": "tier2"
     },
     {
@@ -106,16 +110,12 @@
     },
     {
       "ability_id": 775377419,
-      "kind": "tier3"
-    },
-    {
-      "ability_id": 2048438176,
       "kind": "tier3"
     }
   ],
   "tags": [
     2048438176,
-    537527508,
+    1796564033,
     3776945997
   ]
 }
