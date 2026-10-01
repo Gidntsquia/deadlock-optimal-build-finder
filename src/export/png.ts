@@ -73,9 +73,17 @@ function wrap(g: CanvasRenderingContext2D, text: string, max: number): string[] 
 export interface PngOptions {
   heroName: string;
   heroImage?: string;
+  abilitySlots: string[];
   img: (p?: string) => string | undefined;
   scale?: number;
   detailed?: boolean; // draw the sell / corrupt marks (the screen's Detailed view)
+}
+
+// One row per ability, in the hero's in-game slot order (hero.abilities: signature1..4).
+export function abilityRows(build: Build, slots: string[]) {
+  const rows = [...new Map(build.abilityOrder.map((s) => [s.ability.id, s.ability])).values()];
+  const slot = (c: string) => (slots.includes(c) ? slots.indexOf(c) : slots.length);
+  return rows.sort((a, b) => slot(a.class_name) - slot(b.class_name));
 }
 
 export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob> {
@@ -91,7 +99,7 @@ export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob>
     inner = COLS * TILE + (COLS - 1) * GAP,
     W = EDGE + PAD + 8 + inner + 8 + PAD + 8;
   const phases = PHASES.map((p) => ({ ...p, rows: build.items.filter((b) => b.phase === p.key) })).filter((p) => p.rows.length);
-  const abilities = [...new Map(build.abilityOrder.map((s) => [s.ability.id, s.ability])).values()];
+  const abilities = abilityRows(build, o.abilitySlots);
   const tileImgs = new Map(
     await Promise.all(build.items.map(async (b) => [b.item.id, await loadImg(o.img(b.item.shop_image_webp || b.item.image_webp))] as const)),
   );

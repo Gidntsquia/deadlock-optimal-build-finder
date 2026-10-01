@@ -5,7 +5,7 @@ import type { PanelValidation } from '../validation/heldout';
 import { ItemCard } from './ItemCard';
 import { ItemTile } from './ItemTile';
 import { Details } from './Details';
-import { renderBuildPng } from '../export/png';
+import { abilityRows, renderBuildPng } from '../export/png';
 import { log } from '../log';
 import { toast } from 'sonner';
 
@@ -66,7 +66,7 @@ export function BuildView({
   onOpenHeroes: () => void;
   onStepHero: (d: -1 | 1) => void;
   panel: PanelValidation | null;
-  hero: Pick<Hero, 'id' | 'name' | 'images'>;
+  hero: Pick<Hero, 'id' | 'name' | 'images' | 'abilities'>;
   windowDays?: number;
   fetchedDate: string | null;
   stale: boolean;
@@ -113,12 +113,12 @@ export function BuildView({
     setLastOpenIndex(i);
   };
   const title = `${hero.name} - ${build.name}`;
-  const abilities = [...new Map(build.abilityOrder.map((s) => [s.ability.id, s.ability])).values()];
+  const abilities = abilityRows(build, hero.abilities);
   const sharePng = async () => {
     setBusy(true);
     const toastId = toast.loading('Saving image');
     try {
-      const blob = await renderBuildPng(build, { heroName: hero.name, heroImage: img(hero.images.small), img, detailed });
+      const blob = await renderBuildPng(build, { heroName: hero.name, heroImage: img(hero.images.small), abilitySlots: hero.abilities, img, detailed });
       const name = title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')

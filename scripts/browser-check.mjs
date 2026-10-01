@@ -202,8 +202,8 @@ try {
     check('build: item images point at local data', srcs.length === tiles.length && srcs.every((s) => /\/data\/img\/items\/\d+\.webp$/.test(s)));
     const abil = await page.$$eval('.ap-row', (els) => els.map((e) => e.dataset.ability));
     check(
-      'abilities: 4 real Infernus abilities',
-      ['Napalm', 'Flame Dash', 'Afterburn', 'Concussive Combustion'].every((n) => abil.includes(n)) && abil.length === 4,
+      'abilities: 4 real Infernus abilities, rows in in-game slot order',
+      abil.join() === 'Napalm,Flame Dash,Afterburn,Concussive Combustion',
       abil.join(', '),
     );
     const g = await gridProbe();
@@ -933,6 +933,7 @@ try {
         const second = idom.flatMap((r) => r.items)[1].name;
         await page.keyboard.press('Escape');
         await page.waitForSelector('[role="dialog"]', { state: 'detached', ...T });
+        await page.waitForFunction((n) => document.activeElement?.querySelector('img')?.alt === n, second, { timeout: 2000 }).catch(() => {});
         const back = await page.evaluate(() => document.activeElement?.querySelector('img')?.alt);
         check(
           `tier list (${label}): an item opens a sheet with its tier, win rate and games; arrows step; Escape returns focus`,
