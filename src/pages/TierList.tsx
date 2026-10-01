@@ -27,7 +27,7 @@ const listFromUrl = (): List => {
   const l = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('list');
   return l === 'items' || l === 'corrupted' ? l : 'heroes';
 };
-const BANDS = 'S+ is 4 points or more above that average, S 2–4 above, A 0–2 above, B 0–2 below, C 2–4 below, D more than 4 below.';
+const BANDS = 'S+ is 2 points or more above, S 1–2 above, A 0–1 above, B 0–1 below, C 1–2 below, D more than 2 below.';
 
 const pct = (n: number) => `${n.toFixed(1)}%`;
 
@@ -156,6 +156,17 @@ function ItemRows({ rows, corrupted }: { rows: ItemTierRow[]; corrupted: boolean
                 <span>Games</span>
                 <b>{fmtSouls(cur.matches)}</b>
               </div>
+              <div className="stat-line">
+                <span>Games for a typical item at this price</span>
+                <b>{fmtSouls(Math.round(cur.typical))}</b>
+              </div>
+              <div className="stat-line">
+                <span>Difference that counts</span>
+                <b>
+                  {cur.score >= 0 ? '+' : ''}
+                  {cur.score.toFixed(1)} points
+                </b>
+              </div>
               <p className="tier-stats-rank">
                 Number {(open ?? last) + 1} of {flat.length} on this list.
               </p>
@@ -229,12 +240,15 @@ export function TierList({ onPickHero }: { onPickHero: (slug: string) => void })
         <p>
           {list === 'heroes' && <>Heroes ranked by win rate in Phantom and above games over the last {days} days.</>}
           {list === 'items' && (
-            <>Items on every hero, ranked by win rate against items of the same price, in Phantom and above games over the last {days} days.</>
+            <>
+              Items on every hero, ranked by win rate against items of the same price (rarely bought ones count less), in Phantom and above games over the last{' '}
+              {days} days.
+            </>
           )}
           {list === 'corrupted' && (
             <>
-              Corrupted items on every hero, ranked by win rate against corrupted items of the same price, in games of 30 minutes or more since{' '}
-              {corruptedSince ?? 'they came out'}.
+              Corrupted items on every hero, ranked by win rate against corrupted items of the same price (rarely bought ones count less), in games of 30
+              minutes or more since {corruptedSince ?? 'they came out'}.
             </>
           )}
           {data && 'stats' in data && <> Data from {fmtDate(data.stats.fetched_at)}.</>}
@@ -305,7 +319,9 @@ export function TierList({ onPickHero }: { onPickHero: (slug: string) => void })
             {list !== 'heroes' && (
               <p>
                 Pricier items are bought later, in games that are often already won, so each item is compared with the average win rate of
-                {list === 'corrupted' ? ' corrupted items' : ' items'} at its price. {BANDS} Items with fewer than {MIN_ITEM_MATCHES} games are left out.
+                {list === 'corrupted' ? ' corrupted items' : ' items'} at its price. Rarely bought items are often bought only when a game is already won, so
+                their lead counts for less: an item bought as often as a typical one at its price keeps half its lead, a rare one much less. {BANDS} Items with
+                fewer than {MIN_ITEM_MATCHES} games are left out.
                 {list === 'corrupted' ? ' Corrupted items count every rank, because they are new.' : ' Only Phantom and above games count.'} Best first inside a
                 tier.
               </p>

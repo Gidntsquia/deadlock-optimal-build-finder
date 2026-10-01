@@ -62,28 +62,40 @@ export const MIN_ITEM_MATCHES = 300;
 
 export interface ItemTierRow {
   tier: (typeof TIERS)[number];
-  items: { item: Item; rate: number; edge: number; matches: number }[];
+  items: { item: Item; rate: number; edge: number; typical: number; score: number; matches: number }[];
 }
 
 /**
  * Items rank against items of the same price, since dearer items are bought later, in games already being won.
- * edge = an item's win rate minus the pooled win rate of every listed item at its price (in points). The tier is
- * the hero rule applied to 50 + edge, so the bands are the same 2-point steps: S+ at +4 or more, D below -4.
+ * edge = an item's win rate minus the pooled win rate of every listed item at its price (in points).
+ * A rarely bought item is mostly bought by players already far ahead (a sixth 6400 item), so its edge is
+ * discounted by how rare it is: score = edge x games / (games + typical), typical = the median games of the
+ * listed items at its price. An item bought as often as the typical one keeps half its edge, a rare one little.
+ * Scores spread about half as wide as hero win rates, so the bands are 1 point: S+ at +2 or more, D below -2.
  */
 export function buildItemTierRows(items: Item[], stats: ItemStats['items']): ItemTierRow[] {
   const byId = new Map(items.filter((i) => i.shopable && !i.disabled && i.cost > 0).map((i) => [i.id, i]));
   const listed = stats.filter((s) => byId.has(s.item_id) && s.matches >= MIN_ITEM_MATCHES).map((s) => ({ s, item: byId.get(s.item_id)! }));
-  const pool = new Map<number, { wins: number; matches: number }>();
+  const pool = new Map<number, { wins: number; matches: number; games: number[] }>();
   for (const { s, item } of listed) {
-    const p = pool.get(item.cost) ?? { wins: 0, matches: 0 };
-    pool.set(item.cost, { wins: p.wins + s.wins, matches: p.matches + s.matches });
+    const p = pool.get(item.cost) ?? { wins: 0, matches: 0, games: [] };
+    pool.set(item.cost, { wins: p.wins + s.wins, matches: p.matches + s.matches, games: [...p.games, s.matches] });
   }
   const rows: ItemTierRow[] = TIERS.map((tier) => ({ tier, items: [] }));
   for (const { s, item } of listed) {
+    const p = pool.get(item.cost)!;
     const rate = winRate(s);
-    const edge = rate - winRate(pool.get(item.cost)!);
-    rows.find((r) => r.tier === tierOf(50 + edge))!.items.push({ item, rate, edge, matches: s.matches });
+    const edge = rate - winRate(p);
+    const typical = median(p.games);
+    const score = (edge * s.matches) / (s.matches + typical);
+    rows.find((r) => r.tier === tierOf(50 + 2 * score))!.items.push({ item, rate, edge, typical, score, matches: s.matches });
   }
-  for (const r of rows) r.items.sort((a, b) => b.edge - a.edge || a.item.name.localeCompare(b.item.name));
+  for (const r of rows) r.items.sort((a, b) => b.score - a.score || a.item.name.localeCompare(b.item.name));
   return rows;
 }
+
+const median = (xs: number[]) => {
+  const v = [...xs].sort((a, b) => a - b);
+  const m = v.length >> 1;
+  return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
+};

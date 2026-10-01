@@ -848,7 +848,7 @@ try {
       await page.waitForSelector('.tier-item', T);
       await frames();
       // independent restatement of the item rule in docs/tier-list.md: win rate minus the pooled win rate of the
-      // listed items at the same price, banded like heroes around 50; 300 games or more to be listed
+      // listed items at the same price; 300 games or more to be listed
       const shop = new Map(items.filter((i) => i.shopable && !i.disabled && i.cost > 0).map((i) => [i.id, i]));
       const listed = rows.filter((r) => shop.has(r.item_id) && r.matches >= 300);
       const pool = new Map();
@@ -857,13 +857,20 @@ try {
         const p = pool.get(c) ?? [0, 0];
         pool.set(c, [p[0] + r.wins, p[1] + r.matches]);
       }
+      // then discounted by rarity: x games / (games + median games of the listed items at that price); bands 1 point wide
+      const mid = (xs) => {
+        const v = [...xs].sort((a, b) => a - b);
+        return v.length % 2 ? v[(v.length - 1) / 2] : (v[v.length / 2 - 1] + v[v.length / 2]) / 2;
+      };
       const edge = new Map(
         listed.map((r) => {
-          const [w, m] = pool.get(shop.get(r.item_id).cost);
-          return [shop.get(r.item_id).name, (100 * r.wins) / r.matches - (100 * w) / m];
+          const c = shop.get(r.item_id).cost;
+          const [w, m] = pool.get(c);
+          const typ = mid(listed.filter((x) => shop.get(x.item_id).cost === c).map((x) => x.matches));
+          return [shop.get(r.item_id).name, (((100 * r.wins) / r.matches - (100 * w) / m) * r.matches) / (r.matches + typ)];
         }),
       );
-      const want = new Map([...edge].map(([n, e]) => [n, cuts.find(([, m]) => 50 + e >= m || m < 0)[0]]));
+      const want = new Map([...edge].map(([n, e]) => [n, cuts.find(([, m]) => 50 + 2 * e >= m || m < 0)[0]]));
       const idom = await page.evaluate(() =>
         [...document.querySelectorAll('.tier-row')].map((r) => ({
           tier: r.dataset.tier,

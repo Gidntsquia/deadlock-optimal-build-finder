@@ -22,7 +22,7 @@ Static React app that generates Deadlock hero builds in the browser from a local
 - Pages: `src/Shell.tsx` owns the page (URL path under the Vite base, `pushState` + `popstate`): the build finder at `<base>`
   (`?hero=&style=` unchanged) and the tier list at `<base>tier-list/` (`src/pages/TierList.tsx`, rule in `src/tiers.ts` and
   `docs/tier-list.md`, data `public/data/hero-stats.json` from `fetch-data`, `--hero-stats-only` for just that). The same page switches
-  between Heroes, Items and Corrupted Items (`?list=`); the item lists read `public/data/item-stats.json`, written with hero-stats. Clicking an item opens the build screen's item sheet (`ItemCard`, `extra` slot) with its tier, win rate, price average and games; arrows step through the list. On desktop the item icons are sized in JS (`fitIconSize`) so every row fits the screen with no scroll; on phone they fill the row width in a grid. `vite.config.ts`
+  between Heroes, Items and Corrupted Items (`?list=`); the item lists read `public/data/item-stats.json`, written with hero-stats. Clicking an item opens the build screen's item sheet (`ItemCard`, `extra` slot) with its tier, win rate, price average, games and the rarity-discounted score the tier comes from (rule in `docs/tier-list.md`); arrows step through the list. On desktop the item icons are sized in JS (`fitIconSize`) so every row fits the screen with no scroll; on phone they fill the row width in a grid. `vite.config.ts`
   copies `dist/index.html` to `dist/tier-list/index.html` and `404.html` so direct loads work on Pages. Add a page = a route in
   `src/route.ts` + a copy in that plugin.
 - Top nav (`components/NavBar.tsx`, `<header class="nav">`, height `--nav-h` 36px (44px on phone)) is on every page: logo (`favicon.svg`), name,
