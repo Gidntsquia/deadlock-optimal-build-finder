@@ -45,7 +45,7 @@ npm run verify               # Runs all the checks and prints the panel agreemen
 - Items are ordered by the average time players buy them at.
 - The scoring weights were tuned against the panel (`npx tsx scripts/tune.ts`); the
   agreement numbers are a fit to that panel rather than an out-of-sample forecast.
-- The ability order is the sequence with the best win rate in high-rank games.
+- The ability order is the sequence with the best win rate in high-rank games. When the build has an item that adds ability charges (Extra Charge, Rapid Recharge), it comes from only the games where that item was bought, since those players level the charged abilities first.
 - Each build is checked against a panel of up to 5 top players per hero, chosen
   by recent Phantom+ games on the hero and weighted toward players with more
   lifetime games and more recent play. The app shows the panel's agreement

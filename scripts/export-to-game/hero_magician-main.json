@@ -73,44 +73,44 @@
       "kind": "tier2"
     },
     {
+      "ability_id": 3156905386,
+      "kind": "tier1"
+    },
+    {
       "ability_id": 191022746,
       "kind": "unlock"
     },
     {
-      "ability_id": 191022746,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 191022746,
+      "ability_id": 3156905386,
       "kind": "tier2"
-    },
-    {
-      "ability_id": 191022746,
-      "kind": "tier3"
-    },
-    {
-      "ability_id": 2142213586,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 2142213586,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 2142213586,
-      "kind": "tier3"
-    },
-    {
-      "ability_id": 12456023,
-      "kind": "tier3"
     },
     {
       "ability_id": 3156905386,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 191022746,
       "kind": "tier1"
     },
     {
-      "ability_id": 3156905386,
+      "ability_id": 191022746,
       "kind": "tier2"
+    },
+    {
+      "ability_id": 2142213586,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2142213586,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 191022746,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 2142213586,
+      "kind": "tier3"
     }
   ],
   "tags": [

@@ -26,6 +26,7 @@ const need = consensusThreshold(panel.length);
 console.log(`# ${hero.name} — ${builds.length} builds.`);
 const pop = builds[0]?.population;
 if (pop) console.log(`population: ${pop.kind === 'top' ? `high-rank lobbies (avg badge >= ${pop.minBadge})` : 'all ranks'}, ${pop.matches.toLocaleString()} matches on the most-bought item; ability sequences from ${pop.abilitySequenceKind === 'top' ? 'high-rank' : 'all-rank'} data`);
+for (const b of builds) if (b.population.abilitySequenceItem) console.log(`${b.name}: ability order from games where ${b.population.abilitySequenceItem.name} was bought`);
 for (const b of builds) {
   const v = panel.length ? validateAgainstPanel(b, panel) : null;
   console.log(`\n## ${b.name}  total ${b.totalCost}${v ? `  | panel agreement ${(v.agreement * 100).toFixed(0)}% over ${v.players.length} player(s)` : ''}`);

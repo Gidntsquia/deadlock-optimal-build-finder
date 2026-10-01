@@ -8,6 +8,7 @@
 //   public/data/analytics/<hero_id>.json   item-stats, ability-order-stats, item-permutation-stats, and (top population)
 //                                          build styles: per-style item/ability stats (see scripts/styles.mjs),
 //                                          and sell stats: how often each item is sold to make room (fetchSellStats),
+//                                          and charge-item ability sequences: sequences from games where a charge item was bought (fetchChargeOrders),
 //                                          and corrupted stats: corrupted vs normal copies of each item (fetchCorruptedStats)
 //   public/data/validation/<account>-<hero>.json  a top player's ~20 most recent matchmaking matches on one hero
 //                                          with per-match purchases; 5 players per hero, chosen automatically
@@ -22,6 +23,7 @@
 //   --analytics-only            refresh analytics/* only
 //   --hero-stats-only           refresh hero-stats.json and item-stats.json only (a few seconds)
 //   --sell-stats-only           refresh only the sell stats inside analytics/* (top.sell_stats; --heroes works)
+//   --charge-orders-only        refresh only the charge-item ability sequences inside analytics/* (item_ability_order_stats; --heroes works)
 //   --corrupted-only            refresh only the corrupted-item stats inside analytics/* (corrupted; --heroes works)
 //   --validation-only           re-select players and refetch validation/* for every hero
 //   --heroes 1,31               (with --validation-only or --analytics-only) only these hero ids; with --validation-only their entries are merged into manifest.validation_sets
@@ -286,6 +288,41 @@ async function fetchStyles(hero, topQ, top, shopIds) {
   }
   for (const s of styles) s.share = s.matches / N;
   return { styles, scanned: cands.length };
+}
+
+// Charge-item ability sequences. Players who buy a passive item that adds ability charges (Extra Charge, Rapid
+// Recharge...) level the abilities those charges go on much earlier, so the generator takes a charge build's
+// ability order from only those games. For the high-rank population and each style, for every charge item the
+// hero buys in enough games, fetch the ability sequences of the games where it was bought (on top of the
+// style's own filter). Stored as item_ability_order_stats keyed by item id.
+const CHARGE_MIN_MATCHES = 200;
+async function fetchChargeOrders(heroes) {
+  const targets = HEROES_ARG ? heroes.filter((h) => HEROES_ARG.includes(h.id)) : heroes;
+  const items = JSON.parse(await readFile(path.join(OUT, 'items.json'), 'utf8'));
+  const chargeIds = items.filter((i) => i.shopable && !i.disabled && !i.is_active_item && parseFloat(i.properties?.BonusAbilityCharges?.value ?? 0) > 0).map((i) => i.id);
+  console.log(`charge-item ability sequences (${targets.length} heroes, items ${chargeIds.join(',')})`);
+  for (const h of targets) {
+    const file = path.join(OUT, 'analytics', `${h.id}.json`);
+    const a = JSON.parse(await readFile(file, 'utf8'));
+    if (!a.top) continue;
+    const topQ = `hero_id=${h.id}&min_unix_timestamp=${MIN_TS}&min_average_badge=${TOP_BADGE}`;
+    const fetchFor = async (pop, filter, seed) => {
+      const out = {};
+      for (const id of chargeIds) {
+        if ((pop.item_stats.find((s) => s.item_id === id)?.matches ?? 0) < CHARGE_MIN_MATCHES) continue;
+        // a style seeded on the charge item already is that population
+        const rows = id === seed ? pop.ability_order_stats : await getJson(`${API}/v1/analytics/ability-order-stats?${topQ}${filter(id)}&min_matches=5`);
+        out[id] = [...rows].sort((x, y) => y.matches - x.matches).slice(0, 400);
+      }
+      return out;
+    };
+    a.top.item_ability_order_stats = await fetchFor(a.top, (id) => `&include_item_ids=${id}`, null);
+    for (const st of a.top.styles ?? []) {
+      st.item_ability_order_stats = await fetchFor(st, (id) => (st.seed === null ? `&exclude_item_ids=${st.exclude.join(',')}&include_item_ids=${id}` : `&include_item_ids=${st.seed},${id}`), st.seed);
+    }
+    console.log(`   ${h.name}: ${Object.keys(a.top.item_ability_order_stats).length} charge item(s)`);
+    await save(`analytics/${h.id}.json`, a);
+  }
 }
 
 // Sell stats: how often top players sell an item to make room, as opposed to keeping it or turning it
@@ -554,11 +591,21 @@ async function main() {
     MIN_TS = manifest.min_unix_timestamp; // keep the same window as the rest of the snapshot
     manifest.analytics_fetched_at = new Date().toISOString();
     await fetchAnalytics(heroes, manifest);
+    await fetchChargeOrders(heroes);
     await fetchAllSellStats(heroes, manifest);
     await fetchCorruptedStats(heroes);
     manifest.corrupted_fetched_at = new Date().toISOString();
     await fetchHeroStats(heroes);
     await fetchItemStats();
+    await save('manifest.json', manifest);
+    return;
+  }
+  if (process.argv.includes('--charge-orders-only')) {
+    const manifest = JSON.parse(await readFile(path.join(OUT, 'manifest.json'), 'utf8'));
+    const heroes = JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8'));
+    MIN_TS = manifest.min_unix_timestamp;
+    await fetchChargeOrders(heroes);
+    manifest.charge_orders_fetched_at = new Date().toISOString();
     await save('manifest.json', manifest);
     return;
   }
@@ -616,6 +663,7 @@ async function main() {
   manifest.counts.abilities = abilities.length;
 
   await fetchAnalytics(heroes, manifest);
+  await fetchChargeOrders(heroes);
   await fetchHeroStats(heroes);
   await fetchItemStats();
 

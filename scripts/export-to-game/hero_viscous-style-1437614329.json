@@ -86,6 +86,14 @@
       "kind": "tier1"
     },
     {
+      "ability_id": 1020817390,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1020817390,
+      "kind": "tier3"
+    },
+    {
       "ability_id": 3788152387,
       "kind": "tier1"
     },
@@ -95,14 +103,6 @@
     },
     {
       "ability_id": 3788152387,
-      "kind": "tier3"
-    },
-    {
-      "ability_id": 1020817390,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1020817390,
       "kind": "tier3"
     },
     {

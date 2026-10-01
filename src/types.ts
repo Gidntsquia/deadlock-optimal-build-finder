@@ -97,7 +97,12 @@ export interface AnalyticsPopulation {
 /** Aggregate analytics for one hero: all ranks, plus (optionally) the high-rank population. */
 export interface HeroAnalytics extends AnalyticsPopulation {
   hero_id: number;
-  top?: AnalyticsPopulation & { min_average_badge: number; styles?: StylePopulation[]; sell_stats?: { players: number; matches: number; items: SellStat[] } };
+  top?: AnalyticsPopulation & {
+    min_average_badge: number;
+    styles?: StylePopulation[];
+    item_ability_order_stats?: ItemAbilityOrderStats;
+    sell_stats?: { players: number; matches: number; items: SellStat[] };
+  };
   corrupted?: { since_unix_timestamp: number; min_duration_s: number; items: CorruptedStat[] };
 }
 /** Corrupted vs normal copies of one item for a hero, all ranks, games that lasted min_duration_s+ (fetchCorruptedStats). */
@@ -120,13 +125,21 @@ export interface StylePopulation {
   share: number;
   item_stats: ItemStat[];
   ability_order_stats: AbilityOrderStat[];
+  item_ability_order_stats?: ItemAbilityOrderStats;
 }
+/**
+ * Ability sequences from only the games where a charge item (an item that adds ability charges) was bought,
+ * keyed by item id. Players who buy one level their charged abilities differently (fetchChargeOrders).
+ */
+export type ItemAbilityOrderStats = Record<string, AbilityOrderStat[]>;
 /** Which aggregate population a build was generated from. */
 export interface BuildPopulation {
   kind: 'top' | 'all';
   minBadge: number | null;
   matches: number;
   abilitySequenceKind: 'top' | 'all';
+  /** set when the ability order comes from only the games where this charge item was bought */
+  abilitySequenceItem?: Item;
   /** set when the hero has more than one established build style and this build is one of them */
   style?: { key: string; name: string; tagline: string; share: number; seed: Item | null; anchors: Item[]; exclude: Item[]; defining: Item[] };
 }

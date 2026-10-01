@@ -1,7 +1,7 @@
 // Deterministic build generator. Inputs: item catalog, hero + ability assets, and the AGGREGATE
 // analytics snapshot for the hero (item-stats, ability-order-stats, item-permutation-stats).
 // It never reads any per-player data.
-import type { Ability, AnalyticsPopulation, Build, BuildItem, BuildPopulation, Hero, HeroAnalytics, Item, ItemStat, MatchupStats, Phase, SlotType } from '../types';
+import type { Ability, AnalyticsPopulation, Build, BuildItem, BuildPopulation, Hero, HeroAnalytics, Item, ItemAbilityOrderStats, ItemStat, MatchupStats, Phase, SlotType } from '../types';
 import { ARCHETYPES, MIN_TOP_ITEM_MATCHES, MIN_TOP_SEQ_MATCHES, MIN_VS_MATCHES, PARAMS, UNIT_VALUE, type Archetype } from './stats';
 import { kitProfile } from './kit';
 import { pickAbilityOrder } from './abilities';
@@ -35,7 +35,7 @@ interface Scored { item: Item; stat: ItemStat; pop: number; winLift: number; eff
  * big enough for win rates and buy times to be stable. Ability sequences are chosen separately
  * because they are much sparser than item stats.
  */
-export function choosePopulation(analytics: HeroAnalytics): { items: AnalyticsPopulation; abilities: AnalyticsPopulation; info: BuildPopulation } {
+export function choosePopulation(analytics: HeroAnalytics): { items: AnalyticsPopulation; abilities: AnalyticsPopulation; chargeOrders: ItemAbilityOrderStats[]; info: BuildPopulation } {
   const all: AnalyticsPopulation = analytics;
   const top = analytics.top;
   const topItemMatches = top ? Math.max(0, ...top.item_stats.map((s) => s.matches)) : 0;
@@ -45,6 +45,7 @@ export function choosePopulation(analytics: HeroAnalytics): { items: AnalyticsPo
   return {
     items: useTop ? top! : all,
     abilities: useTopSeq ? top! : all,
+    chargeOrders: useTopSeq && top!.item_ability_order_stats ? [top!.item_ability_order_stats] : [],
     info: {
       kind: useTop ? 'top' : 'all', minBadge: useTop ? top!.min_average_badge : null,
       matches: useTop ? topItemMatches : Math.max(0, ...all.item_stats.map((s) => s.matches)),
@@ -97,6 +98,8 @@ export function stylePopulations(input: GeneratorInput): Population[] {
     return {
       items: { item_stats: s.item_stats, ability_order_stats: s.ability_order_stats, permutation_stats: base.items.permutation_stats },
       abilities: { item_stats: abilities.item_stats, ability_order_stats: abilities.ability_order_stats, permutation_stats: base.items.permutation_stats },
+      // the style's own charge-item sequences first, then the whole high-rank population's
+      chargeOrders: [...(s.item_ability_order_stats ? [s.item_ability_order_stats] : []), ...base.chargeOrders],
       info: { kind: 'top', minBadge: base.info.minBadge, matches: s.matches, abilitySequenceKind: seqMatches >= MIN_TOP_SEQ_MATCHES || base.info.abilitySequenceKind === 'top' ? 'top' : 'all', style: { key: s.key, share: s.share, seed, anchors, exclude, defining, name: finalName, tagline } },
     };
   });
@@ -390,12 +393,21 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
   const phases = new Set(buildItems.map((b) => b.phase));
   if (phases.size < 3) buildItems.forEach((b, i) => { b.phase = i < buildItems.length / 3 ? 'early' : i < (2 * buildItems.length) / 3 ? 'mid' : 'late'; });
 
-  const ab = pickAbilityOrder(hero, abilities, pop.abilities.ability_order_stats);
+  // A build with a charge item (Extra Charge, Rapid Recharge...) takes its ability order from the games where
+  // that item was bought: those players level the abilities the charges go on much earlier. The first charge
+  // item in buy order with enough sequence data decides; otherwise the population's order stands.
+  const seqMax = (rows: { matches: number }[] | undefined) => Math.max(0, ...(rows ?? []).map((r) => r.matches));
+  const charged = buildItems
+    .filter((b) => !b.item.is_active_item && num(b.item.properties.BonusAbilityCharges?.value) > 0)
+    .flatMap((b) => pop.chargeOrders.map((m) => ({ item: b.item, rows: m[String(b.item.id)] })))
+    .find((c) => seqMax(c.rows) >= MIN_TOP_SEQ_MATCHES);
+  const ab = pickAbilityOrder(hero, abilities, charged ? charged.rows! : pop.abilities.ability_order_stats);
+  const info: BuildPopulation = charged ? { ...pop.info, abilitySequenceKind: 'top', abilitySequenceItem: charged.item } : pop.info;
   const style = pop.info.style;
   return {
     key: style ? style.key : arch.key, name: style ? style.name : arch.name, tagline: style ? style.tagline : arch.tagline, heroId: hero.id,
     items: buildItems, totalCost: running,
     abilityOrder: ab.steps, abilityOrderSupport: ab.support,
-    population: pop.info,
+    population: info,
   };
 }

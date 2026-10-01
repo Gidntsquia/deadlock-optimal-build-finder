@@ -95,7 +95,7 @@ export function Details({
         <h3>Ability order</h3>
         <p className="ability-support">
           {support
-            ? `Most successful sequence in ${pop.abilitySequenceKind === 'top' ? 'high-rank' : 'all-rank'} data: ${support.matches.toLocaleString()} matches, ${pct(support.winRate, 1)} win rate.`
+            ? `Most successful sequence in ${pop.abilitySequenceKind === 'top' ? 'high-rank' : 'all-rank'} data${pop.abilitySequenceItem ? ` from games where ${pop.abilitySequenceItem.name} was bought` : ''}: ${support.matches.toLocaleString()} matches, ${pct(support.winRate, 1)} win rate.`
             : 'No sequence data. Default unlock order.'}
         </p>
 

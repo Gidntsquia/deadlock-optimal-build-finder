@@ -57,48 +57,44 @@
       "kind": "unlock"
     },
     {
-      "ability_id": 1796564033,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 1796564033,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 537527508,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 537527508,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 775377419,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 775377419,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 775377419,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 537527508,
-      "kind": "tier2"
-    },
-    {
       "ability_id": 2048438176,
       "kind": "tier1"
+    },
+    {
+      "ability_id": 537527508,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1796564033,
+      "kind": "unlock"
     },
     {
       "ability_id": 2048438176,
       "kind": "tier2"
     },
     {
+      "ability_id": 775377419,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 775377419,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 775377419,
+      "kind": "tier2"
+    },
+    {
       "ability_id": 537527508,
-      "kind": "tier3"
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 537527508,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1796564033,
+      "kind": "tier1"
     },
     {
       "ability_id": 1796564033,
@@ -110,12 +106,16 @@
     },
     {
       "ability_id": 775377419,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 2048438176,
       "kind": "tier3"
     }
   ],
   "tags": [
     2048438176,
-    1796564033,
+    537527508,
     3776945997
   ]
 }

@@ -57,6 +57,17 @@ for (const hero of heroes) {
   check(`hero ${hero.id} ${hero.name} generates`, ok, why.join('; '));
 }
 
+// a build with a passive charge item takes its ability order from the games where that item was bought:
+// Infernus's charge buyers max Flame Dash (its charges come at T3) early, so the build must too
+{
+  const inf = heroes.find((h: any) => h.id === 1);
+  const builds = generateBuilds({ hero: inf, abilities, items, analytics: read('analytics/1.json') });
+  const charge = (b: any) => b.items.some((i: any) => !i.item.is_active_item && parseFloat(i.item.properties.BonusAbilityCharges?.value ?? '0') > 0);
+  const dashMax = (b: any) => b.abilityOrder.findIndex((s: any) => s.ability.name === 'Flame Dash' && s.kind === 'tier3') + 1;
+  const bad = builds.filter((b) => charge(b) && (!b.population.abilitySequenceItem || dashMax(b) === 0 || dashMax(b) > 10));
+  check('Infernus charge builds max Flame Dash by the 10th ability point', builds.some(charge) && bad.length === 0, builds.map((b) => `${b.name}: from ${b.population.abilitySequenceItem?.name ?? 'all games'}, Flame Dash maxed at point ${dashMax(b) || '-'}`).join('; '));
+}
+
 // determinism
 const a = execSync('npx tsx scripts/generate-cli.ts 1 --json').toString(), b = execSync('npx tsx scripts/generate-cli.ts 1 --json').toString();
 check('rerun yields identical Infernus builds', a === b);

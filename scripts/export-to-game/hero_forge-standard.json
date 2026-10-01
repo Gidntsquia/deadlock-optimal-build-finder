@@ -50,20 +50,20 @@
   ],
   "ability_order": [
     {
-      "ability_id": 3133377790,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 3133377790,
-      "kind": "tier1"
-    },
-    {
       "ability_id": 1725685134,
       "kind": "unlock"
     },
     {
       "ability_id": 2142734020,
       "kind": "unlock"
+    },
+    {
+      "ability_id": 3133377790,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 3133377790,
+      "kind": "tier1"
     },
     {
       "ability_id": 3133377790,
@@ -78,6 +78,14 @@
       "kind": "unlock"
     },
     {
+      "ability_id": 1725685134,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1725685134,
+      "kind": "tier3"
+    },
+    {
       "ability_id": 2142734020,
       "kind": "tier1"
     },
@@ -87,14 +95,6 @@
     },
     {
       "ability_id": 2142734020,
-      "kind": "tier3"
-    },
-    {
-      "ability_id": 1725685134,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1725685134,
       "kind": "tier3"
     },
     {
@@ -111,8 +111,8 @@
     }
   ],
   "tags": [
-    3133377790,
     1725685134,
+    2142734020,
     3005970438
   ]
 }
