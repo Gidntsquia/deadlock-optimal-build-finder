@@ -2,11 +2,11 @@
   "hero_id": 64,
   "hero_class_name": "hero_drifter",
   "name": "Monclan Vitality Drifter",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Melee Lifesteal (when you buy Hunter's Aura), Stalker (when you buy Duration Extender), Extra Spirit (when you buy Warp Stone), Healbane (when you buy Counterspell), Slowing Hex (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Spirit Snatch, Arctic Blast.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Melee Lifesteal when you buy Hunter's Aura. Sell Stalker when you buy Duration Extender.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -20,8 +20,8 @@
     },
     {
       "name": "Mid Game",
-      "description": "",
-      "width": 1080,
+      "description": "Sell Extra Spirit when you buy Warp Stone. Sell Healbane when you buy Counterspell. Sell Slowing Hex when you buy Spirit Burn.",
+      "width": 1200,
       "height": 175,
       "item_ids": [
         1976391348,
@@ -31,22 +31,23 @@
         1813726886,
         26002154,
         865958998,
+        3403085434,
         2481177645,
         2121044373
       ]
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Spirit Snatch, Arctic Blast.",
       "width": 720,
       "height": 175,
       "item_ids": [
         2951612397,
+        3270001687,
         1414025773,
         2717651715,
         343572757,
-        3812615317,
-        2163598980
+        3812615317
       ]
     }
   ],

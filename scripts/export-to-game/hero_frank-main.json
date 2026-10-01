@@ -2,11 +2,11 @@
   "hero_id": 66,
   "hero_class_name": "hero_frank",
   "name": "Monclan Spirit Victor",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Monster Rounds (when you buy Warp Stone), Extra Charge (when you buy Ethereal Shift).\nCorrupt at the Broker, in order: Torment Pulse, Escalating Exposure, Infuser, Greater Expansion, Transcendent Cooldown, Ethereal Shift.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Monster Rounds when you buy Warp Stone.",
       "width": 480,
       "height": 175,
       "item_ids": [
@@ -18,7 +18,7 @@
     },
     {
       "name": "Mid Game",
-      "description": "",
+      "description": "Sell Extra Charge when you buy Ethereal Shift.",
       "width": 1320,
       "height": 175,
       "item_ids": [
@@ -37,7 +37,7 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Torment Pulse, Escalating Exposure, Infuser, Greater Expansion, Transcendent Cooldown, Ethereal Shift.",
       "width": 840,
       "height": 175,
       "item_ids": [
@@ -120,6 +120,6 @@
   "tags": [
     2043074967,
     3727084744,
-    2566692615
+    3005970438
   ]
 }

@@ -2,11 +2,11 @@
   "hero_id": 27,
   "hero_class_name": "hero_yamato",
   "name": "Monclan Express Shot Yamato",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Restorative Shot (when you buy Hunter's Aura), Stalker (when you buy Berserker).\nCorrupt at the Broker, in order: Spirit Snatch, Radiant Regeneration, Lifestrike.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Restorative Shot when you buy Hunter's Aura. Sell Stalker when you buy Berserker.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -21,7 +21,7 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1560,
+      "width": 1440,
       "height": 175,
       "item_ids": [
         395867183,
@@ -30,7 +30,6 @@
         2971868509,
         2566692615,
         3633614685,
-        2603935618,
         1252627263,
         3190916303,
         1763073141,
@@ -41,13 +40,12 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 360,
+      "description": "Corrupt at the Broker, in order: Spirit Snatch, Radiant Regeneration, Lifestrike.",
+      "width": 240,
       "height": 175,
       "item_ids": [
         1414319208,
-        2407781327,
-        3261353684
+        2407781327
       ]
     }
   ],
@@ -116,6 +114,6 @@
   "tags": [
     2366960452,
     2566573207,
-    690458959
+    1437614329
   ]
 }

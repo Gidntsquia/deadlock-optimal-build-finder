@@ -2,11 +2,11 @@
   "hero_id": 80,
   "hero_class_name": "hero_werewolf",
   "name": "Monclan Silver",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Restorative Shot (when you buy Spirit Resilience), Stalker (when you buy Berserker), Close Quarters (when you buy Superior Duration), Extra Health (when you buy Diviner's Kevlar).\nCorrupt at the Broker, in order: Weighted Shots, Berserker, Hunter's Aura, Tankbuster, Lifestrike.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Restorative Shot when you buy Spirit Resilience. Sell Stalker when you buy Berserker. Sell Close Quarters when you buy Superior Duration.",
       "width": 600,
       "height": 175,
       "item_ids": [
@@ -19,7 +19,7 @@
     },
     {
       "name": "Mid Game",
-      "description": "",
+      "description": "Sell Extra Health when you buy Diviner's Kevlar.",
       "width": 1200,
       "height": 175,
       "item_ids": [
@@ -37,7 +37,7 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Weighted Shots, Berserker, Hunter's Aura, Tankbuster, Lifestrike.",
       "width": 720,
       "height": 175,
       "item_ids": [

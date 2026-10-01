@@ -2,11 +2,11 @@
   "hero_id": 6,
   "hero_class_name": "hero_atlas",
   "name": "Monclan Spirit Abrams",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Monster Rounds (when you buy Compress Cooldown), Close Quarters (when you buy Spirit Resilience), Restorative Locket (when you buy Phantom Strike), Healbane (when you buy Witchmail).\nCorrupt at the Broker, in order: Spirit Snatch, Spirit Resilience.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Monster Rounds when you buy Compress Cooldown. Sell Close Quarters when you buy Spirit Resilience.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -20,7 +20,7 @@
     },
     {
       "name": "Mid Game",
-      "description": "",
+      "description": "Sell Restorative Locket when you buy Phantom Strike. Sell Healbane when you buy Witchmail.",
       "width": 1200,
       "height": 175,
       "item_ids": [
@@ -38,7 +38,7 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Spirit Snatch, Spirit Resilience.",
       "width": 720,
       "height": 175,
       "item_ids": [

@@ -2,14 +2,15 @@
   "hero_id": 12,
   "hero_class_name": "hero_kelvin",
   "name": "Monclan Kelvin",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: High-Velocity Rounds (when you buy Duration Extender).\nCorrupt at the Broker, in order: Tankbuster, Superior Cooldown, Escalating Exposure, Boundless Spirit, Rapid Recharge, Superior Duration, Greater Expansion.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
-      "width": 600,
+      "description": "Sell High-Velocity Rounds when you buy Duration Extender.",
+      "width": 720,
       "height": 175,
       "item_ids": [
+        3077079169,
         2829638276,
         3776945997,
         3399065363,
@@ -38,7 +39,7 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Tankbuster, Superior Cooldown, Escalating Exposure, Boundless Spirit, Rapid Recharge, Superior Duration, Greater Expansion.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -116,6 +117,6 @@
   "tags": [
     18921423,
     2351041382,
-    3776945997
+    787198704
   ]
 }

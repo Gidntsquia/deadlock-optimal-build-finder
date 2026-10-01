@@ -2,7 +2,7 @@
   "hero_id": 67,
   "hero_class_name": "hero_bookworm",
   "name": "Monclan Paige",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Corrupt at the Broker, in order: Greater Expansion, Superior Duration, Divine Barrier, Transcendent Cooldown.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
@@ -24,13 +24,13 @@
       "width": 1200,
       "height": 175,
       "item_ids": [
-        690458959,
         3776945997,
         4139877411,
         1813726886,
         754480263,
         968099481,
         1150006784,
+        1254091416,
         2603935618,
         7409189,
         380806748
@@ -38,14 +38,15 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 720,
+      "description": "Corrupt at the Broker, in order: Greater Expansion, Superior Duration, Divine Barrier, Transcendent Cooldown.",
+      "width": 840,
       "height": 175,
       "item_ids": [
         787198704,
         2951612397,
         3261353684,
         1193964439,
+        1662311306,
         2717651715,
         915014646
       ]

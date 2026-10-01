@@ -76,6 +76,8 @@
   --tier-4: #2e2419;
   --tooltip-bg: #2d2418;
   --tooltip-ink: #f2e7cf;
+  --corrupt-dark: #6a1fa8; /* the game's corrupted_color_dark / _bright */
+  --corrupt-bright: #d8ec57;
   --ap-icon-bg: #f3ead6;
   --ap-track-unlock: #a06be0;
   --ap-glyph: #a9a39a;
@@ -650,6 +652,62 @@ button.tile:hover {
   letter-spacing: 0.5px;
   padding: 0 8px;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+/* sell-later items: the art fades (the item leaves the build) and a dark corner flag with an out-arrow
+   sits top-left, mirroring the tier flag (a sold item is never corrupted, so it never meets that flag) */
+.tile.sold .art {
+  filter: saturate(0.25) brightness(0.7);
+}
+.tile .sell-tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  background: var(--tooltip-bg);
+  pointer-events: none;
+}
+.tile .sell-tag svg {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: var(--tooltip-ink);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* corrupted-copy suggestion: the game's corrupted frame over the art, plus the swap order in the
+   top-left corner (a sold item is never corrupted, so it never meets the SELL flag) */
+.tile.corrupted .art {
+  background: var(--corrupt-dark);
+}
+.tile .art img.corrupt-frame {
+  pointer-events: none;
+}
+/* the swap order sits in a corner flag that mirrors the tier flag, in the game's corrupted colours */
+.tile .corrupt-tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  background: var(--corrupt-dark);
+  pointer-events: none;
+}
+.tile .corrupt-tag b {
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--corrupt-bright);
 }
 
 /* dialogs: parchment sheets. Bottom sheet on phone, centred on desktop. The phone

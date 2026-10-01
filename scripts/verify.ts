@@ -27,7 +27,7 @@ check('generator has no held-out player reference', !/validation\//i.test(gen) &
 const readers = execSync("grep -rlE 'HeldoutPurchases>\\(|validation/[0-9]' src || true").toString().trim().split('\n').filter(Boolean);
 check('only validation module reads held-out snapshots', readers.every((f) => f.startsWith('src/validation/')), 'files fetching the snapshot: ' + readers.join(', '));
 
-// every hero generates a build, >=12 items each, 3 phases, running totals, 4 real abilities
+// every hero generates a build, >=12 items each, <=12 held at once, 3 phases, running totals, 4 real abilities
 const infAbilities = new Set(['Napalm', 'Flame Dash', 'Afterburn', 'Concussive Combustion']);
 for (const hero of heroes) {
   const analytics = read(`analytics/${hero.id}.json`);
@@ -38,6 +38,16 @@ for (const hero of heroes) {
     for (const b of builds) {
       if (b.items.length < 12) { ok = false; why.push(`${b.name}: ${b.items.length} items`); }
       if (new Set(b.items.map((i) => i.phase)).size !== 3) { ok = false; why.push(`${b.name}: phases`); }
+      // the game has 12 item slots; an upgrade replaces its component, so it takes no new slot; a sell-later
+      // item frees its slot when the item it is sold for is bought
+      let held = 0, peak = 0;
+      for (const i of b.items) { held -= b.items.filter((x) => x.sellFor?.id === i.item.id).length; if (!i.upgradesFrom) held++; peak = Math.max(peak, held); }
+      if (b.items.some((x) => x.sellFor && x.sellFor.id === x.item.id)) { ok = false; why.push(`${b.name}: item sold for itself`); }
+      if (peak > 12) { ok = false; why.push(`${b.name}: holds ${peak} items, game allows 12`); }
+      // corrupted-copy suggestions: only T3/T4 items kept to the end, ranked 1..n with no gaps
+      const corrupt = b.items.filter((x) => x.corrupt);
+      if (corrupt.some((x) => x.item.item_tier < 3 || x.sellFor || b.items.some((y) => y.upgradesFrom?.id === x.item.id))) { ok = false; why.push(`${b.name}: corrupt on a T1/T2, sold or upgraded item`); }
+      if (corrupt.map((x) => x.corrupt!.rank).sort((p, q) => p - q).some((r, k) => r !== k + 1)) { ok = false; why.push(`${b.name}: corrupt ranks not 1..n`); }
       let run = 0; for (const i of b.items) { run += i.paidCost; if (i.runningTotal !== run || !i.item.shop_image_webp) { ok = false; why.push(`${b.name}: totals/image`); break; } }
       const names = new Set(b.abilityOrder.map((s) => s.ability.name));
       if (names.size !== 4 || b.abilityOrder.filter((s) => s.kind === 'unlock').length !== 4) { ok = false; why.push(`${b.name}: abilities ${[...names]}`); }

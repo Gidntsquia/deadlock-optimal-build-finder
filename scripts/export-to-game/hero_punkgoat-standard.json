@@ -2,11 +2,11 @@
   "hero_id": 72,
   "hero_class_name": "hero_punkgoat",
   "name": "Monclan Billy",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Stalker (when you buy Extra Health), Battle Vest (when you buy Spirit Resilience), Spirit Shielding (when you buy Greater Expansion).\nCorrupt at the Broker, in order: Spirit Snatch, Crushing Fists, Cultist Sacrifice, Greater Expansion, Lifestrike.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Stalker when you buy Extra Health.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -20,12 +20,11 @@
     },
     {
       "name": "Mid Game",
-      "description": "",
+      "description": "Sell Battle Vest when you buy Spirit Resilience. Sell Spirit Shielding when you buy Greater Expansion.",
       "width": 1440,
       "height": 175,
       "item_ids": [
         1235347618,
-        1770441818,
         112198670,
         3970837787,
         465043967,
@@ -34,19 +33,21 @@
         1252627263,
         3190916303,
         2095565695,
+        3776945997,
         26002154,
         3633614685
       ]
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 480,
+      "description": "Corrupt at the Broker, in order: Spirit Snatch, Crushing Fists, Cultist Sacrifice, Greater Expansion, Lifestrike.",
+      "width": 600,
       "height": 175,
       "item_ids": [
         787198704,
         2163598980,
         1193964439,
+        2407781327,
         800008313
       ]
     }

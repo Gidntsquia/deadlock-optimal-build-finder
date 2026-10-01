@@ -2,12 +2,12 @@
   "hero_id": 14,
   "hero_class_name": "hero_astro",
   "name": "Monclan Weapon Holliday",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Restorative Shot (when you buy Extra Stamina).\nCorrupt at the Broker, in order: Headhunter, Sharpshooter, Stamina Mastery.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
-      "width": 960,
+      "description": "Sell Restorative Shot when you buy Extra Stamina.",
+      "width": 840,
       "height": 175,
       "item_ids": [
         3862866912,
@@ -16,36 +16,33 @@
         3633614685,
         1235347618,
         4053935515,
-        668299740,
-        3331811235
+        668299740
       ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 840,
+      "width": 720,
       "height": 175,
       "item_ids": [
+        3331811235,
         2971868509,
-        968099481,
         4104549924,
         3077079169,
         1763073141,
-        1548066885,
-        787198704
+        1548066885
       ]
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 840,
+      "description": "Corrupt at the Broker, in order: Headhunter, Sharpshooter, Stamina Mastery.",
+      "width": 720,
       "height": 175,
       "item_ids": [
+        787198704,
         84321454,
         4139877411,
-        1292979587,
         2152872419,
-        3585132399,
         334300056,
         2356412290
       ]

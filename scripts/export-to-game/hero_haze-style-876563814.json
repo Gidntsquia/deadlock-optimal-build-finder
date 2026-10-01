@@ -2,11 +2,11 @@
   "hero_id": 13,
   "hero_class_name": "hero_haze",
   "name": "Monclan Vitality Haze",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Golden Goose Egg (when you buy Spirit Lifesteal), Extra Regen (when you buy Weakening Headshot).\nCorrupt at the Broker, in order: Burst Fire, Capacitor, Surge of Power.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Golden Goose Egg when you buy Spirit Lifesteal. Sell Extra Regen when you buy Weakening Headshot.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -38,16 +38,14 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 720,
+      "description": "Corrupt at the Broker, in order: Burst Fire, Capacitor, Surge of Power.",
+      "width": 480,
       "height": 175,
       "item_ids": [
-        2480592370,
         876563814,
         1770441818,
         3919289022,
-        2226497419,
-        1113837674
+        2226497419
       ]
     }
   ],
@@ -116,6 +114,6 @@
   "tags": [
     1080948381,
     2948410412,
-    876563814
+    2226497419
   ]
 }

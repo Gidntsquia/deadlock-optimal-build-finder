@@ -2,11 +2,11 @@
   "hero_id": 50,
   "hero_class_name": "hero_synth",
   "name": "Monclan Pocket",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Extra Regen (when you buy Duration Extender), Enchanter's Emblem (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Majestic Leap, Greater Expansion, Spirit Burn, Tankbuster, Transcendent Cooldown.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Extra Regen when you buy Duration Extender.",
       "width": 600,
       "height": 175,
       "item_ids": [
@@ -19,8 +19,8 @@
     },
     {
       "name": "Mid Game",
-      "description": "",
-      "width": 1320,
+      "description": "Sell Enchanter's Emblem when you buy Spirit Burn.",
+      "width": 1440,
       "height": 175,
       "item_ids": [
         668299740,
@@ -28,6 +28,7 @@
         4104549924,
         3970837787,
         2081037738,
+        3731635960,
         380806748,
         600033864,
         754480263,
@@ -38,7 +39,7 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Majestic Leap, Greater Expansion, Spirit Burn, Tankbuster, Transcendent Cooldown.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -120,6 +121,6 @@
   "tags": [
     1976701714,
     3747867012,
-    1998374645
+    343572757
   ]
 }

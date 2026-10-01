@@ -81,6 +81,14 @@ export interface PairStat {
   losses: number;
   matches: number;
 }
+/** How often top players sell an item to make room, from a sample of recent high-rank games (fetchSellStats). */
+export interface SellStat {
+  item_id: number;
+  buyers: number;
+  sold: number; // sold without being upgraded
+  upgraded: number; // turned into an upgrade (the game records this as a sale too)
+  avg_sold_time_s: number; // over the `sold` games only
+}
 export interface AnalyticsPopulation {
   item_stats: ItemStat[];
   ability_order_stats: AbilityOrderStat[];
@@ -89,7 +97,14 @@ export interface AnalyticsPopulation {
 /** Aggregate analytics for one hero: all ranks, plus (optionally) the high-rank population. */
 export interface HeroAnalytics extends AnalyticsPopulation {
   hero_id: number;
-  top?: AnalyticsPopulation & { min_average_badge: number; styles?: StylePopulation[] };
+  top?: AnalyticsPopulation & { min_average_badge: number; styles?: StylePopulation[]; sell_stats?: { players: number; matches: number; items: SellStat[] } };
+  corrupted?: { since_unix_timestamp: number; min_duration_s: number; items: CorruptedStat[] };
+}
+/** Corrupted vs normal copies of one item for a hero, all ranks, games that lasted min_duration_s+ (fetchCorruptedStats). */
+export interface CorruptedStat {
+  item_id: number;
+  corrupted: { wins: number; matches: number; avg_buy_time_s: number };
+  normal: { wins: number; matches: number };
 }
 /**
  * One build style of the high-rank population (see scripts/styles.mjs). `main` is the population with every
@@ -144,6 +159,9 @@ export interface BuildItem {
   runningTotal: number;
   paidCost: number; // cost after crediting a component already in the build
   upgradesFrom?: Item; // the component this item upgrades (if in the build)
+  sellFor?: Item; // sell this item to make room when buying that one (it does not stay to the end)
+  sellRate?: number; // share of sampled top players who sell it to make room
+  corrupt?: { rank: number; gain: number; matches: number; normalWinRate: number; corruptedWinRate: number }; // swap for the corrupted copy at the Broker; rank 1 first
   score: number;
   reasons: string[];
   usageRate: number;

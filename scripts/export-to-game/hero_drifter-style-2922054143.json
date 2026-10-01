@@ -2,11 +2,11 @@
   "hero_id": 64,
   "hero_class_name": "hero_drifter",
   "name": "Monclan Spirit Drifter",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Melee Lifesteal (when you buy Cursed Relic), Stalker (when you buy Superior Cooldown).\nCorrupt at the Broker, in order: Shadow Weave, Cursed Relic, Spirit Snatch.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Melee Lifesteal when you buy Cursed Relic. Sell Stalker when you buy Superior Cooldown.",
       "width": 600,
       "height": 175,
       "item_ids": [
@@ -20,14 +20,13 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1320,
+      "width": 1200,
       "height": 175,
       "item_ids": [
         2922054143,
         3399065363,
         3190916303,
         3633614685,
-        2603935618,
         1798666702,
         865958998,
         3270001687,
@@ -38,14 +37,14 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Shadow Weave, Cursed Relic, Spirit Snatch.",
       "width": 600,
       "height": 175,
       "item_ids": [
         2121044373,
         2717651715,
-        1414025773,
-        343572757,
+        2061878743,
+        2617435668,
         3261353684
       ]
     }
@@ -115,6 +114,6 @@
   "tags": [
     3120550633,
     1264175662,
-    98582110
+    2121044373
   ]
 }

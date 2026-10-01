@@ -34,6 +34,7 @@ const PHASES: { key: Phase; label: string }[] = [
   { key: 'late', label: 'Late Game' },
 ];
 const TIER_COST = { tier1: '1', tier2: '2', tier3: '5' } as const;
+export const CORRUPT_FRAME = 'img/corrupted/frame.webp';
 const FONT = 'Nunito, "Segoe UI", system-ui, sans-serif';
 
 const loadImg = (src?: string) =>
@@ -74,6 +75,7 @@ export interface PngOptions {
   heroImage?: string;
   img: (p?: string) => string | undefined;
   scale?: number;
+  detailed?: boolean; // draw the sell / corrupt marks (the screen's Detailed view)
 }
 
 export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob> {
@@ -95,6 +97,7 @@ export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob>
   );
   const abImgs = new Map(await Promise.all(abilities.map(async (a) => [a.id, await loadImg(o.img(a.image_webp))] as const)));
   const heroImg = await loadImg(o.heroImage);
+  const corruptFrame = o.detailed && build.items.some((b) => b.corrupt) ? await loadImg(o.img(CORRUPT_FRAME)) : null;
   try {
     await (document as unknown as { fonts?: { load: (f: string) => Promise<unknown> } }).fonts?.load(`800 16px ${FONT}`);
   } catch {
@@ -167,13 +170,22 @@ export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob>
       g.save();
       roundRect(g, x, ty, TILE, TILE_H, 4);
       g.clip();
-      g.fillStyle = art;
+      g.fillStyle = o.detailed && b.corrupt ? '#6a1fa8' : art;
       g.fillRect(x, ty, TILE, TILE);
       g.fillStyle = plate;
       g.fillRect(x, ty + TILE, TILE, TILE_H - TILE);
       const im = tileImgs.get(b.item.id);
       if (im) {
         g.drawImage(im, x, ty, TILE, TILE);
+      }
+      if (o.detailed && b.sellFor) {
+        // sold later: fade the art (grey it out, then darken), like the screen's .tile.sold
+        g.globalCompositeOperation = 'saturation';
+        g.fillStyle = 'hsla(0, 0%, 50%, 0.75)';
+        g.fillRect(x, ty, TILE, TILE);
+        g.globalCompositeOperation = 'source-over';
+        g.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        g.fillRect(x, ty, TILE, TILE);
       }
       g.fillStyle = flag;
       g.beginPath();
@@ -187,12 +199,50 @@ export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob>
       const rn = ROMAN[b.item.item_tier] ?? String(b.item.item_tier);
       g.fillText(rn, x + TILE - 3 - g.measureText(rn).width, ty + 11);
       g.textAlign = 'center';
-      if (b.item.is_active_item) {
+      if (o.detailed && b.corrupt) {
+        if (corruptFrame) g.drawImage(corruptFrame, x, ty, TILE, TILE);
+        // swap order in a corner flag mirroring the tier flag
+        g.fillStyle = '#6a1fa8';
+        g.beginPath();
+        g.moveTo(x, ty);
+        g.lineTo(x + 28, ty);
+        g.lineTo(x, ty + 28);
+        g.closePath();
+        g.fill();
+        g.fillStyle = '#d8ec57';
+        g.font = `900 10px ${FONT}`;
+        g.textAlign = 'left';
+        g.fillText(String(b.corrupt.rank), x + 4, ty + 11);
+        g.textAlign = 'center';
+      }
+      if (o.detailed && b.sellFor) {
+        // dark corner flag with an out-arrow, top-left
         g.fillStyle = '#2d2418';
-        roundRect(g, x + TILE / 2 - 24, ty + TILE - 12, 48, 16, 4);
+        g.beginPath();
+        g.moveTo(x, ty);
+        g.lineTo(x + 28, ty);
+        g.lineTo(x, ty + 28);
+        g.closePath();
+        g.fill();
+        g.strokeStyle = '#f2e7cf';
+        g.lineWidth = 2;
+        g.lineCap = 'round';
+        g.lineJoin = 'round';
+        g.beginPath();
+        g.moveTo(x + 4, ty + 12);
+        g.lineTo(x + 12, ty + 4);
+        g.moveTo(x + 7, ty + 4);
+        g.lineTo(x + 12, ty + 4);
+        g.lineTo(x + 12, ty + 9);
+        g.stroke();
+      }
+      if (b.item.is_active_item) {
+        g.font = `900 9px ${FONT}`;
+        const tw = g.measureText('ACTIVE').width + 16;
+        g.fillStyle = '#2d2418';
+        roundRect(g, x + TILE / 2 - tw / 2, ty + TILE - 12, tw, 16, 4);
         g.fill();
         g.fillStyle = '#f2e7cf';
-        g.font = `900 9px ${FONT}`;
         g.fillText('ACTIVE', x + TILE / 2, ty + TILE - 2);
       }
       g.fillStyle = C.ink;

@@ -2,7 +2,7 @@
   "hero_id": 31,
   "hero_class_name": "hero_lash",
   "name": "Monclan Lash",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Bullet Resist Shredder (when you buy Superior Cooldown), Mystic Shot (when you buy Debuff Reducer), Healbane (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Stamina Mastery, Boundless Spirit, Superior Cooldown.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
@@ -19,7 +19,7 @@
     },
     {
       "name": "Mid Game",
-      "description": "",
+      "description": "Sell Bullet Resist Shredder when you buy Superior Cooldown. Sell Mystic Shot when you buy Debuff Reducer. Sell Healbane when you buy Spirit Burn.",
       "width": 1080,
       "height": 175,
       "item_ids": [
@@ -36,8 +36,8 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 960,
+      "description": "Corrupt at the Broker, in order: Stamina Mastery, Boundless Spirit, Superior Cooldown.",
+      "width": 840,
       "height": 175,
       "item_ids": [
         2121044373,
@@ -46,8 +46,7 @@
         2519598785,
         1047818222,
         1193964439,
-        343572757,
-        3357231760
+        343572757
       ]
     }
   ],

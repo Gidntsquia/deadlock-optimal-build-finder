@@ -2,11 +2,11 @@
   "hero_id": 1,
   "hero_class_name": "hero_inferno",
   "name": "Monclan Headshot Booster Infernus",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Extra Regen (when you buy Duration Extender), Healbane (when you buy Dispel Magic), Suppressor (when you buy Toxic Bullets).\nCorrupt at the Broker, in order: Rapid Recharge, Superior Duration.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Extra Regen when you buy Duration Extender. Sell Healbane when you buy Dispel Magic. Sell Suppressor when you buy Toxic Bullets.",
       "width": 840,
       "height": 175,
       "item_ids": [
@@ -22,9 +22,10 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1320,
+      "width": 1440,
       "height": 175,
       "item_ids": [
+        805079544,
         7409189,
         112198670,
         4104549924,
@@ -40,7 +41,7 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Rapid Recharge, Superior Duration.",
       "width": 480,
       "height": 175,
       "item_ids": [

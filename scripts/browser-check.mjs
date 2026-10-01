@@ -258,6 +258,22 @@ try {
   await page.waitForFunction(() => document.activeElement?.classList.contains('details-btn'), null, { timeout: 2000 }).catch(() => {});
   check('details: Escape closes and returns focus to the control', await page.evaluate(() => document.activeElement?.classList.contains('details-btn')));
 
+  // ---- Detailed view: sell / corrupt marks are hidden until the toggle is on ----
+  {
+    const marks = () => page.$$eval('.tiles .tile', (els) => els.filter((e) => e.querySelector('.sell-tag, .corrupt-tag, .corrupt-frame')).length);
+    const before = await marks();
+    await page.click('.detail-btn');
+    await page.waitForSelector('.tiles .tile .corrupt-tag');
+    const framed = await page.$$eval('.tiles .tile.corrupted', (els) =>
+      els.every((e) => e.querySelector('.corrupt-frame')?.complete && e.querySelector('.corrupt-frame').naturalWidth > 0),
+    );
+    check(
+      'detailed: off by default with no marks; on shows the corrupted frame (loaded) on each corrupt tile',
+      before === 0 && (await page.getAttribute('.detail-btn', 'aria-pressed')) === 'true' && framed && (await marks()) > 0,
+      `before ${before}, after ${await marks()}, frames loaded ${framed}`,
+    );
+  }
+
   // ---- item sheet (desktop) ----
   const firstTile = await page.$eval('.tiles .tile', (el) => el.textContent);
   await page.click('.tiles .tile');
@@ -294,12 +310,48 @@ try {
     check('item sheet: ArrowRight steps to the next item, still centred', inside(r2, 1440, 900) && Math.abs((r2.left + r2.right) / 2 - 720) <= 2);
     const heads = await page.$$eval('[data-slot="dialog-content"] .tt-section h3', (els) => els.map((e) => e.textContent ?? ''));
     check('item sheet: no heading prints a raw section_type', !heads.some((h) => /^[a-z_]+$/.test(h)), heads.join(', '));
+    // sell-later items: a sell flag (faded art, out-arrow) on the tile and a "Sell later" note in its sheet, and only for those
+    const shown = await title();
+    const sells = await page.$$eval('.tiles .tile', (els) =>
+      els.filter((e) => e.querySelector('.sell-tag')).map((e) => e.querySelector('.plate')?.textContent),
+    );
+    const noted = heads.includes('Sell later');
+    check(
+      'sell-later: Infernus has a SELL tile; the sheet note matches the tile flag',
+      sells.length > 0 && noted === sells.includes(shown),
+      `${shown}: note ${noted}; sell flag on ${sells.join(', ')}`,
+    );
     await snap({ path: shot('item-sheet-desktop.png') });
     await page.keyboard.press('Escape');
     await page.waitForSelector('.sheet', { state: 'detached' });
     await page.waitForFunction(() => document.activeElement?.classList.contains('tile'), null, { timeout: 2000 }).catch(() => {});
     const back = await page.evaluate(() => (document.activeElement?.classList.contains('tile') ? document.activeElement.textContent : null));
     check('item sheet: Escape returns focus to the tile last shown', back !== null && back !== firstTile, `${back} vs ${firstTile}`);
+    // corrupted copies: corrupt 1..n badges on Infernus tiles; the first one's sheet says to swap it first
+    const corrupts = await page.$$eval('.tiles .tile .corrupt-tag', (els) => els.map((e) => e.textContent ?? ''));
+    const ranks = corrupts.map((t) => Number(t.replace('corrupt', ''))).sort((a, b) => a - b);
+    let firstNote = '';
+    if (ranks.length) {
+      await page.locator('.tiles .tile', { has: page.locator('.corrupt-tag', { hasText: /^corrupt 1$/ }) }).click();
+      await page.waitForSelector('.sheet');
+      firstNote = await page.$$eval(
+        '[data-slot="dialog-content"] .tt-section',
+        (els) => els.find((e) => e.querySelector('h3')?.textContent === 'Corrupt it')?.textContent ?? '',
+      );
+      await page.keyboard.press('Escape');
+      await page.waitForSelector('.sheet', { state: 'detached' });
+    }
+    check(
+      'corrupt: Infernus tiles numbered 1..n, corrupt 1 sheet says swap first',
+      ranks.length > 0 && ranks.every((r, i) => r === i + 1) && firstNote.includes('first'),
+      `${corrupts.join(', ')}; ${firstNote}`,
+    );
+    await page.click('.detail-btn');
+    await page.waitForSelector('.tiles .tile .corrupt-tag', { state: 'detached' });
+    check(
+      'detailed: toggling off hides the marks again and is remembered',
+      (await page.$$('.tiles .sell-tag, .tiles .corrupt-frame')).length === 0 && (await page.evaluate(() => localStorage.getItem('detailed'))) === '0',
+    );
     // focus ring on a tile (a real Tab first so :focus-visible applies)
     const tile = await page.$('.tiles .tile');
     await page.evaluate(() => document.activeElement?.blur());

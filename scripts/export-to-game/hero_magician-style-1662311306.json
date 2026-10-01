@@ -2,49 +2,47 @@
   "hero_id": 60,
   "hero_class_name": "hero_magician",
   "name": "Monclan Vitality Sinclair",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Monster Rounds (when you buy Diviner's Kevlar), Sprint Boots (when you buy Superior Cooldown).\nCorrupt at the Broker, in order: Diviner's Kevlar, Transcendent Cooldown, Greater Expansion.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
-      "width": 1080,
+      "description": "Sell Monster Rounds when you buy Diviner's Kevlar. Sell Sprint Boots when you buy Superior Cooldown.",
+      "width": 840,
       "height": 175,
       "item_ids": [
         3077079169,
         1009965641,
         2064029594,
         3776945997,
-        4139877411,
         1672893796,
         1150006784,
-        968099481,
         3399065363
       ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 720,
+      "width": 840,
       "height": 175,
       "item_ids": [
         7409189,
         857669956,
         754480263,
+        1813726886,
         865958998,
-        2951612397,
-        1102081447
+        3270001687,
+        2951612397
       ]
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 840,
+      "description": "Corrupt at the Broker, in order: Diviner's Kevlar, Transcendent Cooldown, Greater Expansion.",
+      "width": 720,
       "height": 175,
       "item_ids": [
         1193964439,
         2717651715,
         1662311306,
-        380806748,
         2820116164,
         3261353684,
         915014646

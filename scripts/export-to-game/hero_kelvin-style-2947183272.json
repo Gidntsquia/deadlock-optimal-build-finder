@@ -2,7 +2,7 @@
   "hero_id": 12,
   "hero_class_name": "hero_kelvin",
   "name": "Monclan Radiant Regeneration Kelvin",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Enchanter's Emblem (when you buy Alchemical Fire).\nCorrupt at the Broker, in order: Superior Cooldown, Escalating Exposure, Boundless Spirit, Rapid Recharge, Greater Expansion.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
@@ -22,7 +22,7 @@
     },
     {
       "name": "Mid Game",
-      "description": "",
+      "description": "Sell Enchanter's Emblem when you buy Alchemical Fire.",
       "width": 840,
       "height": 175,
       "item_ids": [
@@ -37,17 +37,17 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Superior Cooldown, Escalating Exposure, Boundless Spirit, Rapid Recharge, Greater Expansion.",
       "width": 840,
       "height": 175,
       "item_ids": [
         787198704,
         380806748,
+        1932939246,
         3005970438,
         3261353684,
         1193964439,
-        2519598785,
-        2717651715
+        2519598785
       ]
     }
   ],

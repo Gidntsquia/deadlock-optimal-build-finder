@@ -2,7 +2,7 @@
   "hero_id": 77,
   "hero_class_name": "hero_fencer",
   "name": "Monclan Weapon Apollo",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Corrupt at the Broker, in order: Spirit Resilience, Lifestrike, Boundless Spirit.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
@@ -24,24 +24,21 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1200,
+      "width": 840,
       "height": 175,
       "item_ids": [
         7409189,
         2566692615,
-        4139877411,
-        2603935618,
         3190916303,
         1252627263,
         380806748,
         2095565695,
-        334300056,
         3731635960
       ]
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Spirit Resilience, Lifestrike, Boundless Spirit.",
       "width": 360,
       "height": 175,
       "item_ids": [

@@ -2,11 +2,11 @@
   "hero_id": 27,
   "hero_class_name": "hero_yamato",
   "name": "Monclan Close Quarters Yamato",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Restorative Shot (when you buy Berserker), Stalker (when you buy Express Shot).\nCorrupt at the Broker, in order: Radiant Regeneration, Lifestrike.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Restorative Shot when you buy Berserker. Sell Stalker when you buy Express Shot.",
       "width": 600,
       "height": 175,
       "item_ids": [
@@ -20,7 +20,7 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1560,
+      "width": 1200,
       "height": 175,
       "item_ids": [
         2829638276,
@@ -30,24 +30,19 @@
         1252627263,
         2566692615,
         1763073141,
-        2603935618,
         3633614685,
-        3190916303,
         26002154,
-        2481177645,
-        3077079169
+        2481177645
       ]
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 480,
+      "description": "Corrupt at the Broker, in order: Radiant Regeneration, Lifestrike.",
+      "width": 240,
       "height": 175,
       "item_ids": [
         1414319208,
-        690458959,
-        2407781327,
-        800008313
+        690458959
       ]
     }
   ],

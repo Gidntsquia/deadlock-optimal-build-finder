@@ -2,11 +2,11 @@
   "hero_id": 1,
   "hero_class_name": "hero_inferno",
   "name": "Monclan Infernus",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Extra Regen (when you buy Dispel Magic), Healbane (when you buy Ricochet).\nCorrupt at the Broker, in order: Rapid Recharge, Ricochet, Superior Duration.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Extra Regen when you buy Dispel Magic.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -20,7 +20,7 @@
     },
     {
       "name": "Mid Game",
-      "description": "",
+      "description": "Sell Healbane when you buy Ricochet.",
       "width": 1320,
       "height": 175,
       "item_ids": [
@@ -39,7 +39,7 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Rapid Recharge, Ricochet, Superior Duration.",
       "width": 600,
       "height": 175,
       "item_ids": [

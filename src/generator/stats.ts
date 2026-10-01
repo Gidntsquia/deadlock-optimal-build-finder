@@ -27,23 +27,36 @@ export const ARCHETYPES: Archetype[] = [
 
 // Scoring weights and selection limits (see the wiki "How the Build Generator Works"). One mutable
 // object so scripts/tune.ts can sweep them; the app never changes it at runtime. Current values were
-// chosen by scripts/tune.ts to maximise mean panel agreement over all 38 heroes (2026-09-07, after the per-style builds landed), so they
-// are in-sample for that panel.
+// chosen by scripts/tune.ts to maximise mean panel agreement over all 38 heroes (2026-10-01, after the 12-slot cap and sell-later
+// items landed), so they are in-sample for that panel.
 export const PARAMS = {
-  weights: { popularity: 3.0, winLift: 0.25, efficiency: 0, kit: 0, synergy: 0, active: -0.2, matchup: 0 },
+  weights: { popularity: 3.0, winLift: 1.5, efficiency: 0.05, kit: 0, synergy: 0, active: -0.2, matchup: 0 },
   winShrinkFrac: 0.2,       // Bayesian shrinkage: prior weight = 20% of the hero's most-bought item's matches
   minUsage: 0.12,           // ignore items bought in <12% (relative) of games: their win rates are selection-biased noise
-  maxItems: 16,             // the game has 16 slots
-  minItems: 14,
+  maxItems: 12,             // the game has 12 item slots; a component that is upgraded later shares its upgrade's slot
+  minItems: 12,             // must stay <= maxItems: the filler step does not track slots
   maxUpgradeSteps: 6,       // extra entries allowed for component -> upgrade pairs (they share a slot)
-  slotCap: 8,               // items per slot type (4 base slots + 4 flex)
-  maxActives: 3,
+  slotCap: 7,               // items per slot type; a balance heuristic, not a game rule (any slot holds any type)
+  maxActives: 5,
+  // Items top players usually sell later to make room (cheap early items like Extra Regen). Such an item
+  // does not count against maxItems: it is sold when a later purchase needs its slot.
+  sellMinShare: 0.1,        // sold (not upgraded) by >=10% of the sampled top players who bought it
+  sellMinBuyers: 20,        // ... out of at least this many buyers in the sample
+  sellMinUsage: 0.25,       // a sell-later item joins the build when bought in >=25% (relative) of games ...
+  sellMaxBuyTimeS: 1200,    // ... and bought on average before this game time
+  maxSold: 5,               // at most this many sell-later items per build
+  // Corrupted copies (Broker, from about minute 30): suggest swapping a kept T3/T4 item when games with the
+  // corrupted copy were won more often than games with the normal copy (both 30+ min games, all ranks).
+  corruptMinMatches: 100,   // corrupted games needed before we trust the gap
+  corruptPrior: 300,        // shrink the corrupted win rate toward the normal one by this many pseudo-games
+  corruptMinGain: 0.005,    // shrunk gain needed (0.5 points)
+
   phaseTimeS: { early: 600, mid: 1320 }, // <10 min early, <22 min mid, else late
-  tierMin: { 1: 4, 2: 3 } as Record<number, number>, // minimum items of tier 1 / tier 2
+  tierMin: { 1: 0, 2: 3 } as Record<number, number>, // minimum items of tier 1 / tier 2
   pairMinMatches: 200,      // item pairs with fewer matches carry no synergy signal
   // Build styles (detected at fetch time, scripts/styles.mjs): a style population is only used when its
   // most-bought item has this many matches; otherwise the hero falls back to one build.
-  minStyleMatches: 300,
+  minStyleMatches: 500,
 };
 export const WEIGHTS = PARAMS.weights;
 // Population choice: generate from the high-rank population (lobby average badge >= the snapshot's

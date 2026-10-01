@@ -2,11 +2,11 @@
   "hero_id": 6,
   "hero_class_name": "hero_atlas",
   "name": "Monclan Weapon Abrams",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Restorative Shot (when you buy Duration Extender), Extra Regen (when you buy Phantom Strike), Monster Rounds (when you buy Spirit Resilience), Melee Lifesteal (when you buy Weighted Shots), Stalker (when you buy Berserker).\nCorrupt at the Broker, in order: Crushing Fists, Spirit Resilience, Berserker.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Restorative Shot when you buy Duration Extender. Sell Extra Regen when you buy Phantom Strike. Sell Monster Rounds when you buy Spirit Resilience. Sell Melee Lifesteal when you buy Weighted Shots. Sell Stalker when you buy Berserker.",
       "width": 840,
       "height": 175,
       "item_ids": [
@@ -33,8 +33,8 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 960,
+      "description": "Corrupt at the Broker, in order: Crushing Fists, Spirit Resilience, Berserker.",
+      "width": 1080,
       "height": 175,
       "item_ids": [
         3731635960,
@@ -43,6 +43,7 @@
         1371725689,
         2095565695,
         2163598980,
+        3791587546,
         1414319208,
         800008313
       ]
@@ -113,6 +114,6 @@
   "tags": [
     715762406,
     2824119765,
-    26002154
+    2717651715
   ]
 }

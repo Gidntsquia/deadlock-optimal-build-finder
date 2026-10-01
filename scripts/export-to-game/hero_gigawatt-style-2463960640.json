@@ -2,11 +2,11 @@
   "hero_id": 2,
   "hero_class_name": "hero_gigawatt",
   "name": "Monclan Escalating Resilience Seven",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Extra Regen (when you buy Spirit Lifesteal), Monster Rounds (when you buy Spirit Resilience), Suppressor (when you buy Debuff Reducer), Enchanter's Emblem (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Escalating Exposure, Spirit Burn, Surge of Power.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Extra Regen when you buy Spirit Lifesteal. Sell Monster Rounds when you buy Spirit Resilience. Sell Suppressor when you buy Debuff Reducer. Sell Enchanter's Emblem when you buy Spirit Burn.",
       "width": 840,
       "height": 175,
       "item_ids": [
@@ -22,15 +22,16 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1200,
+      "width": 1320,
       "height": 175,
       "item_ids": [
         1548066885,
         1292979587,
+        3403085434,
+        112198670,
         3399065363,
         2603935618,
         2447176615,
-        393974127,
         2463960640,
         2081037738,
         876563814,
@@ -39,7 +40,7 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Escalating Exposure, Spirit Burn, Surge of Power.",
       "width": 600,
       "height": 175,
       "item_ids": [
@@ -116,6 +117,6 @@
   "tags": [
     539192269,
     1074714947,
-    2463960640
+    3005970438
   ]
 }

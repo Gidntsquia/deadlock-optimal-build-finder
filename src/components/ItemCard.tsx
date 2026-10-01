@@ -67,7 +67,7 @@ export function ItemCard({
         }}
       >
         <div className="sheet-head">
-          <ItemTile item={it} />
+          <ItemTile item={it} sell={bi.sellFor?.name} corrupt={bi.corrupt?.rank} />
           <div>
             <DialogTitle asChild>
               <h2>{it.name}</h2>
@@ -79,6 +79,23 @@ export function ItemCard({
             </div>
           </div>
         </div>
+
+        {bi.sellFor && (
+          <div className="tt-section">
+            <h3>Sell later</h3>
+            <p>Sell this when you buy {bi.sellFor.name}. It helps early, then frees its slot.</p>
+          </div>
+        )}
+
+        {bi.corrupt && (
+          <div className="tt-section">
+            <h3>Corrupt it</h3>
+            <p>
+              At the Broker, swap this for its corrupted copy. The swap is free and adds a random drawback, but on this hero it still pays off.{' '}
+              {bi.corrupt.rank === 1 ? 'Swap this one first.' : `Swap it after ${items.find((x) => x.corrupt?.rank === bi.corrupt!.rank - 1)?.item.name}.`}
+            </p>
+          </div>
+        )}
 
         {keys.length > 0 && (
           <div className="tt-section">

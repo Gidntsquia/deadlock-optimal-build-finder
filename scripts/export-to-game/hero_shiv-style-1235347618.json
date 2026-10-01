@@ -2,16 +2,15 @@
   "hero_id": 19,
   "hero_class_name": "hero_shiv",
   "name": "Monclan Weapon Shiv",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Restorative Shot (when you buy Spirit Resilience), Close Quarters (when you buy Berserker).\nCorrupt at the Broker, in order: Spirit Resilience, Radiant Regeneration, Express Shot.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
-      "width": 600,
+      "description": "Sell Restorative Shot when you buy Spirit Resilience. Sell Close Quarters when you buy Berserker.",
+      "width": 480,
       "height": 175,
       "item_ids": [
         3862866912,
-        1009965641,
         2829638276,
         1342610602,
         1439347412
@@ -20,7 +19,7 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1320,
+      "width": 1200,
       "height": 175,
       "item_ids": [
         2971868509,
@@ -30,7 +29,6 @@
         2603935618,
         1976391348,
         2481177645,
-        3403085434,
         3077079169,
         3731635960,
         690458959
@@ -38,7 +36,7 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Spirit Resilience, Radiant Regeneration, Express Shot.",
       "width": 240,
       "height": 175,
       "item_ids": [

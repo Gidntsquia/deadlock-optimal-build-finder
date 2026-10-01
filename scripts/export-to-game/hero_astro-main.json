@@ -2,11 +2,11 @@
   "hero_id": 14,
   "hero_class_name": "hero_astro",
   "name": "Monclan Spirit Holliday",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Headshot Booster (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Spirit Burn, Stamina Mastery.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Headshot Booster when you buy Spirit Burn.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -36,8 +36,8 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 960,
+      "description": "Corrupt at the Broker, in order: Spirit Burn, Stamina Mastery.",
+      "width": 840,
       "height": 175,
       "item_ids": [
         380806748,
@@ -46,8 +46,7 @@
         2081037738,
         3261353684,
         2519598785,
-        343572757,
-        3005970438
+        343572757
       ]
     }
   ],

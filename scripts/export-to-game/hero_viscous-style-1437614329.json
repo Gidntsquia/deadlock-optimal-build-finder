@@ -2,7 +2,7 @@
   "hero_id": 35,
   "hero_class_name": "hero_viscous",
   "name": "Monclan Vitality Viscous",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Corrupt at the Broker, in order: Crushing Fists, Express Shot, Spirit Snatch, Lifestrike.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
@@ -38,8 +38,8 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 720,
+      "description": "Corrupt at the Broker, in order: Crushing Fists, Express Shot, Spirit Snatch, Lifestrike.",
+      "width": 840,
       "height": 175,
       "item_ids": [
         3294954488,
@@ -47,7 +47,8 @@
         2121044373,
         800008313,
         1193964439,
-        3261353684
+        3261353684,
+        915014646
       ]
     }
   ],

@@ -2,7 +2,7 @@
   "hero_id": 81,
   "hero_class_name": "hero_unicorn",
   "name": "Monclan Celeste",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Suppressor (when you buy Superior Cooldown), Spirit Shielding (when you buy Witchmail), Healbane (when you buy Mystic Vulnerability).\nCorrupt at the Broker, in order: Torment Pulse, Greater Expansion, Radiant Regeneration, Tankbuster.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
@@ -19,7 +19,7 @@
     },
     {
       "name": "Mid Game",
-      "description": "",
+      "description": "Sell Suppressor when you buy Superior Cooldown. Sell Spirit Shielding when you buy Witchmail. Sell Healbane when you buy Mystic Vulnerability.",
       "width": 1320,
       "height": 175,
       "item_ids": [
@@ -38,7 +38,7 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Torment Pulse, Greater Expansion, Radiant Regeneration, Tankbuster.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -116,6 +116,6 @@
   "tags": [
     3443575800,
     1950738949,
-    2947183272
+    2829638276
   ]
 }

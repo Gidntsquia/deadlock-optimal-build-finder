@@ -2,7 +2,7 @@
   "hero_id": 4,
   "hero_class_name": "hero_ghost",
   "name": "Monclan Tankbuster Lady Geist",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Corrupt at the Broker, in order: Greater Expansion, Spirit Burn, Superior Cooldown, Radiant Regeneration.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
@@ -21,13 +21,14 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1080,
+      "width": 1200,
       "height": 175,
       "item_ids": [
         2947183272,
         876563814,
         2447176615,
         2566692615,
+        2603935618,
         380806748,
         7409189,
         2121044373,
@@ -37,12 +38,11 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 840,
+      "description": "Corrupt at the Broker, in order: Greater Expansion, Spirit Burn, Superior Cooldown, Radiant Regeneration.",
+      "width": 720,
       "height": 175,
       "item_ids": [
         3261353684,
-        3577481646,
         865846625,
         1193964439,
         3005970438,

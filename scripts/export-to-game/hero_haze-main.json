@@ -2,11 +2,11 @@
   "hero_id": 13,
   "hero_class_name": "hero_haze",
   "name": "Monclan Weapon Haze",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Extra Regen (when you buy Burst Fire), Active Reload (when you buy Ricochet), Battle Vest (when you buy Siphon Bullets), Slowing Hex (when you buy Silencer).\nCorrupt at the Broker, in order: Burst Fire, Ricochet, Siphon Bullets, Surge of Power.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Extra Regen when you buy Burst Fire. Sell Active Reload when you buy Ricochet.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -20,13 +20,14 @@
     },
     {
       "name": "Mid Game",
-      "description": "",
-      "width": 1320,
+      "description": "Sell Battle Vest when you buy Siphon Bullets. Sell Slowing Hex when you buy Silencer.",
+      "width": 1440,
       "height": 175,
       "item_ids": [
         1235347618,
         1548066885,
         3399065363,
+        1813726886,
         2971868509,
         1292979587,
         499683006,
@@ -39,11 +40,10 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 360,
+      "description": "Corrupt at the Broker, in order: Burst Fire, Ricochet, Siphon Bullets, Surge of Power.",
+      "width": 240,
       "height": 175,
       "item_ids": [
-        2163598980,
         1282141666,
         1113837674
       ]

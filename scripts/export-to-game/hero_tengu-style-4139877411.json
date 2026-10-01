@@ -2,11 +2,11 @@
   "hero_id": 20,
   "hero_class_name": "hero_tengu",
   "name": "Monclan Extra Stamina Ivy",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Monster Rounds (when you buy Compress Cooldown), Extra Health (when you buy Inhibitor).\nCorrupt at the Broker, in order: Capacitor, Headhunter, Greater Expansion.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Monster Rounds when you buy Compress Cooldown. Sell Extra Health when you buy Inhibitor.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -21,7 +21,7 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1200,
+      "width": 1080,
       "height": 175,
       "item_ids": [
         2010028405,
@@ -29,7 +29,6 @@
         381961617,
         3403085434,
         2971868509,
-        1813726886,
         2603935618,
         754480263,
         710436191,
@@ -38,13 +37,12 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 720,
+      "description": "Corrupt at the Broker, in order: Capacitor, Headhunter, Greater Expansion.",
+      "width": 600,
       "height": 175,
       "item_ids": [
         4053935515,
         380806748,
-        2163598980,
         3261353684,
         2037039379,
         1193964439

@@ -2,11 +2,11 @@
   "hero_id": 76,
   "hero_class_name": "hero_necro",
   "name": "Monclan Extended Magazine Graves",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Restorative Shot (when you buy Ricochet).\nCorrupt at the Broker, in order: Ricochet, Capacitor, Superior Duration.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Restorative Shot when you buy Ricochet.",
       "width": 480,
       "height": 175,
       "item_ids": [
@@ -19,7 +19,7 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1680,
+      "width": 1440,
       "height": 175,
       "item_ids": [
         811521119,
@@ -28,8 +28,6 @@
         7409189,
         112198670,
         2356412290,
-        1292979587,
-        1925087134,
         3647584222,
         710436191,
         3696726732,
@@ -40,14 +38,13 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 480,
+      "description": "Corrupt at the Broker, in order: Ricochet, Capacitor, Superior Duration.",
+      "width": 360,
       "height": 175,
       "item_ids": [
         2717651715,
         2226497419,
-        2480592370,
-        2519598785
+        2480592370
       ]
     }
   ],

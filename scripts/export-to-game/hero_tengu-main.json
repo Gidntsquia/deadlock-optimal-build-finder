@@ -2,18 +2,17 @@
   "hero_id": 20,
   "hero_class_name": "hero_tengu",
   "name": "Monclan Ivy",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Monster Rounds (when you buy Duration Extender).\nCorrupt at the Broker, in order: Healing Tempo, Capacitor, Healing Nova, Superior Duration, Greater Expansion.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
-      "width": 720,
+      "description": "Sell Monster Rounds when you buy Duration Extender.",
+      "width": 600,
       "height": 175,
       "item_ids": [
         1009965641,
         1548066885,
         2356412290,
-        1710079648,
         811521119,
         2829638276
       ]
@@ -21,30 +20,28 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1440,
+      "width": 1320,
       "height": 175,
       "item_ids": [
         3399065363,
         3776945997,
+        2956256701,
         381961617,
-        1813726886,
         2603935618,
         2566692615,
         754480263,
         710436191,
         2971868509,
-        7409189,
         1102081447,
         2951612397
       ]
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 480,
+      "description": "Corrupt at the Broker, in order: Healing Tempo, Capacitor, Healing Nova, Superior Duration, Greater Expansion.",
+      "width": 360,
       "height": 175,
       "item_ids": [
-        787198704,
         1427630806,
         1193964439,
         2717651715

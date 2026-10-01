@@ -2,11 +2,11 @@
   "hero_id": 16,
   "hero_class_name": "hero_nano",
   "name": "Monclan Calico",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Melee Lifesteal (when you buy Compress Cooldown), Stalker (when you buy Scourge).\nCorrupt at the Broker, in order: Torment Pulse, Arctic Blast.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Melee Lifesteal when you buy Compress Cooldown. Sell Stalker when you buy Scourge.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -21,11 +21,10 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 960,
+      "width": 840,
       "height": 175,
       "item_ids": [
         3190916303,
-        2447176615,
         395867183,
         1144549437,
         2481177645,
@@ -36,8 +35,8 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 960,
+      "description": "Corrupt at the Broker, in order: Torment Pulse, Arctic Blast.",
+      "width": 840,
       "height": 175,
       "item_ids": [
         968099481,
@@ -46,8 +45,7 @@
         380806748,
         2519598785,
         3261353684,
-        343572757,
-        3005970438
+        2417568017
       ]
     }
   ],
@@ -116,6 +114,6 @@
   "tags": [
     1426567660,
     4131517918,
-    1437614329
+    98582110
   ]
 }

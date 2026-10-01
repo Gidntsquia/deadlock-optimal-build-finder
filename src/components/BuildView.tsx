@@ -73,6 +73,23 @@ export function BuildView({
 }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  // Detailed view: sell and corrupt marks on the tiles. Off by default; remembered per browser.
+  const [detailed, setDetailed] = useState(() => {
+    try {
+      return localStorage.getItem('detailed') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const toggleDetailed = () => {
+    const next = !detailed;
+    setDetailed(next);
+    try {
+      localStorage.setItem('detailed', next ? '1' : '0');
+    } catch {
+      /* storage blocked: the choice lasts this visit only */
+    }
+  };
   const switchRef = useRef<HTMLDivElement | null>(null);
   useLayoutEffect(() => {
     const el = switchRef.current;
@@ -101,7 +118,7 @@ export function BuildView({
     setBusy(true);
     const toastId = toast.loading('Saving image');
     try {
-      const blob = await renderBuildPng(build, { heroName: hero.name, heroImage: img(hero.images.small), img });
+      const blob = await renderBuildPng(build, { heroName: hero.name, heroImage: img(hero.images.small), img, detailed });
       const name = title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
@@ -154,6 +171,9 @@ export function BuildView({
           </div>
         )}
         <div className="actions">
+          <button className="pill detail-btn" aria-pressed={detailed} onClick={toggleDetailed} title="Show which items to sell later and which to corrupt">
+            Detailed
+          </button>
           <button className="pill share-btn" onClick={sharePng} disabled={busy}>
             Share
           </button>
@@ -178,6 +198,8 @@ export function BuildView({
                       item={b.item}
                       total={b.runningTotal}
                       cost={b.paidCost}
+                      sell={detailed ? b.sellFor?.name : undefined}
+                      corrupt={detailed ? b.corrupt?.rank : undefined}
                       onClick={() => selectIndex(build.items.indexOf(b))}
                     />
                   ))}

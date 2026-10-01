@@ -2,11 +2,11 @@
   "hero_id": 3,
   "hero_class_name": "hero_hornet",
   "name": "Monclan Vindicta",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Opening Rounds (when you buy Spirit Lifesteal).\nCorrupt at the Broker, in order: Spiritual Overflow, Sharpshooter.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Opening Rounds when you buy Spirit Lifesteal.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -38,16 +38,14 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 720,
+      "description": "Corrupt at the Broker, in order: Spiritual Overflow, Sharpshooter.",
+      "width": 480,
       "height": 175,
       "item_ids": [
         2739107182,
         2356412290,
         876563814,
-        499683006,
-        2226497419,
-        3919289022
+        2226497419
       ]
     }
   ],
@@ -116,6 +114,6 @@
   "tags": [
     2048438176,
     1796564033,
-    3776945997
+    2152872419
   ]
 }

@@ -110,7 +110,7 @@ export function generateBuilds(input: GeneratorInput): Build[] {
 
 export function generateBuild(input: GeneratorInput, arch: Archetype, population?: Population): Build {
   const { hero, abilities, items } = input;
-  const { weights: WEIGHTS, winShrinkFrac: WIN_SHRINK_FRAC, minUsage: MIN_USAGE, maxItems: MAX_ITEMS, minItems: MIN_ITEMS, maxUpgradeSteps: MAX_UPGRADE_STEPS, slotCap: SLOT_CAP, maxActives: MAX_ACTIVES, phaseTimeS: PHASE_TIME_S, tierMin: TIER_MIN, pairMinMatches } = PARAMS;
+  const { weights: WEIGHTS, winShrinkFrac: WIN_SHRINK_FRAC, minUsage: MIN_USAGE, maxItems: MAX_ITEMS, minItems: MIN_ITEMS, maxUpgradeSteps: MAX_UPGRADE_STEPS, slotCap: SLOT_CAP, maxActives: MAX_ACTIVES, phaseTimeS: PHASE_TIME_S, tierMin: TIER_MIN, pairMinMatches, sellMinShare, sellMinBuyers, sellMinUsage, sellMaxBuyTimeS, maxSold: MAX_SOLD } = PARAMS;
   const pop = population ?? choosePopulation(input.analytics);
   const analytics = pop.items;
   const catalog = new Map(items.filter((i) => i.shopable && !i.disabled && i.cost > 0).map((i) => [i.id, i]));
@@ -246,6 +246,12 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
     pair.set(`${a}:${b}`, lift); pair.set(`${b}:${a}`, lift);
   }
 
+  // Sell-later items: ones the hero's top players usually sell to make room rather than keep or upgrade.
+  // Sell stats are hero-wide (shared by every style).
+  const sellRate = new Map<number, number>();
+  for (const r of input.analytics.top?.sell_stats?.items ?? [])
+    if (r.buyers >= sellMinBuyers && r.sold / r.buyers >= sellMinShare) sellRate.set(r.item_id, r.sold / r.buyers);
+
   // 3) greedy selection under slot / tier / active caps.
   // Upgrade chains: an item and the item it upgrades into may BOTH be in the build (buy the
   // component early, upgrade later, as the in-game shop does). The upgrade takes over the
@@ -255,6 +261,9 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
   const slotCount: Record<SlotType, number> = { weapon: 0, vitality: 0, spirit: 0 };
   const tierCount: Record<number, number> = {};
   let actives = 0, finals = 0;
+  // sell-later items in the build (by class): bought early, sold when a later item needs the slot, so they
+  // do not count as finals. One that later gets upgraded becomes a normal component instead.
+  const sold = new Set<string>();
   const has = (id: number) => chosen.some((c) => c.s.item.id === id);
   // component class -> the chosen upgrade that consumes it (a component can only be upgraded once)
   const consumed = new Map<string, string>();
@@ -270,17 +279,18 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
 
   const tierShortfall = () => Object.entries(TIER_MIN).filter(([t, min]) => (tierCount[+t] ?? 0) < min).map(([t]) => +t);
 
-  while (finals < MAX_ITEMS && chosen.length < MAX_ITEMS + MAX_UPGRADE_STEPS) {
+  while (finals < MAX_ITEMS && chosen.length < MAX_ITEMS + MAX_UPGRADE_STEPS + MAX_SOLD) {
     const need = tierShortfall();
     const forcedTier = finals >= MAX_ITEMS - need.length * 2 ? need : []; // fill cheap tiers before we run out of room
-    let best: { s: Scored; score: number; reasons: string[]; inChain: boolean; chain: [string, string] | null } | null = null;
+    let best: { s: Scored; score: number; reasons: string[]; inChain: boolean; chain: [string, string] | null; sell: boolean } | null = null;
     for (const s of scored) {
       const it = s.item;
       if (has(it.id)) continue;
       // part of an upgrade chain already in the build: shares that slot instead of taking a new one
       const chain = chainPair(it);
       const inChain = !!chain;
-      if (!inChain && slotCount[it.item_slot_type] >= SLOT_CAP) continue;
+      const sell = !inChain && sellRate.has(it.id) && sold.size < MAX_SOLD;
+      if (!inChain && !sell && slotCount[it.item_slot_type] >= SLOT_CAP) continue;
       if (it.is_active_item && actives >= MAX_ACTIVES) continue;
       if (forcedTier.length && !forcedTier.includes(it.item_tier)) continue;
       let syn = 0, n = 0;
@@ -295,13 +305,31 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
         if (s.kit > 0.6) reasons.push(`scales ${hero.name}'s kit`);
         if (syn > 0.2) reasons.push('wins more alongside items already in the build');
         if (matchupActive && s.matchupLift > 0.1) reasons.push(`commonly picked against enemy hero ${s.matchupEnemies.join(', ')}`);
-        best = { s, score, reasons, inChain, chain };
+        best = { s, score, reasons, inChain, chain, sell };
       }
     }
     if (!best) break;
     chosen.push(best);
     const it = best.s.item;
-    if (best.chain) consumed.set(best.chain[0], best.chain[1]); else { slotCount[it.item_slot_type]++; finals++; }
+    if (best.chain) {
+      consumed.set(best.chain[0], best.chain[1]);
+      // upgrading a sell-later item: the upgrade keeps that slot for good, so it now counts as a final
+      // (a sell-later item is never itself picked as a component of a chosen upgrade, so `it` is the upgrade)
+      if (sold.delete(best.chain[0])) { slotCount[it.item_slot_type]++; finals++; }
+    } else if (best.sell) sold.add(it.class_name);
+    else { slotCount[it.item_slot_type]++; finals++; }
+    tierCount[it.item_tier] = (tierCount[it.item_tier] ?? 0) + 1;
+    if (it.is_active_item) actives++;
+  }
+  // Sell-later items take no lasting slot, so they are not judged against the permanent items above: any
+  // the population buys early in enough games joins the build (best score first, up to the cap).
+  for (const s of [...scored].sort((a, b) => b.base - a.base || a.item.id - b.item.id)) {
+    if (sold.size >= MAX_SOLD) break;
+    const it = s.item;
+    if (has(it.id) || !sellRate.has(it.id) || s.pop < sellMinUsage || s.stat.avg_buy_time_s >= sellMaxBuyTimeS || chainPair(it)) continue;
+    if (it.is_active_item && actives >= MAX_ACTIVES) continue;
+    chosen.push({ s, score: s.base, reasons: [`bought early in ${(s.pop * 100).toFixed(0)}% of ${hero.name} games (relative)`] });
+    sold.add(it.class_name);
     tierCount[it.item_tier] = (tierCount[it.item_tier] ?? 0) + 1;
     if (it.is_active_item) actives++;
   }
@@ -332,6 +360,31 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
     const phase: Phase = t < PHASE_TIME_S.early ? 'early' : t < PHASE_TIME_S.mid ? 'mid' : 'late';
     const reasons = upgradesFrom ? [`upgrades ${upgradesFrom.name} already in the build; pays only the ${paidCost} soul difference`, ...c.reasons] : c.reasons;
     return { item: c.s.item, phase, order: i + 1, runningTotal: running, paidCost, upgradesFrom, score: c.score, reasons, usageRate: c.s.pop, winRate: c.s.stat.wins / c.s.stat.matches, avgBuyTimeS: t };
+  });
+  // Sell points: walk the buy order holding items; when a purchase would go past the game's slot count,
+  // sell the earliest-bought sell-later item still held to make room for it. One never needed is kept.
+  const held: BuildItem[] = [];
+  for (const b of buildItems) {
+    if (b.upgradesFrom) { const k = held.findIndex((h) => h.item.id === b.upgradesFrom!.id); if (k >= 0) held.splice(k, 1); }
+    if (!b.upgradesFrom && held.length >= MAX_ITEMS) {
+      const k = held.findIndex((h) => sold.has(h.item.class_name));
+      if (k >= 0) { const [out] = held.splice(k, 1); out.sellFor = b.item; out.sellRate = sellRate.get(out.item.id); out.reasons = [`some top players sell it later to make room; sell it when you buy ${b.item.name}`, ...out.reasons]; }
+    }
+    held.push(b);
+  }
+  // Corrupted copies: among items kept to the end, T3/T4 ones whose corrupted copy won more often than the
+  // normal copy (shrunk toward the normal rate), ordered by that gain. Sold items are never swapped.
+  const corrupted = new Map((input.analytics.corrupted?.items ?? []).map((r) => [r.item_id, r]));
+  const corruptable = held.flatMap((b) => {
+    const r = corrupted.get(b.item.id);
+    if (!r || b.item.item_tier < 3 || r.corrupted.matches < PARAMS.corruptMinMatches || !r.normal.matches) return [];
+    const nwr = r.normal.wins / r.normal.matches;
+    const cwr = (r.corrupted.wins + PARAMS.corruptPrior * nwr) / (r.corrupted.matches + PARAMS.corruptPrior);
+    return cwr - nwr >= PARAMS.corruptMinGain ? [{ b, gain: cwr - nwr, r, nwr }] : [];
+  }).sort((x, y) => y.gain - x.gain);
+  corruptable.forEach(({ b, gain, r, nwr }, i) => {
+    b.corrupt = { rank: i + 1, gain, matches: r.corrupted.matches, normalWinRate: nwr, corruptedWinRate: r.corrupted.wins / r.corrupted.matches };
+    b.reasons = [...b.reasons, `swap it for the corrupted copy at the Broker (${i === 0 ? 'first' : `#${i + 1}`}): games with the corrupted copy were won more often`];
   });
   // guarantee every phase has at least one item (fallback: split by thirds)
   const phases = new Set(buildItems.map((b) => b.phase));

@@ -52,8 +52,19 @@ function defaultName(build: Build, hero: Hero): string {
   return styleName ? `Monclan ${styleName} ${hero.name}` : `Monclan ${hero.name}`;
 }
 
-function defaultDescription(): string {
+// The build's own description repeats the sell and corrupt notes up front: it is the text players see
+// first in the in-game build browser, before opening any category.
+function defaultDescription(build: Build, corruptOrder: string[]): string {
+  const sells = build.items
+    .filter((b) => b.sellFor)
+    .sort((a, b) => a.order - b.order)
+    .map((b) => `${b.item.name} (when you buy ${b.sellFor!.name})`);
+  const notes = [
+    sells.length ? `Sell later: ${sells.join(', ')}.` : null,
+    corruptOrder.length ? `Corrupt at the Broker, in order: ${corruptOrder.join(', ')}.` : null,
+  ].filter(Boolean);
   return (
+    (notes.length ? notes.join('\n') + '\n\n' : '') +
     'Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and ' +
     'win rate, then assembled into a buy order.\n\n' +
     "Created with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder."
@@ -83,6 +94,10 @@ function relevantTags(build: Build): number[] {
  */
 export function toGameBuildJson(build: Build, hero: Hero, opts?: { name?: string; description?: string; tags?: number[] }): GameBuildJson {
   const phases: Phase[] = ['early', 'mid', 'late'];
+  const corruptOrder = build.items
+    .filter((b) => b.corrupt)
+    .sort((a, b) => a.corrupt!.rank - b.corrupt!.rank)
+    .map((b) => b.item.name);
   const categories: GameBuildCategory[] = phases
     .map((phase) => {
       const item_ids = build.items
@@ -90,7 +105,13 @@ export function toGameBuildJson(build: Build, hero: Hero, opts?: { name?: string
         .sort((a, b) => a.order - b.order)
         .map((b) => b.item.id);
       const width = Math.max(1, item_ids.length) * ITEM_WIDTH;
-      return { name: PHASE_LABEL[phase], description: '', width, height: ROW_HEIGHT, item_ids };
+      // sell-later items: the in-game editor has no per-item note, so the phase's description carries it
+      const description = build.items
+        .filter((b) => b.phase === phase && b.sellFor)
+        .map((b) => `Sell ${b.item.name} when you buy ${b.sellFor!.name}.`)
+        .concat(phase === 'late' && corruptOrder.length ? [`Corrupt at the Broker, in order: ${corruptOrder.join(', ')}.`] : [])
+        .join(' ');
+      return { name: PHASE_LABEL[phase], description, width, height: ROW_HEIGHT, item_ids };
     })
     .filter((c) => c.item_ids.length > 0);
 
@@ -98,7 +119,7 @@ export function toGameBuildJson(build: Build, hero: Hero, opts?: { name?: string
     hero_id: hero.id,
     hero_class_name: hero.class_name,
     name: opts?.name ?? defaultName(build, hero),
-    description: opts?.description ?? defaultDescription(),
+    description: opts?.description ?? defaultDescription(build, corruptOrder),
     categories,
     ability_order: build.abilityOrder.map((s) => ({ ability_id: s.ability.id, kind: s.kind })),
     tags: opts?.tags ?? relevantTags(build),

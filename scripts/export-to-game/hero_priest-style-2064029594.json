@@ -2,15 +2,16 @@
   "hero_id": 65,
   "hero_class_name": "hero_priest",
   "name": "Monclan Opening Rounds Venator",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Restorative Shot (when you buy Extra Charge), Monster Rounds (when you buy Ballistic Enchantment), Battle Vest (when you buy Spirit Resilience).\nCorrupt at the Broker, in order: Weighted Shots, Hollow Point.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
-      "width": 720,
+      "description": "Sell Restorative Shot when you buy Extra Charge. Sell Monster Rounds when you buy Ballistic Enchantment. Sell Battle Vest when you buy Spirit Resilience.",
+      "width": 840,
       "height": 175,
       "item_ids": [
         3862866912,
+        1009965641,
         1342610602,
         3077079169,
         3633614685,
@@ -21,16 +22,14 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1320,
+      "width": 1080,
       "height": 175,
       "item_ids": [
         1770441818,
         3399065363,
         2447176615,
         499683006,
-        3585132399,
         2678489038,
-        393974127,
         3791587546,
         2095565695,
         1763073141,
@@ -39,11 +38,10 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 600,
+      "description": "Corrupt at the Broker, in order: Weighted Shots, Hollow Point.",
+      "width": 480,
       "height": 175,
       "item_ids": [
-        754480263,
         3294954488,
         2163598980,
         787198704,

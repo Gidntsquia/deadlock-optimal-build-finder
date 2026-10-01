@@ -123,6 +123,10 @@ export function Details({
                     <td>
                       {b.item.name}
                       {b.upgradesFrom ? ` (from ${b.upgradesFrom.name})` : ''}
+                      {b.sellFor ? ` (sell for ${b.sellFor.name}${b.sellRate !== undefined ? `; ${pct(b.sellRate)} of top players sell it` : ''})` : ''}
+                      {b.corrupt
+                        ? ` (corrupt #${b.corrupt.rank}: ${pct(b.corrupt.corruptedWinRate, 1)} win rate corrupted vs ${pct(b.corrupt.normalWinRate, 1)} normal over ${b.corrupt.matches.toLocaleString()} games of 30+ min, all ranks)`
+                        : ''}
                     </td>
                     <td>{b.order}</td>
                     <td>{PHASE[b.phase]}</td>

@@ -2,19 +2,18 @@
   "hero_id": 35,
   "hero_class_name": "hero_viscous",
   "name": "Monclan Spirit Viscous",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Healing Rite (when you buy Phantom Strike), Sprint Boots (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Diviner's Kevlar, Spirit Burn.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
-      "width": 840,
+      "description": "Sell Healing Rite when you buy Phantom Strike. Sell Sprint Boots when you buy Spirit Burn.",
+      "width": 720,
       "height": 175,
       "item_ids": [
         1998374645,
-        1009965641,
         4139877411,
+        1710079648,
         3399065363,
-        3074274290,
         1150006784,
         3970837787
       ]
@@ -22,10 +21,9 @@
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1080,
+      "width": 960,
       "height": 175,
       "item_ids": [
-        465043967,
         754480263,
         1672893796,
         968099481,
@@ -38,15 +36,17 @@
     },
     {
       "name": "Late Game",
-      "description": "",
-      "width": 720,
+      "description": "Corrupt at the Broker, in order: Diviner's Kevlar, Spirit Burn.",
+      "width": 960,
       "height": 175,
       "item_ids": [
         3261353684,
         1193964439,
         2820116164,
         2717651715,
+        1371725689,
         2519598785,
+        343572757,
         915014646
       ]
     }

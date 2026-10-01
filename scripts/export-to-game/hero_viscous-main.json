@@ -2,18 +2,19 @@
   "hero_id": 35,
   "hero_class_name": "hero_viscous",
   "name": "Monclan Weapon Viscous",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Headshot Booster (when you buy Mystic Reverb), Healing Rite (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Mystic Reverb, Express Shot, Spirit Snatch, Spirit Burn.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
-      "width": 600,
+      "description": "Sell Headshot Booster when you buy Mystic Reverb. Sell Healing Rite when you buy Spirit Burn.",
+      "width": 720,
       "height": 175,
       "item_ids": [
         2010028405,
         1998374645,
         3077079169,
         395867183,
+        1710079648,
         690458959
       ]
     },
@@ -38,7 +39,7 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Mystic Reverb, Express Shot, Spirit Snatch, Spirit Burn.",
       "width": 720,
       "height": 175,
       "item_ids": [
@@ -116,6 +117,6 @@
   "tags": [
     3247040238,
     3788152387,
-    1998374645
+    2121044373
   ]
 }

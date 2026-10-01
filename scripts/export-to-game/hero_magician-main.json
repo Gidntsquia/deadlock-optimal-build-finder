@@ -2,11 +2,11 @@
   "hero_id": 60,
   "hero_class_name": "hero_magician",
   "name": "Monclan Sinclair",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Monster Rounds (when you buy Compress Cooldown), Opening Rounds (when you buy Diviner's Kevlar).\nCorrupt at the Broker, in order: Alchemical Fire, Diviner's Kevlar, Boundless Spirit, Greater Expansion.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Monster Rounds when you buy Compress Cooldown. Sell Opening Rounds when you buy Diviner's Kevlar.",
       "width": 840,
       "height": 175,
       "item_ids": [
@@ -38,7 +38,7 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Alchemical Fire, Diviner's Kevlar, Boundless Spirit, Greater Expansion.",
       "width": 720,
       "height": 175,
       "item_ids": [

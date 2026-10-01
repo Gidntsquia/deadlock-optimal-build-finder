@@ -2,11 +2,11 @@
   "hero_id": 10,
   "hero_class_name": "hero_chrono",
   "name": "Monclan Spirit Paradox",
-  "description": "Generated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Restorative Shot (when you buy Stamina Mastery), Monster Rounds (when you buy Compress Cooldown), Sprint Boots (when you buy Echo Shard).\nCorrupt at the Broker, in order: Greater Expansion, Superior Duration, Stamina Mastery, Transcendent Cooldown.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "",
+      "description": "Sell Restorative Shot when you buy Stamina Mastery. Sell Monster Rounds when you buy Compress Cooldown. Sell Sprint Boots when you buy Echo Shard.",
       "width": 840,
       "height": 175,
       "item_ids": [
@@ -38,7 +38,7 @@
     },
     {
       "name": "Late Game",
-      "description": "",
+      "description": "Corrupt at the Broker, in order: Greater Expansion, Superior Duration, Stamina Mastery, Transcendent Cooldown.",
       "width": 720,
       "height": 175,
       "item_ids": [
