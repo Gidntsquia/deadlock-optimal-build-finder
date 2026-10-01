@@ -64,4 +64,5 @@ export const heroBackdrop = (heroId: number) => ({
   backgroundPosition: `${10 + ((heroId * 37) % 81)}% ${15 + ((heroId * 53) % 71)}%`,
 });
 
+export const loadItemTierData = () => Promise.all([j<Item[]>('items.json'), j<import('../tiers').ItemStats>('item-stats.json')]);
 export const loadTierData = () => Promise.all([j<Hero[]>('heroes.json'), j<import('../tiers').HeroStats>('hero-stats.json')]);

@@ -14,11 +14,13 @@
 //                                          from the Phantom+ scoreboard (see selectValidationPlayers)   (VALIDATION ONLY)
 //   public/data/img/{items,heroes,abilities,corrupted}/  webp images so the app needs no network at all
 //   public/data/hero-stats.json            per-hero wins + matches, Phantom+ (badge >= 90), same window; feeds the tier list
+//   public/data/item-stats.json            per-item wins + matches over every hero (Phantom+, same window) and per corrupted
+//                                          item (all ranks, games >= 30 min, since corrupted items came out); feeds the item tier lists
 //   public/data/manifest.json              timestamps + counts + validation_sets (who was selected and why)
 //
 // Flags
 //   --analytics-only            refresh analytics/* only
-//   --hero-stats-only           refresh hero-stats.json only (a few seconds)
+//   --hero-stats-only           refresh hero-stats.json and item-stats.json only (a few seconds)
 //   --sell-stats-only           refresh only the sell stats inside analytics/* (top.sell_stats; --heroes works)
 //   --corrupted-only            refresh only the corrupted-item stats inside analytics/* (corrupted; --heroes works)
 //   --validation-only           re-select players and refetch validation/* for every hero
@@ -381,6 +383,27 @@ async function fetchHeroStats(heroes) {
   });
 }
 
+// Item tier list input: every item's wins and matches over all heroes. Normal copies use the tier list's population
+// (Phantom+, snapshot window); corrupted copies are too new for that, so they use the corrupted-stats population.
+async function fetchItemStats() {
+  console.log(`item win rates, all heroes (badge>=${TOP_BADGE}; corrupted: all ranks, games >= ${CORRUPTED_MIN_DURATION_S / 60} min)`);
+  const [normal, corrupted] = await Promise.all([
+    getJson(`${API}/v1/analytics/item-stats?min_average_badge=${TOP_BADGE}&min_unix_timestamp=${MIN_TS}&corrupted_items=exclude`),
+    getJson(`${API}/v1/analytics/item-stats?min_unix_timestamp=${CORRUPTED_SINCE}&min_duration_s=${CORRUPTED_MIN_DURATION_S}&corrupted_items=only`),
+  ]);
+  const slim = (rows) => rows.filter((r) => r.matches > 0).map((r) => ({ item_id: r.item_id, wins: r.wins, matches: r.matches }));
+  await save('item-stats.json', {
+    fetched_at: new Date().toISOString(),
+    min_average_badge: TOP_BADGE,
+    min_unix_timestamp: MIN_TS,
+    window_days: WINDOW_DAYS,
+    corrupted_since_unix_timestamp: CORRUPTED_SINCE,
+    corrupted_min_duration_s: CORRUPTED_MIN_DURATION_S,
+    items: slim(normal),
+    corrupted: slim(corrupted),
+  });
+}
+
 async function fetchAnalytics(heroes, manifest) {
   const targets = HEROES_ARG ? heroes.filter((h) => HEROES_ARG.includes(h.id)) : heroes;
   console.log(`4/5 per-hero analytics (${targets.length} heroes, all ranks + badge>=${TOP_BADGE}, plus build styles)`);
@@ -522,6 +545,7 @@ async function main() {
     const heroes = JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8'));
     MIN_TS = manifest.min_unix_timestamp;
     await fetchHeroStats(heroes);
+    await fetchItemStats();
     return;
   }
   if (ANALYTICS_ONLY) {
@@ -534,6 +558,7 @@ async function main() {
     await fetchCorruptedStats(heroes);
     manifest.corrupted_fetched_at = new Date().toISOString();
     await fetchHeroStats(heroes);
+    await fetchItemStats();
     await save('manifest.json', manifest);
     return;
   }
@@ -592,6 +617,7 @@ async function main() {
 
   await fetchAnalytics(heroes, manifest);
   await fetchHeroStats(heroes);
+  await fetchItemStats();
 
   await fetchValidation(heroes, manifest);
   await fetchAllSellStats(heroes, manifest); // after validation: needs the panel ids to leave them out

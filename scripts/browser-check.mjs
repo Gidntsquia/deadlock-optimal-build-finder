@@ -835,6 +835,80 @@ try {
     await frames();
     await snap({ path: shot('tier-list-desktop.png'), fullPage: true });
     await axe('desktop, tier list');
+
+    // item and corrupted item lists: same page, picked with the Heroes / Items / Corrupted Items switch
+    const [items, istats] = await page.evaluate(() =>
+      Promise.all([fetch('/data/items.json').then((r) => r.json()), fetch('/data/item-stats.json').then((r) => r.json())]),
+    );
+    for (const [label, key, rows] of [
+      ['Items', 'items', istats.items],
+      ['Corrupted Items', 'corrupted', istats.corrupted],
+    ]) {
+      await page.click(`.tier-switch button:text-is("${label}")`);
+      await page.waitForSelector('.tier-item', T);
+      await frames();
+      // independent restatement of the item rule in docs/tier-list.md: win rate minus the pooled win rate of the
+      // listed items at the same price, banded like heroes around 50; 300 games or more to be listed
+      const shop = new Map(items.filter((i) => i.shopable && !i.disabled && i.cost > 0).map((i) => [i.id, i]));
+      const listed = rows.filter((r) => shop.has(r.item_id) && r.matches >= 300);
+      const pool = new Map();
+      for (const r of listed) {
+        const c = shop.get(r.item_id).cost;
+        const p = pool.get(c) ?? [0, 0];
+        pool.set(c, [p[0] + r.wins, p[1] + r.matches]);
+      }
+      const edge = new Map(
+        listed.map((r) => {
+          const [w, m] = pool.get(shop.get(r.item_id).cost);
+          return [shop.get(r.item_id).name, (100 * r.wins) / r.matches - (100 * w) / m];
+        }),
+      );
+      const want = new Map([...edge].map(([n, e]) => [n, cuts.find(([, m]) => 50 + e >= m || m < 0)[0]]));
+      const idom = await page.evaluate(() =>
+        [...document.querySelectorAll('.tier-row')].map((r) => ({
+          tier: r.dataset.tier,
+          items: [...r.querySelectorAll('.tier-item')].map((e) => ({
+            name: e.querySelector('img').alt,
+            title: e.title,
+            corrupt: e.classList.contains('corrupted'),
+          })),
+        })),
+      );
+      const got = idom.flatMap((r) => r.items.map((i) => [i.name, r.tier]));
+      const iorder = idom.every((r, i) => idom.slice(i + 1).every((lo) => r.items.every((a) => lo.items.every((b) => edge.get(a.name) >= edge.get(b.name)))));
+      check(
+        `tier list (${label}): every listed item once, in the tier the written rule gives, best first, named`,
+        got.length === want.size &&
+          got.every(([n, t]) => want.get(n) === t) &&
+          iorder &&
+          idom.every((r) => r.items.every((i) => i.name && i.title === i.name && i.corrupt === (key === 'corrupted'))) &&
+          new URL(page.url()).searchParams.get('list') === key,
+        `${got.length}/${want.size} ${page.url()}`,
+      );
+      for (const [w, h] of [
+        [1440, 900],
+        [1920, 1080],
+      ]) {
+        await page.setViewportSize({ width: w, height: h });
+        await frames();
+        const r = await page.evaluate(() => ({
+          v: document.documentElement.scrollHeight - innerHeight,
+          inner: [...document.querySelectorAll('.tiers, .tier-rows')].some((e) => e.scrollHeight > e.clientHeight + 1 || e.scrollWidth > e.clientWidth + 1),
+          heroes: [...document.querySelectorAll('.tier-hero')].filter((e) => e.getClientRects().length).length,
+        }));
+        check(`tier list (${label}) fits ${w}x${h} without scrolling, heroes hidden`, r.v <= 0 && !r.inner && r.heroes === 0, JSON.stringify(r));
+      }
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await frames();
+      await snap({ path: shot(`tier-list-${key}-desktop.png`) });
+      await axe(`desktop, tier list ${label}`);
+    }
+    await page.click('.tier-switch button:text-is("Heroes")');
+    await frames();
+    check(
+      'tier list: Heroes switch brings the hero list back and drops ?list',
+      (await page.$$('.tier-hero')).length === 38 && !(await page.$('.tier-item')) && !new URL(page.url()).searchParams.has('list'),
+    );
   }
   {
     // instant return: right after Back, within two frames, the build is already drawn (no skeleton, no stale dim)
@@ -911,7 +985,8 @@ try {
           const n = document.querySelector('.nav');
           return n.scrollWidth <= n.clientWidth;
         })) &&
-        (await tapTargets()).filter((c) => /nav/.test(c)).length === 0,
+        (await tapTargets()).filter((c) => /nav/.test(c)).length === 0 &&
+        (await page.$$eval('.tier-switch button', (bs) => bs.length === 3 && bs.every((b) => b.getBoundingClientRect().height >= 40))),
       JSON.stringify(f),
     );
     await snap({ path: shot('tier-list-phone.png') });

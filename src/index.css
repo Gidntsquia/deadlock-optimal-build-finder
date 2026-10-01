@@ -1387,6 +1387,75 @@ button.tile:hover {
 .tier-hero:hover {
   background: var(--board-head);
 }
+/* Heroes / Items / Corrupted Items switch beside the page title */
+.tier-switch {
+  display: inline-flex;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 4px;
+  background: var(--room2);
+  border-radius: var(--radius-md);
+}
+.tier-switch button {
+  min-height: 28px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  color: var(--navy-ink);
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.tier-switch button:hover {
+  background: var(--board-head);
+  color: var(--ink);
+}
+.tier-switch button[aria-pressed='true'] {
+  background: var(--teal);
+  color: var(--teal-ink);
+  box-shadow: var(--shadow-hard);
+}
+.tier-switch button:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+}
+/* item lists: slot-coloured icons that wrap; the name is the tooltip and the image's alt text */
+.tier-items {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 4px 8px;
+  list-style: none;
+}
+.tier-item {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-hard);
+}
+.tier-item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.tier-item.weapon {
+  background: var(--weapon);
+}
+.tier-item.vitality {
+  background: var(--vitality);
+}
+.tier-item.spirit {
+  background: var(--spirit);
+}
+.tier-item.corrupted {
+  background: var(--corrupt-dark);
+}
 .tier-rule {
   margin-top: 16px;
   color: var(--navy-ink);
@@ -1423,6 +1492,18 @@ button.tile:hover {
   .tier-hero img {
     width: 48px;
     height: 48px;
+  }
+  .tier-switch button {
+    min-height: 40px;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+  .tier-items {
+    padding: 4px;
+  }
+  .tier-item {
+    width: 40px;
+    height: 40px;
   }
 }
 
@@ -1477,6 +1558,21 @@ button.tile:hover {
     max-width: 80px;
     height: auto;
     aspect-ratio: 1;
+  }
+  /* item lists have far more entries than heroes: rows take their own height and wrap */
+  .tier-rows.items {
+    overflow-y: auto;
+  }
+  .tier-rows.items .tier-row {
+    flex: 0 0 auto;
+  }
+  .tier-switch {
+    margin: 0 0 0 12px;
+    vertical-align: middle;
+  }
+  .tier-item {
+    width: 52px;
+    height: 52px;
   }
   .tier-foot {
     position: relative;
