@@ -90,6 +90,12 @@
   --row-head-ink: #f4ead3;
   --row-body: #bfb08f;
   --nav-h: 36px;
+  /* ability card: the game's dark ability tooltip */
+  --ab-bg: #16140f;
+  --ab-head: #231f18;
+  --ab-panel: #2b261d;
+  --ab-ink: #efe6d2;
+  --ab-dim: #a99f8b;
   --pill: #d3e6ec;
   --frame-edge: #4a9db2;
 
@@ -357,6 +363,7 @@ h3 {
   gap: 0;
 }
 .ap-row {
+  position: relative;
   display: grid;
   grid-template-columns: var(--ap-icon) repeat(var(--ap-cols), minmax(0, 1fr));
   align-items: center;
@@ -385,7 +392,37 @@ h3 {
 }
 .ap-mark {
   grid-row: 1;
-  justify-self: center;
+  align-self: stretch;
+  justify-self: stretch;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+.ap-icon,
+.ap-mark {
+  cursor: pointer;
+}
+span.ap-icon,
+span.ap-mark {
+  cursor: default;
+}
+/* phone: one button over the whole row (see BuildView) */
+.ap-row-btn {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: var(--radius-sm);
+}
+.ap-mark:hover .ap-chip {
+  background: var(--navy-track);
+  box-shadow: inset 0 0 0 1px var(--navy-ink);
+}
+.ap-icon:hover {
+  box-shadow: inset 0 0 0 2px var(--teal);
+}
+.ap-chip {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -423,11 +460,14 @@ h3 {
     --ap-icon: 28px;
     padding: 8px 4px;
   }
+  .ap-row {
+    height: 40px;
+  }
   .ap-icon {
     width: 28px;
     height: 28px;
   }
-  .ap-mark {
+  .ap-chip {
     font-size: 10px;
     gap: 0;
     min-width: 100%;
@@ -813,6 +853,300 @@ button.tile:hover {
   font-size: 14px;
 }
 
+/* ability card: the game's ability tooltip. Dark panel, name bar, headline stat tiles in
+   the stat's colour, minor stats as a list, then the three upgrade boxes with their 1/2/5 cost. */
+.sheet.ability-sheet {
+  background: var(--ab-bg);
+  color: var(--ab-ink);
+  box-shadow: inset 0 3px 0 var(--spirit-deep);
+  padding: 0 0 16px;
+}
+.ability-sheet [data-slot='dialog-close'] {
+  color: var(--ab-ink);
+}
+.ab-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 48px 12px 12px;
+  background: var(--ab-head);
+  border-bottom: 1px solid color-mix(in srgb, var(--ab-ink) 12%, transparent);
+}
+.ab-icon {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  background: var(--ap-icon-bg);
+}
+.ab-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: brightness(0);
+}
+.ab-title h2 {
+  font-size: 24px;
+  line-height: 1.1;
+  color: #fff;
+}
+.ab-quip {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--ab-dim);
+}
+.ab-point {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  background: color-mix(in srgb, var(--spirit-deep) 22%, var(--ab-bg));
+}
+.ab-point b {
+  color: #fff;
+}
+.ab-point-chip,
+.ab-tier-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  background: var(--room);
+  color: var(--navy-ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+.ab-glyph {
+  width: 12px;
+  height: 12px;
+  fill: var(--ap-glyph);
+  stroke: var(--ap-glyph);
+}
+.ab-glyph .ap-bolt {
+  fill: var(--room);
+  stroke: none;
+}
+.ab-point-chip.unlock .ab-glyph {
+  width: 16px;
+  height: 16px;
+  fill: var(--ap-track-unlock);
+  stroke: var(--ap-track-unlock);
+}
+.ab-stats-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding: 8px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ab-ink) 12%, transparent);
+  font-size: 13px;
+}
+.ab-hstat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ab-dim);
+}
+.ab-hstat b {
+  color: #fff;
+  font-size: 15px;
+}
+.ab-hstat img,
+.ab-tile img {
+  flex: none;
+}
+.ab-body {
+  padding: 0 12px;
+}
+.ab-section {
+  padding-top: 12px;
+}
+.ab-section.ab-unlocked {
+  margin-top: 12px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--spirit-deep);
+}
+.ab-text {
+  font-size: 15px;
+  line-height: 1.4;
+}
+.ab-hl {
+  color: #fff;
+  font-weight: 900;
+}
+.ab-dim {
+  color: var(--ab-dim);
+  font-size: 13px;
+}
+.ab-spirit {
+  color: var(--spirit);
+  font-weight: 900;
+}
+.ab-weapon {
+  color: var(--weapon);
+  font-weight: 900;
+}
+.ab-vitality {
+  color: var(--vitality);
+  font-weight: 900;
+}
+.ab-warn {
+  color: var(--warn);
+  font-weight: 900;
+}
+.ab-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.ab-block {
+  flex: 1 1 auto;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--ab-panel);
+}
+.ab-block h3 {
+  font-size: 13px;
+  color: var(--ab-dim);
+  margin-bottom: 4px;
+}
+.ab-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ab-tile {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 4px;
+  min-width: 96px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--ab-ink) 6%, transparent);
+}
+.ab-tile b {
+  font-size: 20px;
+  line-height: 1.2;
+  color: #fff;
+}
+.ab-tile.spirit b {
+  color: var(--spirit);
+}
+.ab-tile.weapon b {
+  color: var(--weapon);
+}
+.ab-tile.vitality b {
+  color: var(--vitality);
+}
+.ab-tile span,
+.ab-tile small {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--ab-dim);
+}
+.ab-tile small.ab-spirit {
+  color: var(--spirit);
+}
+.ab-basic {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0 16px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+.ab-basic div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--ab-ink) 10%, transparent);
+  color: var(--ab-dim);
+}
+.ab-basic b {
+  color: var(--ab-ink);
+}
+/* values an upgrade bought so far has changed */
+.ab-up b,
+.ab-tile.ab-up b,
+.ab-basic .ab-up b {
+  color: var(--teal);
+}
+.ab-tiers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 12px 0;
+  padding: 0;
+  list-style: none;
+}
+.ab-tier {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--ab-panel);
+  color: var(--ab-dim);
+  font-size: 13px;
+  line-height: 1.35;
+}
+.ab-tier-cost {
+  align-self: flex-start;
+}
+.ab-tier.bought {
+  background: color-mix(in srgb, var(--spirit-deep) 30%, var(--ab-panel));
+  color: var(--ab-ink);
+}
+.ab-tier.bought .ab-glyph,
+.ab-tier.here .ab-glyph {
+  fill: var(--spirit);
+  stroke: var(--spirit);
+}
+.ab-tier.here {
+  background: color-mix(in srgb, var(--spirit-deep) 45%, var(--ab-panel));
+  color: #fff;
+  box-shadow: inset 0 0 0 2px var(--spirit);
+}
+.ab-tier-text {
+  flex: 1;
+}
+.ab-tier-when {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--ab-dim);
+}
+.ab-tier.here .ab-tier-when {
+  color: #fff;
+}
+.ab-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 16px 12px 0;
+}
+.ab-nav .pill:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+@media (max-width: 899px) {
+  .ab-tiers {
+    grid-template-columns: 1fr;
+  }
+  .ab-tier {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .ab-tier-when {
+    flex: none;
+  }
+}
+
 /* hero picker */
 .hero-filter {
   width: 100%;
@@ -1065,7 +1399,7 @@ button.tile:hover {
     height: var(--ap-icon);
     justify-self: center;
   }
-  .ap-mark {
+  .ap-chip {
     height: clamp(26px, 13.5cqh, 44px);
     min-width: 0;
     width: calc(100% - 8px);

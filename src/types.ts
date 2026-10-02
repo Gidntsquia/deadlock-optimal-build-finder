@@ -45,6 +45,28 @@ export interface Hero {
   tags?: string[];
 }
 
+export interface AbilityProperty {
+  value: string | number;
+  scale: string | string[] | null;
+  stat_scale?: number; // spirit power multiplier when scale is ETechPower
+  label?: string;
+  prefix?: string;
+  postfix?: string;
+  css_class?: string;
+  icon?: string; // app-relative, img/props/
+  disable_value?: string;
+}
+/** The game's tooltip layout for an ability: text sections, each with blocks of headline stats and a list of minor stats. */
+export interface AbilityTooltip {
+  header?: string[];
+  sections: {
+    text?: string;
+    requires?: string; // shown only once an upgrade that changes this property is bought
+    blocks: { title?: string; props: { key: string; status?: string; status_value?: string; show_value?: boolean; icon?: string }[] }[];
+    basic?: string[];
+  }[];
+}
+
 export interface Ability {
   id: number;
   class_name: string;
@@ -53,8 +75,13 @@ export interface Ability {
   image_webp?: string;
   ability_type?: string;
   description: string;
-  upgrades: { name: string; bonus: string }[][];
-  properties: Record<string, { value: string | number; scale: string | string[] | null }>;
+  quip?: string;
+  tier_desc?: string[]; // upgrade text for tiers 1..3, '' where the game has none
+  active?: string;
+  passive?: string;
+  upgrades: { name: string; bonus: string; type?: string }[][];
+  properties: Record<string, AbilityProperty>;
+  tooltip?: AbilityTooltip; // signature abilities only
 }
 
 export interface ItemStat {

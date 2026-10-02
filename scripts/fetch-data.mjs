@@ -4,7 +4,7 @@
 // Outputs
 //   public/data/items.json                 item catalog (all upgrade items)
 //   public/data/heroes.json                active heroes with base stats + growth
-//   public/data/abilities.json             abilities of active heroes (names, upgrades)
+//   public/data/abilities.json             abilities of active heroes (names, upgrades, tooltip text and stats)
 //   public/data/analytics/<hero_id>.json   item-stats, ability-order-stats, item-permutation-stats, and (top population)
 //                                          build styles: per-style item/ability stats (see scripts/styles.mjs),
 //                                          and sell stats: how often each item is sold to make room (fetchSellStats),
@@ -13,7 +13,7 @@
 //   public/data/validation/<account>-<hero>.json  a top player's ~20 most recent matchmaking matches on one hero
 //                                          with per-match purchases; 5 players per hero, chosen automatically
 //                                          from the Phantom+ scoreboard (see selectValidationPlayers)   (VALIDATION ONLY)
-//   public/data/img/{items,heroes,abilities,corrupted}/  webp images so the app needs no network at all
+//   public/data/img/{items,heroes,abilities,corrupted,props}/  images so the app needs no network at all
 //   public/data/hero-stats.json            per-hero wins + matches, Phantom+ (badge >= 90), same window; feeds the tier list
 //   public/data/item-stats.json            per-item wins + matches over every hero (Phantom+, same window) and per corrupted
 //                                          item (all ranks, games >= 30 min, since corrupted items came out); feeds the item tier lists
@@ -21,6 +21,7 @@
 //
 // Flags
 //   --analytics-only            refresh analytics/* only
+//   --abilities-only            refresh abilities.json, ability images and the tooltip stat icons only
 //   --hero-stats-only           refresh hero-stats.json and item-stats.json only (a few seconds)
 //   --sell-stats-only           refresh only the sell stats inside analytics/* (top.sell_stats; --heroes works)
 //   --charge-orders-only        refresh only the charge-item ability sequences inside analytics/* (item_ability_order_stats; --heroes works)
@@ -243,17 +244,95 @@ function slimHero(h) {
   };
 }
 
+// Keeps what the ability tooltip needs: stat labels and icons, the tooltip's stat blocks, the per-tier
+// upgrade text (t1_desc..t3_desc, missing on some tiers; the app then writes it from the stat bonuses).
+// Inline <svg> icons in the tooltip text are dropped (the app colours the label after them instead).
+const noSvg = (s) => (typeof s === 'string' ? s.replace(/<svg[\s\S]*?<\/svg>\s*/gi, '') : s);
 function slimAbility(a) {
+  const d = Object.fromEntries(Object.entries(a.description || {}).map(([k, v]) => [k, noSvg(v)]));
+  const td = a.tooltip_details || {};
   return {
     id: a.id, class_name: a.class_name, name: a.name, hero: a.hero, image_webp: a.image_webp,
-    ability_type: a.ability_type, description: a.description?.desc || '',
-    upgrades: (a.upgrades || []).map((u) => (u.property_upgrades || []).map((p) => ({ name: p.name, bonus: String(p.bonus) }))),
+    ability_type: a.ability_type, description: d.desc || '',
+    quip: d.quip, tier_desc: [d.t1_desc, d.t2_desc, d.t3_desc].map((x) => x || ''),
+    active: d.active, passive: d.passive,
+    upgrades: (a.upgrades || []).map((u) =>
+      (u.property_upgrades || []).map((p) => ({ name: p.name, bonus: String(p.bonus), ...(p.upgrade_type ? { type: p.upgrade_type } : {}) })),
+    ),
     properties: Object.fromEntries(
       Object.entries(a.properties || {})
         .filter(([, v]) => v && v.value !== undefined)
-        .map(([k, v]) => [k, { value: v.value, scale: v.scale_function?.specific_stat_scale_type || v.scale_function?.scaling_stats || null }]),
+        .map(([k, v]) => [
+          k,
+          {
+            value: v.value,
+            scale: v.scale_function?.specific_stat_scale_type || v.scale_function?.scaling_stats || null,
+            stat_scale: v.scale_function?.stat_scale, label: v.label, prefix: v.prefix, postfix: v.postfix,
+            css_class: v.css_class, icon: v.icon, disable_value: v.disable_value,
+          },
+        ]),
     ),
+    tooltip: {
+      header: td.additional_header_properties,
+      sections: (td.info_sections || []).map((sec) => ({
+        text: noSvg(sec.loc_string),
+        requires: sec.property_upgrade_required,
+        blocks: (sec.properties_block || []).map((b) => ({
+          title: noSvg(b.loc_string),
+          props: (b.properties || []).map((p) => ({
+            key: p.important_property, status: p.status_effect_name, status_value: p.status_effect_value,
+            show_value: p.show_property_value, icon: p.important_property_icon,
+          })),
+        })),
+        basic: sec.basic_properties,
+      })),
+    },
   };
+}
+
+// Stat icons used by the ability tooltips, saved once under img/props/ (svg or png, as served).
+async function saveAbilityIcons(abilities) {
+  const local = new Map();
+  const save1 = async (url) => {
+    if (!url || local.has(url)) return local.get(url);
+    const rel = `img/props/${path.basename(new URL(url).pathname)}`;
+    try {
+      const res = await fetch(url, { redirect: 'follow' });
+      if (!res.ok) throw new Error(`${res.status}`);
+      await mkdir(path.join(OUT, 'img/props'), { recursive: true });
+      await writeFile(path.join(OUT, rel), Buffer.from(await res.arrayBuffer()));
+      local.set(url, rel);
+    } catch (e) {
+      console.warn(`  icon failed ${url}: ${e.message}`);
+      local.set(url, undefined);
+    }
+    return local.get(url);
+  };
+  for (const a of abilities) {
+    for (const p of Object.values(a.properties)) p.icon = await save1(p.icon);
+    for (const s of a.tooltip.sections) for (const b of s.blocks) for (const p of b.props) p.icon = await save1(p.icon);
+  }
+  console.log(`   ${[...local.values()].filter(Boolean).length} stat icons`);
+}
+
+async function fetchAbilities(heroes) {
+  const abilitiesRaw = await getJson(`${ASSETS}/items/by-type/ability`);
+  const heroIds = new Set(heroes.map((h) => h.id));
+  const sigNames = new Set(heroes.flatMap((h) => h.abilities));
+  const abilities = abilitiesRaw.filter((a) => heroIds.has(a.hero)).map(slimAbility);
+  for (const a of abilities) {
+    if (!sigNames.has(a.class_name)) {
+      // innates (zipline, mantle...) are never shown: keep only what the generator reads
+      delete a.tooltip;
+      for (const p of Object.values(a.properties)) for (const k of Object.keys(p)) if (k !== 'value' && k !== 'scale') delete p[k];
+      continue;
+    }
+    const l = await saveImage(a.image_webp, 'abilities', a.id);
+    if (l) a.image_webp = l;
+  }
+  await saveAbilityIcons(abilities.filter((a) => a.tooltip));
+  await save('abilities.json', abilities);
+  return abilities;
 }
 
 async function fetchPopulation(heroId, extra = '') {
@@ -623,6 +702,10 @@ async function main() {
     if (!SELECT_ONLY) await save('manifest.json', manifest);
     return;
   }
+  if (process.argv.includes('--abilities-only')) {
+    await fetchAbilities(JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8')));
+    return;
+  }
   if (process.argv.includes('--hero-stats-only')) {
     const manifest = JSON.parse(await readFile(path.join(OUT, 'manifest.json'), 'utf8'));
     const heroes = JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8'));
@@ -703,12 +786,7 @@ async function main() {
   manifest.counts.heroes = heroes.length;
 
   console.log('3/5 abilities');
-  const abilitiesRaw = await getJson(`${ASSETS}/items/by-type/ability`);
-  const activeIds = new Set(active.map((h) => h.id));
-  const abilities = abilitiesRaw.filter((a) => activeIds.has(a.hero)).map(slimAbility);
-  const sigNames = new Set(heroes.flatMap((h) => h.abilities));
-  for (const a of abilities) if (sigNames.has(a.class_name)) { const l = await saveImage(a.image_webp, 'abilities', a.id); if (l) a.image_webp = l; }
-  await save('abilities.json', abilities);
+  const abilities = await fetchAbilities(heroes);
   manifest.counts.abilities = abilities.length;
 
   await fetchAnalytics(heroes, manifest);

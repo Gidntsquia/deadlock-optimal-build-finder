@@ -1,10 +1,11 @@
 import { heroBackdrop, img } from '../data/load';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { Build, Hero, Phase } from '../types';
 import type { PanelValidation } from '../validation/heldout';
 import { ItemCard } from './ItemCard';
 import { ItemTile } from './ItemTile';
 import { Details } from './Details';
+import { AbilityCard, type AbilityView } from './AbilityCard';
 import { abilityRows, renderBuildPng } from '../export/png';
 import { log } from '../log';
 import { toast } from 'sonner';
@@ -32,6 +33,16 @@ const SwapBadge = () => (
     </svg>
   </span>
 );
+
+// Phone: the point chips are too narrow to tap one by one, so each ability row is one button
+// and the tap position picks the point (keyboard activation opens the whole ability).
+const PHONE = '(max-width: 899px)';
+const subscribePhone = (cb: () => void) => {
+  const m = window.matchMedia(PHONE);
+  m.addEventListener('change', cb);
+  return () => m.removeEventListener('change', cb);
+};
+const usePhone = () => useSyncExternalStore(subscribePhone, () => window.matchMedia(PHONE).matches);
 
 export const HeroArrow = ({ dir, onStep }: { dir: -1 | 1; onStep: (d: -1 | 1) => void }) => (
   <button className={['hero-arrow', dir < 0 ? 'prev' : 'next'].join(' ')} onClick={() => onStep(dir)} aria-label={dir < 0 ? 'Previous hero' : 'Next hero'}>
@@ -113,6 +124,21 @@ export function BuildView({
   const selectIndex = (i: number) => {
     setOpenIndex(i);
     setLastOpenIndex(i);
+  };
+  // ability card: same keep-content-while-closing pattern as the item sheet
+  const [abilityView, setAbilityView] = useState<AbilityView | null>(null);
+  const [lastAbilityView, setLastAbilityView] = useState<AbilityView | null>(null);
+  const showAbility = (v: AbilityView) => {
+    setAbilityView(v);
+    setLastAbilityView(v);
+  };
+  const abilityRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const abilityKey = (v: AbilityView) => (v.point === null ? `a${v.abilityId}` : `p${v.point}`);
+  const phone = usePhone();
+  const pickPoint = (e: React.MouseEvent<HTMLButtonElement>, abilityId: number) => {
+    const marks = [...(e.currentTarget.parentElement?.querySelectorAll<HTMLElement>('.ap-mark') ?? [])];
+    const hit = e.detail ? marks.find((m) => ((r) => e.clientX >= r.left && e.clientX <= r.right)(m.getBoundingClientRect())) : undefined;
+    showAbility({ abilityId, point: hit ? Number(hit.dataset.index) : null });
   };
   const title = `${hero.name} - ${build.name}`;
   const abilities = abilityRows(build, hero.abilities);
@@ -218,25 +244,65 @@ export function BuildView({
             >
               {abilities.map((a) => (
                 <li key={a.id} className="ap-row" data-ability={a.name} aria-label={a.name}>
-                  <span className="ap-icon">
-                    <img src={img(a.image_webp)} alt="" width={32} height={32} />
-                  </span>
+                  {phone ? (
+                    <>
+                      <button
+                        className="ap-row-btn"
+                        ref={(el) => {
+                          abilityRefs.current[`a${a.id}`] = el;
+                        }}
+                        onClick={(e) => pickPoint(e, a.id)}
+                        aria-label={`${a.name}, show ability and upgrades`}
+                      />
+                      <span className="ap-icon">
+                        <img src={img(a.image_webp)} alt="" width={32} height={32} />
+                      </span>
+                    </>
+                  ) : (
+                    <button
+                      className="ap-icon"
+                      ref={(el) => {
+                        abilityRefs.current[`a${a.id}`] = el;
+                      }}
+                      onClick={() => showAbility({ abilityId: a.id, point: null })}
+                      aria-label={`${a.name}, show ability`}
+                    >
+                      <img src={img(a.image_webp)} alt="" width={32} height={32} />
+                    </button>
+                  )}
                   {build.abilityOrder
                     .filter((s) => s.ability.id === a.id)
-                    .map((s) => (
-                      <span
-                        key={s.index}
-                        role="img"
-                        className={['ap-mark', s.kind].join(' ')}
-                        data-ability={a.name}
-                        data-index={s.index}
-                        style={{ gridColumn: s.index + 2 }}
-                        aria-label={`${a.name} ${STEP_LABEL[s.kind]}, point ${s.index + 1}`}
-                      >
-                        <PointGlyph unlock={s.kind === 'unlock'} />
-                        {s.kind === 'unlock' ? null : TIER_COST[s.kind]}
-                      </span>
-                    ))}
+                    .map((s) => {
+                      const props = {
+                        className: ['ap-mark', s.kind].join(' '),
+                        'data-ability': a.name,
+                        'data-index': s.index,
+                        style: { gridColumn: s.index + 2 },
+                        'aria-label': `${a.name} ${STEP_LABEL[s.kind]}, point ${s.index + 1}`,
+                      };
+                      const chip = (
+                        <span className="ap-chip">
+                          <PointGlyph unlock={s.kind === 'unlock'} />
+                          {s.kind === 'unlock' ? null : TIER_COST[s.kind]}
+                        </span>
+                      );
+                      return phone ? (
+                        <span key={s.index} role="img" {...props}>
+                          {chip}
+                        </span>
+                      ) : (
+                        <button
+                          key={s.index}
+                          {...props}
+                          ref={(el) => {
+                            abilityRefs.current[`p${s.index}`] = el;
+                          }}
+                          onClick={() => showAbility({ abilityId: a.id, point: s.index })}
+                        >
+                          {chip}
+                        </button>
+                      );
+                    })}
                 </li>
               ))}
             </ol>
@@ -251,6 +317,17 @@ export function BuildView({
         onNavigate={selectIndex}
         returnFocus={(itemId) => tileRefs.current[itemId]?.focus()}
       />
+      {lastAbilityView && (
+        <AbilityCard
+          open={abilityView !== null}
+          view={lastAbilityView}
+          abilities={abilities}
+          order={build.abilityOrder}
+          onClose={() => setAbilityView(null)}
+          onNavigate={showAbility}
+          returnFocus={(v) => (abilityRefs.current[abilityKey(v)] ?? abilityRefs.current[`a${v.abilityId}`])?.focus()}
+        />
+      )}
     </>
   );
 }

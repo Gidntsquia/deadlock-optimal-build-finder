@@ -29,7 +29,7 @@ Static React app that generates Deadlock hero builds in the browser from a local
   Build Finder, Tier List, Street Brawl (external link), and a "by GidntSquia" credit link at the right (hidden on phone; the tier list footer also credits). The tier list page must fit one screen at >=900px wide (checked at 1440x900 and 1920x1080). Layout heights subtract `--nav-h`; keep new full-height rules doing so.
   Favicon links in `index.html` carry `?v=2`: browsers cache tab icons hard, bump it when the icon changes.
 - Screen layout: one in-game style build window (`BuildView.tsx`): hero button, title, build
-  pills, Share, Details, three phase rows, Ability Order grid (`.ap-grid`, one row per ability, one chip per point). The only top bar is the nav; no footer. The hero
+  pills, Share, Details, three phase rows, Ability Order grid (`.ap-grid`, one row per ability, one chip per point). Clicking an ability icon or a point opens the in-game style ability card (`AbilityCard.tsx`: stats, effect tiles, the three upgrades with the bought/current ones lit, arrows step); on phone each row is one button and the tap position picks the point. Card data comes from `abilities.json` (`fetch-data --abilities-only` refreshes it and the stat icons in `img/props/`). The only top bar is the nav; no footer. The hero
   picker is a dialog (`HeroPicker.tsx`). Every number, stat, data date, validation result and
   link lives in the Details dialog (`Details.tsx`) and nowhere else; The tier list page may say "win rate"/"Phantom"; the rules below are for the build screen. `verify:browser` fails if
   banned words (%, match, win rate, README...) show on the main screen or in the share PNG, or

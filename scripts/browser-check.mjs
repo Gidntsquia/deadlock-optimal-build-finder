@@ -366,6 +366,58 @@ try {
     await tile.evaluate((el) => el.blur());
   }
 
+  // ---- ability card: click an ability icon (whole ability), then a point (that upgrade lit, earlier ones bought) ----
+  {
+    const row = await page.$eval('.ap-row', (el) => el.dataset.ability);
+    await page.click('.ap-row .ap-icon');
+    await page.waitForSelector('.ability-sheet');
+    const card = await page.evaluate(() => ({
+      name: document.querySelector('.ability-sheet h2')?.textContent,
+      tiers: [...document.querySelectorAll('.ab-tier .ab-tier-text')].map((e) => e.textContent.trim()),
+      point: !!document.querySelector('.ab-point'),
+      lit: document.querySelectorAll('.ab-tier.bought, .ab-tier.here').length,
+      tiles: document.querySelectorAll('.ab-tile').length,
+      icons: [...document.querySelectorAll('.ability-sheet img')].every((i) => i.complete && i.naturalWidth > 0 && i.src.startsWith(location.origin)),
+      text: document.querySelector('.ability-sheet').innerText,
+    }));
+    check(
+      'ability card: icon opens that ability with 3 upgrade boxes, stat tiles, local icons, no point picked',
+      card.name === row && card.tiers.length === 3 && card.tiers.every(Boolean) && !card.point && card.lit === 0 && card.tiles > 0 && card.icons,
+      JSON.stringify({ ...card, text: undefined }),
+    );
+    check('ability card: no raw values (NaN, undefined, {s:sign})', !/NaN|undefined|\{s:/.test(card.text));
+    const r = await rectOf('[role="dialog"]');
+    check('ability card: centred and inside the window', inside(r, 1440, 900) && Math.abs((r.left + r.right) / 2 - 720) <= 2, JSON.stringify(r));
+    await axe('desktop, ability card open');
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('.ability-sheet', { state: 'detached' });
+    check('ability card: Escape returns focus to the ability icon', await page.evaluate(() => document.activeElement?.classList.contains('ap-icon')));
+    const mark = page.locator('.ap-mark.tier2').first();
+    const idx = Number(await mark.getAttribute('data-index'));
+    await mark.click();
+    await page.waitForSelector('.ability-sheet');
+    const pt = await page.evaluate(() => ({
+      point: document.querySelector('.ab-point')?.textContent ?? '',
+      tiers: [...document.querySelectorAll('.ab-tier')]
+        .map((e) => (e.classList.contains('here') ? 'here' : e.classList.contains('bought') ? 'bought' : '-'))
+        .join(','),
+    }));
+    check(
+      'ability card: a 2-point upgrade shows that point, tier 1 bought, tier 2 lit',
+      pt.point.includes(`Point ${idx + 1} of`) && pt.tiers === 'bought,here,-',
+      JSON.stringify(pt),
+    );
+    await page.keyboard.press('ArrowRight');
+    await page.waitForFunction((p) => document.querySelector('.ab-point')?.textContent.includes(`Point ${p} of`), idx + 2, { timeout: 5000 }).catch(() => {});
+    check('ability card: ArrowRight steps to the next point', (await page.textContent('.ab-point'))?.includes(`Point ${idx + 2} of`));
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('.ability-sheet', { state: 'detached' });
+    check(
+      'ability card: Escape returns focus to the point last shown',
+      await page.evaluate((i) => document.activeElement?.classList.contains('ap-mark') && document.activeElement.dataset.index === String(i), idx + 1),
+    );
+  }
+
   // ---- hero picker, URL, arrows, styles ----
   await openHeroes();
   const allHeroes = await page.$$eval('.hero-dialog .hero-opt', (els) => els.map((e) => e.textContent.trim()));
@@ -688,6 +740,22 @@ try {
     await axe('phone, item sheet open');
     await page.keyboard.press('Escape');
     await page.waitForSelector('.sheet', { state: 'detached' });
+    // ability card on phone: each row is one button; the tap position picks the point
+    const m = page.locator('.ap-mark.tier3').first();
+    await m.scrollIntoViewIfNeeded();
+    const mi = Number(await m.getAttribute('data-index'));
+    const mb = await m.boundingBox();
+    await page.mouse.click(mb.x + mb.width / 2, mb.y + mb.height / 2);
+    await page.waitForSelector('.ability-sheet');
+    const ar = await rectOf('[role="dialog"]');
+    check(
+      'phone: tapping a point opens the ability card at that point, bottom-anchored on screen',
+      (await page.textContent('.ab-point'))?.includes(`Point ${mi + 1} of`) && inside(ar, 390, 844) && Math.abs(ar.bottom - 844) <= 1,
+      JSON.stringify(ar),
+    );
+    await snap({ path: shot('ability-card-phone.png') });
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('.ability-sheet', { state: 'detached' });
   }
 
   // ---- back to desktop: axe, unknown slug, reduced motion ----
