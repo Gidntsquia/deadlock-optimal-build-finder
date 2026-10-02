@@ -57,6 +57,7 @@ export function BuildView({
   panel,
   hero,
   windowDays,
+  sinceDate,
   fetchedDate,
   stale,
 }: {
@@ -68,6 +69,7 @@ export function BuildView({
   panel: PanelValidation | null;
   hero: Pick<Hero, 'id' | 'name' | 'images' | 'abilities'>;
   windowDays?: number;
+  sinceDate: string | null;
   fetchedDate: string | null;
   stale: boolean;
 }) {
@@ -177,7 +179,7 @@ export function BuildView({
           <button className="pill share-btn" onClick={sharePng} disabled={busy}>
             Share
           </button>
-          <Details build={build} panel={panel} heroName={hero.name} windowDays={windowDays} fetchedDate={fetchedDate} />
+          <Details build={build} panel={panel} heroName={hero.name} windowDays={windowDays} sinceDate={sinceDate} fetchedDate={fetchedDate} />
         </div>
       </div>
       <div className={['board-wrap', stale ? 'stale' : null].filter(Boolean).join(' ')} aria-busy={stale}>

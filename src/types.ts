@@ -97,6 +97,10 @@ export interface AnalyticsPopulation {
 /** Aggregate analytics for one hero: all ranks, plus (optionally) the high-rank population. */
 export interface HeroAnalytics extends AnalyticsPopulation {
   hero_id: number;
+  /** start of this hero's data window (unix s); set when it was refetched from a patch on (fetch-data --since) */
+  min_unix_timestamp?: number;
+  /** all-rank charge-item ability sequences, used when high-rank sequences are too thin */
+  item_ability_order_stats?: ItemAbilityOrderStats;
   top?: AnalyticsPopulation & {
     min_average_badge: number;
     styles?: StylePopulation[];

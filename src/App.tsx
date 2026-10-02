@@ -293,15 +293,14 @@ export default function App({ active = true }: { active?: boolean }) {
 
   // en-GB's "short" month gives "Sept" (4 letters) for September; build the day/month/year
   // pieces separately so the month abbreviation is always exactly 3 letters, e.g. "4 Sep 2026".
-  const fetchedDate = manifest?.fetched_at
-    ? (() => {
-        const d = new Date(manifest.fetched_at);
-        const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric' }).format(d);
-        const month = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d);
-        const year = new Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(d);
-        return `${day} ${month} ${year}`;
-      })()
-    : null;
+  const fmtDay = (d: Date) => {
+    const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric' }).format(d);
+    const month = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d);
+    const year = new Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(d);
+    return `${day} ${month} ${year}`;
+  };
+  const fetchedDate = manifest?.fetched_at ? fmtDay(new Date(manifest.fetched_at)) : null;
+  const sinceDate = analytics?.min_unix_timestamp ? fmtDay(new Date(analytics.min_unix_timestamp * 1000)) : null;
 
   const [heroesOpen, setHeroesOpen] = useState(false);
   // display:none -> shown restarts CSS animations; drop the slide state while hidden so switching pages plays nothing
@@ -387,6 +386,7 @@ export default function App({ active = true }: { active?: boolean }) {
               panel={build ? (validations[tab] ?? null) : (lastGood?.panel ?? null)}
               hero={shownHero}
               windowDays={manifest?.window_days}
+              sinceDate={sinceDate}
               fetchedDate={fetchedDate}
               stale={isStale}
             />

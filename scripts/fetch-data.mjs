@@ -26,6 +26,8 @@
 //   --charge-orders-only        refresh only the charge-item ability sequences inside analytics/* (item_ability_order_stats; --heroes works)
 //   --corrupted-only            refresh only the corrupted-item stats inside analytics/* (corrupted; --heroes works)
 //   --validation-only           re-select players and refetch validation/* for every hero
+//   --since 2026-09-29T20:00Z   (with --analytics-only) only use games from this time on, e.g. a patch going live; the
+//                               hero's analytics file records it (min_unix_timestamp) and the Details dialog shows it
 //   --heroes 1,31               (with --validation-only or --analytics-only) only these hero ids; with --validation-only their entries are merged into manifest.validation_sets
 //   --select-only               (with --validation-only) run the selection, print the table per hero, write nothing
 //   --matchups 6:20,12,50;60:3,17,20   opt-in enemy-counter experiment fetch (plans/matchup-builds.md).
@@ -77,6 +79,13 @@ const ANALYTICS_ONLY = process.argv.includes('--analytics-only');
 // caller skips that match and moves on to the next one (there are more candidates than the target).
 const MAX_WAIT_MS = 45 * 1000;
 let MIN_TS = Math.floor(Date.now() / 1000) - WINDOW_DAYS * 86400;
+const SINCE_ARG = (() => {
+  const i = process.argv.indexOf('--since');
+  if (i < 0) return null;
+  const t = Date.parse(process.argv[i + 1] ?? '');
+  if (!Number.isFinite(t)) throw new Error(`--since: bad date ${process.argv[i + 1]}`);
+  return Math.floor(t / 1000);
+})();
 // Rate limit is 200 req / 60 s -> ~350 ms between requests keeps us well under.
 const SLEEP_MS = 350;
 
@@ -305,7 +314,8 @@ async function fetchChargeOrders(heroes) {
     const file = path.join(OUT, 'analytics', `${h.id}.json`);
     const a = JSON.parse(await readFile(file, 'utf8'));
     if (!a.top) continue;
-    const topQ = `hero_id=${h.id}&min_unix_timestamp=${MIN_TS}&min_average_badge=${TOP_BADGE}`;
+    const since = a.min_unix_timestamp ?? MIN_TS; // a hero refetched with --since keeps that window
+    const topQ = `hero_id=${h.id}&min_unix_timestamp=${since}&min_average_badge=${TOP_BADGE}`;
     const fetchFor = async (pop, filter, seed) => {
       const out = {};
       for (const id of chargeIds) {
@@ -317,10 +327,18 @@ async function fetchChargeOrders(heroes) {
       return out;
     };
     a.top.item_ability_order_stats = await fetchFor(a.top, (id) => `&include_item_ids=${id}`, null);
+    // all ranks too: the generator falls back to it when high-rank sequences are too thin (e.g. right after a patch)
+    const allQ = `hero_id=${h.id}&min_unix_timestamp=${since}`;
+    a.item_ability_order_stats = {};
+    for (const id of chargeIds) {
+      if ((a.item_stats.find((s) => s.item_id === id)?.matches ?? 0) < CHARGE_MIN_MATCHES) continue;
+      const rows = await getJson(`${API}/v1/analytics/ability-order-stats?${allQ}&include_item_ids=${id}&min_matches=5`);
+      a.item_ability_order_stats[id] = [...rows].sort((x, y) => y.matches - x.matches).slice(0, 400);
+    }
     for (const st of a.top.styles ?? []) {
       st.item_ability_order_stats = await fetchFor(st, (id) => (st.seed === null ? `&exclude_item_ids=${st.exclude.join(',')}&include_item_ids=${id}` : `&include_item_ids=${st.seed},${id}`), st.seed);
     }
-    console.log(`   ${h.name}: ${Object.keys(a.top.item_ability_order_stats).length} charge item(s)`);
+    console.log(`   ${h.name}: ${Object.keys(a.top.item_ability_order_stats).length} charge item(s), ${Object.keys(a.item_ability_order_stats).length} all-rank`);
     await save(`analytics/${h.id}.json`, a);
   }
 }
@@ -330,9 +348,9 @@ async function fetchChargeOrders(heroes) {
 // sold (an upgrade counts as a sale), so this counts it from a sample of recent high-rank games instead.
 // Only per-item totals are stored. Validation panel players' rows are left out so the panel stays held out.
 const SELL_SAMPLE_MATCHES = 300;
-async function fetchSellStats(heroId, items, panelIds) {
+async function fetchSellStats(heroId, items, panelIds, since = MIN_TS) {
   const byId = new Map(items.map((i) => [i.id, i]));
-  const q = `hero_ids=${heroId}&min_average_badge=${TOP_BADGE}&min_unix_timestamp=${MIN_TS}&game_mode=normal&include_player_items=true&limit=${SELL_SAMPLE_MATCHES}`;
+  const q = `hero_ids=${heroId}&min_average_badge=${TOP_BADGE}&min_unix_timestamp=${since}&game_mode=normal&include_player_items=true&limit=${SELL_SAMPLE_MATCHES}`;
   const matches = await getJson(`${API}/v1/matches/metadata?${q}`);
   const acc = new Map();
   let players = 0;
@@ -367,7 +385,7 @@ async function fetchAllSellStats(heroes, manifest) {
   for (const h of targets) {
     const file = path.join(OUT, `analytics/${h.id}.json`);
     const analytics = JSON.parse(await readFile(file, 'utf8'));
-    const sell = await fetchSellStats(h.id, items, panelIds);
+    const sell = await fetchSellStats(h.id, items, panelIds, analytics.min_unix_timestamp ?? MIN_TS);
     console.log(`   ${h.name}: ${sell.players} players; sold for room in >=30%: ${sell.items.filter((r) => r.buyers >= 30 && r.sold / r.buyers >= 0.3).map((r) => items.find((i) => i.id === r.item_id).name).join(', ') || 'none'}`);
     analytics.top = { ...analytics.top, sell_stats: sell };
     await save(`analytics/${h.id}.json`, analytics);
@@ -452,7 +470,7 @@ async function fetchAnalytics(heroes, manifest) {
     const topMatches = Math.max(0, ...top.item_stats.map((s) => s.matches));
     const { styles, scanned } = await fetchStyles(h, topQ, top, shopIds);
     console.log(`   ${h.name}: top-rank max item matches ${topMatches}; ${scanned} anchors scanned, ${Math.max(0, styles.length - 1)} alternative style(s)${styles.length ? ': ' + styles.slice(1).map((s) => `${s.seed} ${(s.share * 100).toFixed(0)}%`).join(', ') : ''}`);
-    await save(`analytics/${h.id}.json`, { hero_id: h.id, ...all, top: { min_average_badge: TOP_BADGE, ...top, styles } });
+    await save(`analytics/${h.id}.json`, { hero_id: h.id, ...(SINCE_ARG ? { min_unix_timestamp: SINCE_ARG } : {}), ...all, top: { min_average_badge: TOP_BADGE, ...top, styles } });
   }
   manifest.counts.analytics_heroes = heroes.length;
   manifest.top_min_average_badge = TOP_BADGE;
@@ -588,15 +606,18 @@ async function main() {
   if (ANALYTICS_ONLY) {
     const manifest = JSON.parse(await readFile(path.join(OUT, 'manifest.json'), 'utf8'));
     const heroes = JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8'));
-    MIN_TS = manifest.min_unix_timestamp; // keep the same window as the rest of the snapshot
+    MIN_TS = SINCE_ARG ?? manifest.min_unix_timestamp; // keep the same window as the rest of the snapshot unless --since
     manifest.analytics_fetched_at = new Date().toISOString();
     await fetchAnalytics(heroes, manifest);
     await fetchChargeOrders(heroes);
     await fetchAllSellStats(heroes, manifest);
     await fetchCorruptedStats(heroes);
     manifest.corrupted_fetched_at = new Date().toISOString();
-    await fetchHeroStats(heroes);
-    await fetchItemStats();
+    // the tier lists cover every hero, so a --heroes or --since run leaves them on the snapshot window
+    if (!HEROES_ARG && !SINCE_ARG) {
+      await fetchHeroStats(heroes);
+      await fetchItemStats();
+    }
     await save('manifest.json', manifest);
     return;
   }

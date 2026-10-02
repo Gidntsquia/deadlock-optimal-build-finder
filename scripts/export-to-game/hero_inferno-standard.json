@@ -2,12 +2,12 @@
   "hero_id": 1,
   "hero_class_name": "hero_inferno",
   "name": "Monclan Infernus",
-  "description": "Sell later: Extra Regen (when you buy Dispel Magic), Healbane (when you buy Ricochet).\nCorrupt at the Broker, in order: Rapid Recharge, Ricochet, Superior Duration.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Extra Regen (when you buy Dispel Magic), Healbane (when you buy Ricochet).\nCorrupt at the Broker, in order: Rapid Recharge, Superior Duration, Ricochet, Spiritual Overflow, Boundless Spirit.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Extra Regen when you buy Dispel Magic.",
-      "width": 720,
+      "description": "Sell Extra Regen when you buy Dispel Magic. Sell Healbane when you buy Ricochet.",
+      "width": 840,
       "height": 175,
       "item_ids": [
         968099481,
@@ -15,22 +15,23 @@
         668299740,
         7409189,
         1548066885,
-        4104549924
+        1672893796,
+        2603935618
       ]
     },
     {
       "name": "Mid Game",
-      "description": "Sell Healbane when you buy Ricochet.",
+      "description": "",
       "width": 1320,
       "height": 175,
       "item_ids": [
-        2603935618,
-        84321454,
+        4104549924,
         3776945997,
-        876563814,
+        112198670,
         2356412290,
-        2081037738,
         2951612397,
+        876563814,
+        2081037738,
         787198704,
         1144549437,
         3696726732,
@@ -39,13 +40,13 @@
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Rapid Recharge, Ricochet, Superior Duration.",
+      "description": "Corrupt at the Broker, in order: Rapid Recharge, Superior Duration, Ricochet, Spiritual Overflow, Boundless Spirit.",
       "width": 600,
       "height": 175,
       "item_ids": [
         2717651715,
-        2226497419,
         3005970438,
+        2226497419,
         2480592370,
         2519598785
       ]
@@ -65,12 +66,12 @@
       "kind": "unlock"
     },
     {
-      "ability_id": 3516947824,
-      "kind": "tier1"
-    },
-    {
       "ability_id": 491391007,
       "kind": "unlock"
+    },
+    {
+      "ability_id": 3516947824,
+      "kind": "tier1"
     },
     {
       "ability_id": 3516947824,
@@ -111,6 +112,10 @@
     {
       "ability_id": 1593133799,
       "kind": "tier2"
+    },
+    {
+      "ability_id": 1593133799,
+      "kind": "tier3"
     }
   ],
   "tags": [

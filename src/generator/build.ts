@@ -27,6 +27,8 @@ export function statValue(item: Item, mult: Record<string, number>): number {
   return v;
 }
 
+/** charge-item ability sequences and the population (high-rank or all ranks) they come from */
+interface ChargeOrders { kind: 'top' | 'all'; rows: ItemAbilityOrderStats }
 interface Scored { item: Item; stat: ItemStat; pop: number; winLift: number; eff: number; kit: number; matchupLift: number; matchupEnemies: number[]; base: number }
 
 /**
@@ -35,7 +37,7 @@ interface Scored { item: Item; stat: ItemStat; pop: number; winLift: number; eff
  * big enough for win rates and buy times to be stable. Ability sequences are chosen separately
  * because they are much sparser than item stats.
  */
-export function choosePopulation(analytics: HeroAnalytics): { items: AnalyticsPopulation; abilities: AnalyticsPopulation; chargeOrders: ItemAbilityOrderStats[]; info: BuildPopulation } {
+export function choosePopulation(analytics: HeroAnalytics): { items: AnalyticsPopulation; abilities: AnalyticsPopulation; chargeOrders: ChargeOrders[]; info: BuildPopulation } {
   const all: AnalyticsPopulation = analytics;
   const top = analytics.top;
   const topItemMatches = top ? Math.max(0, ...top.item_stats.map((s) => s.matches)) : 0;
@@ -45,7 +47,12 @@ export function choosePopulation(analytics: HeroAnalytics): { items: AnalyticsPo
   return {
     items: useTop ? top! : all,
     abilities: useTopSeq ? top! : all,
-    chargeOrders: useTopSeq && top!.item_ability_order_stats ? [top!.item_ability_order_stats] : [],
+    // charge-item sequences from the same population the ability order comes from (all ranks when high-rank
+    // sequences are too thin, e.g. right after a patch)
+    chargeOrders:
+      useTopSeq && top!.item_ability_order_stats ? [{ kind: 'top', rows: top!.item_ability_order_stats }]
+      : !useTopSeq && analytics.item_ability_order_stats ? [{ kind: 'all', rows: analytics.item_ability_order_stats }]
+      : [],
     info: {
       kind: useTop ? 'top' : 'all', minBadge: useTop ? top!.min_average_badge : null,
       matches: useTop ? topItemMatches : Math.max(0, ...all.item_stats.map((s) => s.matches)),
@@ -99,7 +106,7 @@ export function stylePopulations(input: GeneratorInput): Population[] {
       items: { item_stats: s.item_stats, ability_order_stats: s.ability_order_stats, permutation_stats: base.items.permutation_stats },
       abilities: { item_stats: abilities.item_stats, ability_order_stats: abilities.ability_order_stats, permutation_stats: base.items.permutation_stats },
       // the style's own charge-item sequences first, then the whole high-rank population's
-      chargeOrders: [...(s.item_ability_order_stats ? [s.item_ability_order_stats] : []), ...base.chargeOrders],
+      chargeOrders: [...(s.item_ability_order_stats ? [{ kind: 'top' as const, rows: s.item_ability_order_stats }] : []), ...base.chargeOrders],
       info: { kind: 'top', minBadge: base.info.minBadge, matches: s.matches, abilitySequenceKind: seqMatches >= MIN_TOP_SEQ_MATCHES || base.info.abilitySequenceKind === 'top' ? 'top' : 'all', style: { key: s.key, share: s.share, seed, anchors, exclude, defining, name: finalName, tagline } },
     };
   });
@@ -399,10 +406,10 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
   const seqMax = (rows: { matches: number }[] | undefined) => Math.max(0, ...(rows ?? []).map((r) => r.matches));
   const charged = buildItems
     .filter((b) => !b.item.is_active_item && num(b.item.properties.BonusAbilityCharges?.value) > 0)
-    .flatMap((b) => pop.chargeOrders.map((m) => ({ item: b.item, rows: m[String(b.item.id)] })))
+    .flatMap((b) => pop.chargeOrders.map((m) => ({ item: b.item, kind: m.kind, rows: m.rows[String(b.item.id)] })))
     .find((c) => seqMax(c.rows) >= MIN_TOP_SEQ_MATCHES);
   const ab = pickAbilityOrder(hero, abilities, charged ? charged.rows! : pop.abilities.ability_order_stats);
-  const info: BuildPopulation = charged ? { ...pop.info, abilitySequenceKind: 'top', abilitySequenceItem: charged.item } : pop.info;
+  const info: BuildPopulation = charged ? { ...pop.info, abilitySequenceKind: charged.kind, abilitySequenceItem: charged.item } : pop.info;
   const style = pop.info.style;
   return {
     key: style ? style.key : arch.key, name: style ? style.name : arch.name, tagline: style ? style.tagline : arch.tagline, heroId: hero.id,

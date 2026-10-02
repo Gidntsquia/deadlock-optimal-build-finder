@@ -217,7 +217,9 @@ try {
     );
     check('one details control, closed by default', (await page.$$('.details-btn')).length === 1 && (await page.$$('.details')).length === 0);
     let bad = [];
-    for (const sel of ['.hero-btn:visible', '.style-switch', '.row.abilities', '.ap-grid', '.share-btn', '.details-btn']) {
+    // build pills only show when the hero has more than one build style (checked on Warden below)
+    const pills = (await page.$$('.style-switch')).length ? ['.style-switch'] : [];
+    for (const sel of ['.hero-btn:visible', ...pills, '.row.abilities', '.ap-grid', '.share-btn', '.details-btn']) {
       const r = await page.locator(sel).first().boundingBox();
       if (!r || r.x < 0 || r.y < 0 || r.x + r.width > 1440 || r.y + r.height > 900) bad.push(sel);
     }

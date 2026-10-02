@@ -12,12 +12,15 @@ export function Details({
   panel,
   heroName,
   windowDays,
+  sinceDate,
   fetchedDate,
 }: {
   build: Build;
   panel: PanelValidation | null;
   heroName: string;
   windowDays?: number;
+  /** set when this hero's data starts at a patch rather than the snapshot's rolling window */
+  sinceDate?: string | null;
   fetchedDate: string | null;
 }) {
   const reps = panel?.players.length ?? 0;
@@ -38,7 +41,7 @@ export function Details({
           {pop.kind === 'top'
             ? `From ${pop.matches.toLocaleString()} high-rank matches (Phantom and above).`
             : `From ${pop.matches.toLocaleString()} matches, all ranks (not enough high-rank games for this hero).`}{' '}
-          {windowDays ? `Last ${windowDays} days` : ''}
+          {sinceDate ? `Games since the ${sinceDate} patch` : windowDays ? `Last ${windowDays} days` : ''}
           {fetchedDate ? `, data from ${fetchedDate}.` : ''}
         </p>
         <p>
