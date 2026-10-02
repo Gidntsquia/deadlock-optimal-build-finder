@@ -2,7 +2,9 @@
 
 Data: `public/data/hero-stats.json`, written by `npm run fetch-data` (or `node scripts/fetch-data.mjs --hero-stats-only`,
 a few seconds). One row per hero: `wins` and `matches` from `api.deadlock-api.com/v1/analytics/hero-stats` with
-`min_average_badge=90` (Phantom and above) over the snapshot's 30-day window.
+`min_average_badge=90` (Phantom and above) since the latest patch (`PATCH_NAME` / `PATCH_SINCE` in
+`scripts/fetch-data.mjs`, now 09-29-2026 from 20:00 UTC; bump both when a new patch lands, titles at
+`api.deadlock-api.com/v1/patches`). Older games are left out so the lists show the game as it plays now.
 
 Rule (`src/tiers.ts`): win rate = wins / matches x 100. Tier by win rate:
 
@@ -27,7 +29,7 @@ The same page has a Heroes / Items / Corrupted Items switch (`?list=items`, `?li
 Data: `public/data/item-stats.json`, written with `hero-stats.json` (same flags). Rows are wins and matches per item over
 every hero from `/v1/analytics/item-stats`:
 
-- `items`: normal copies (`corrupted_items=exclude`), Phantom and above, the snapshot's 30-day window.
+- `items`: normal copies (`corrupted_items=exclude`), Phantom and above, since the latest patch.
 - `corrupted`: corrupted copies (`corrupted_items=only`), all ranks, games of 30 minutes or more, since corrupted items
   came out (29 Sep 2026). Phantom+ alone had only 20 to 260 games per corrupted item on 2026-10-01, too few to rank.
 

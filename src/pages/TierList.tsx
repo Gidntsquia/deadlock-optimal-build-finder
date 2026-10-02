@@ -214,7 +214,9 @@ export function TierList({ onPickHero }: { onPickHero: (slug: string) => void })
     else url.searchParams.set('list', l);
     window.history.replaceState(window.history.state, '', url);
   };
-  const days = data && 'stats' in data ? data.stats.window_days : 30;
+  // the +12h keeps the day right in time zones west of UTC (the patch went live in the evening, UTC)
+  const patchDate = data && 'stats' in data ? fmtDate(new Date((data.stats.min_unix_timestamp + 12 * 3600) * 1000).toISOString()) : null;
+  const since = patchDate ? `since the ${patchDate} patch` : 'since the latest patch';
   const corruptedSince =
     itemData && 'stats' in itemData ? fmtDate(new Date((itemData.stats.corrupted_since_unix_timestamp + 12 * 3600) * 1000).toISOString()) : null;
 
@@ -238,12 +240,9 @@ export function TierList({ onPickHero }: { onPickHero: (slug: string) => void })
           ))}
         </div>
         <p>
-          {list === 'heroes' && <>Heroes ranked by win rate in Phantom and above games over the last {days} days.</>}
+          {list === 'heroes' && <>Heroes ranked by win rate in Phantom and above games {since}.</>}
           {list === 'items' && (
-            <>
-              Items on every hero, ranked by win rate against items of the same price (rarely bought ones count less), in Phantom and above games over the last{' '}
-              {days} days.
-            </>
+            <>Items on every hero, ranked by win rate against items of the same price (rarely bought ones count less), in Phantom and above games {since}.</>
           )}
           {list === 'corrupted' && (
             <>

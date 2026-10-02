@@ -15,8 +15,8 @@
 //                                          with per-match purchases; 5 players per hero, chosen automatically
 //                                          from the Phantom+ scoreboard (see selectValidationPlayers)   (VALIDATION ONLY)
 //   public/data/img/{items,heroes,abilities,corrupted,props}/  images so the app needs no network at all
-//   public/data/hero-stats.json            per-hero wins + matches, Phantom+ (badge >= 90), same window; feeds the tier list
-//   public/data/item-stats.json            per-item wins + matches over every hero (Phantom+, same window) and per corrupted
+//   public/data/hero-stats.json            per-hero wins + matches, Phantom+ (badge >= 90), since the latest patch (PATCH_SINCE); feeds the tier list
+//   public/data/item-stats.json            per-item wins + matches over every hero (Phantom+, since the latest patch) and per corrupted
 //                                          item (all ranks, games >= 30 min, since corrupted items came out); feeds the item tier lists
 //   public/data/manifest.json              timestamps + counts + validation_sets (who was selected and why)
 //
@@ -568,8 +568,12 @@ async function fetchAllSellStats(heroes, manifest) {
 // about minute 30). For each item: games where the hero ran the corrupted copy vs games with the normal
 // copy, both limited to games that lasted >= 30 min so the normal side also reached the Broker. All ranks:
 // at Phantom+ there are too few corrupted games yet. Since the corrupted launch only.
-// the 09-29-2026 patch went live ~19:30 UTC (first corrupted buys); 20:00 keeps pre-patch games out
-const CORRUPTED_SINCE = Math.floor(Date.UTC(2026, 8, 29, 20) / 1000);
+// The latest patch: the tier lists and the corrupted stats count only games from then on. Bump both on a new patch
+// (titles: api.deadlock-api.com/v1/patches). 09-29-2026 went live ~19:30 UTC (first corrupted buys); 20:00 keeps
+// pre-patch games out.
+const PATCH_NAME = '09-29-2026';
+const PATCH_SINCE = Math.floor(Date.UTC(2026, 8, 29, 20) / 1000);
+const CORRUPTED_SINCE = PATCH_SINCE; // corrupted items came out in this patch
 const CORRUPTED_MIN_DURATION_S = 1800;
 async function fetchCorruptedStats(heroes) {
   const targets = HEROES_ARG ? heroes.filter((h) => HEROES_ARG.includes(h.id)) : heroes;
@@ -631,36 +635,38 @@ async function fetchImbueTargets(heroes) {
   }
 }
 
-// Tier list input: one request, every hero's wins and matches at badge >= TOP_BADGE over the snapshot window.
+// Tier list input: one request, every hero's wins and matches at badge >= TOP_BADGE since the latest patch.
 async function fetchHeroStats(heroes) {
-  console.log(`hero win rates (badge>=${TOP_BADGE})`);
-  const rows = await getJson(`${API}/v1/analytics/hero-stats?min_average_badge=${TOP_BADGE}&min_unix_timestamp=${MIN_TS}`);
+  console.log(`hero win rates (badge>=${TOP_BADGE}, since the ${PATCH_NAME} patch)`);
+  const rows = await getJson(`${API}/v1/analytics/hero-stats?min_average_badge=${TOP_BADGE}&min_unix_timestamp=${PATCH_SINCE}`);
   const byId = new Map(rows.map((r) => [r.hero_id, r]));
   const missing = heroes.filter((h) => !byId.has(h.id)).map((h) => h.name);
   if (missing.length) throw new Error(`hero-stats has no row for: ${missing.join(', ')}`);
   await save('hero-stats.json', {
     fetched_at: new Date().toISOString(),
     min_average_badge: TOP_BADGE,
-    min_unix_timestamp: MIN_TS,
-    window_days: WINDOW_DAYS,
+    patch: PATCH_NAME,
+    min_unix_timestamp: PATCH_SINCE,
     heroes: heroes.map((h) => ({ hero_id: h.id, wins: byId.get(h.id).wins, matches: byId.get(h.id).matches })),
   });
 }
 
 // Item tier list input: every item's wins and matches over all heroes. Normal copies use the tier list's population
-// (Phantom+, snapshot window); corrupted copies are too new for that, so they use the corrupted-stats population.
+// (Phantom+, since the latest patch); corrupted copies are too new for that, so they use the corrupted-stats population.
 async function fetchItemStats() {
-  console.log(`item win rates, all heroes (badge>=${TOP_BADGE}; corrupted: all ranks, games >= ${CORRUPTED_MIN_DURATION_S / 60} min)`);
+  console.log(
+    `item win rates, all heroes (badge>=${TOP_BADGE}, since the ${PATCH_NAME} patch; corrupted: all ranks, games >= ${CORRUPTED_MIN_DURATION_S / 60} min)`,
+  );
   const [normal, corrupted] = await Promise.all([
-    getJson(`${API}/v1/analytics/item-stats?min_average_badge=${TOP_BADGE}&min_unix_timestamp=${MIN_TS}&corrupted_items=exclude`),
+    getJson(`${API}/v1/analytics/item-stats?min_average_badge=${TOP_BADGE}&min_unix_timestamp=${PATCH_SINCE}&corrupted_items=exclude`),
     getJson(`${API}/v1/analytics/item-stats?min_unix_timestamp=${CORRUPTED_SINCE}&min_duration_s=${CORRUPTED_MIN_DURATION_S}&corrupted_items=only`),
   ]);
   const slim = (rows) => rows.filter((r) => r.matches > 0).map((r) => ({ item_id: r.item_id, wins: r.wins, matches: r.matches }));
   await save('item-stats.json', {
     fetched_at: new Date().toISOString(),
     min_average_badge: TOP_BADGE,
-    min_unix_timestamp: MIN_TS,
-    window_days: WINDOW_DAYS,
+    patch: PATCH_NAME,
+    min_unix_timestamp: PATCH_SINCE,
     corrupted_since_unix_timestamp: CORRUPTED_SINCE,
     corrupted_min_duration_s: CORRUPTED_MIN_DURATION_S,
     items: slim(normal),
@@ -909,8 +915,8 @@ async function main() {
     manifest.corrupted_fetched_at = new Date().toISOString();
     await fetchImbueTargets(heroes);
     manifest.imbue_targets_fetched_at = new Date().toISOString();
-    // the tier lists cover every hero, so a --heroes or --since run leaves them on the snapshot window
-    if (!HEROES_ARG && !SINCE_ARG) {
+    // the tier lists cover every hero, so a --heroes run leaves them alone
+    if (!HEROES_ARG) {
       await fetchHeroStats(heroes);
       await fetchItemStats();
     }

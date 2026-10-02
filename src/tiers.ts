@@ -1,10 +1,12 @@
 import type { Hero, Item } from './types';
 
-/** Phantom+ (average lobby badge >= 90) totals per hero over the snapshot window; written by `npm run fetch-data`. */
+/** Phantom+ (average lobby badge >= 90) totals per hero since the latest patch; written by `npm run fetch-data`. */
 export interface HeroStats {
   fetched_at: string;
   min_average_badge: number;
-  window_days: number;
+  /** patch title, e.g. "09-29-2026"; games from `min_unix_timestamp` on */
+  patch: string;
+  min_unix_timestamp: number;
   heroes: { hero_id: number; wins: number; matches: number }[];
 }
 
@@ -45,12 +47,13 @@ export function buildTierRows(heroes: Hero[], stats: HeroStats): TierRow[] {
   return rows;
 }
 
-/** Per-item totals over every hero; written by `npm run fetch-data`. `items` are normal copies (Phantom+, snapshot
- * window), `corrupted` are corrupted copies (all ranks, games of `corrupted_min_duration_s` or longer, since release). */
+/** Per-item totals over every hero; written by `npm run fetch-data`. `items` are normal copies (Phantom+, since the
+ * latest patch), `corrupted` are corrupted copies (all ranks, games of `corrupted_min_duration_s` or longer, since release). */
 export interface ItemStats {
   fetched_at: string;
   min_average_badge: number;
-  window_days: number;
+  patch: string;
+  min_unix_timestamp: number;
   corrupted_since_unix_timestamp: number;
   corrupted_min_duration_s: number;
   items: { item_id: number; wins: number; matches: number }[];
