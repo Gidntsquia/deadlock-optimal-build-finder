@@ -371,12 +371,13 @@ try {
     const row = await page.$eval('.ap-row', (el) => el.dataset.ability);
     await page.click('.ap-row .ap-icon');
     await page.waitForSelector('.ability-sheet');
+    await page.waitForFunction(() => [...document.querySelectorAll('.ability-sheet img')].every((i) => i.complete), null, { timeout: 5000 }).catch(() => {});
     const card = await page.evaluate(() => ({
       name: document.querySelector('.ability-sheet h2')?.textContent,
       tiers: [...document.querySelectorAll('.ab-tier .ab-tier-text')].map((e) => e.textContent.trim()),
-      point: !!document.querySelector('.ab-point'),
+      point: !!document.querySelector('.ab-point-chip'),
       lit: document.querySelectorAll('.ab-tier.bought, .ab-tier.here').length,
-      tiles: document.querySelectorAll('.ab-tile').length,
+      tiles: document.querySelectorAll('.ab-tile:not(.ab-sizer *)').length,
       icons: [...document.querySelectorAll('.ability-sheet img')].every((i) => i.complete && i.naturalWidth > 0 && i.src.startsWith(location.origin)),
       text: document.querySelector('.ability-sheet').innerText,
     }));
@@ -396,7 +397,7 @@ try {
         max: Number(document.querySelector('#ab-progress')?.max),
         gains: document.querySelector('.ab-gains')?.textContent ?? '',
         lit: document.querySelectorAll('.ab-tier.bought').length,
-        vals: [...document.querySelectorAll('.ab-hstat b, .ab-tile b')].map((e) => e.textContent).join('|'),
+        vals: [...document.querySelectorAll('.ab-hstat b:not(.ab-sizer *), .ab-tile b:not(.ab-sizer *)')].map((e) => e.textContent).join('|'),
         text: document.querySelector('.ability-sheet').innerText,
       }));
     const p0 = await progress();
@@ -430,7 +431,9 @@ try {
       page.evaluate(() => {
         const stat = (label) =>
           parseFloat(
-            [...document.querySelectorAll('.ab-hstat, .ab-tile')].find((e) => e.querySelector('span')?.textContent === label)?.querySelector('b')?.textContent,
+            [...document.querySelectorAll('.ab-hstat:not(.ab-sizer *), .ab-tile:not(.ab-sizer *)')]
+              .find((e) => e.querySelector('span')?.textContent === label)
+              ?.querySelector('b')?.textContent,
           );
         const g = document.querySelector('.ab-gains')?.textContent ?? '';
         return {
@@ -457,6 +460,7 @@ try {
         level: Number(g.match(/Level (\d+)/)?.[1]),
         spirit: parseFloat(g.match(/Spirit power ([\d.]+)/)?.[1] ?? '0'),
         say: await page.getAttribute('#ab-progress', 'aria-valuetext'),
+        height: await page.$eval('.ability-sheet', (e) => Math.round(e.getBoundingClientRect().height)),
       });
     }
     const levelGap = walk.find((w, i) => i && w.level > walk[i - 1].level + 1);
@@ -466,6 +470,8 @@ try {
       !levelGap && !badDrop,
       JSON.stringify({ levelGap, badDrop }),
     );
+    const heights = [...new Set(walk.map((w) => w.height))];
+    check('ability card: the card keeps one size as the slider moves', heights.length === 1, heights.join(' '));
     await page.keyboard.press('Escape');
     await page.waitForSelector('.ability-sheet', { state: 'detached' });
     const mark = page.locator('.ap-mark.tier2').first();

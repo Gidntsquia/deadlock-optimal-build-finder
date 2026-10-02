@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { img } from '../data/load';
 import type { Ability, AbilityProperty, AbilityStep, BuildItem } from '../types';
 import { boostsAt, heldItems, itemBoosts, timeline, type Boosts, type HeroLevels, type Moment } from '../abilityProgress';
@@ -188,18 +188,54 @@ export function AbilityCard({
   // imbue items held now: the player picks whether this ability is the one they went on
   const [imbued, setImbued] = useState<Set<string>>(() => new Set());
   const held = heldItems(moments, pos).map((b) => b.item);
-  const imbues = held.filter((i) => itemBoosts(i).imbue);
-  const onThis = imbues.filter((i) => imbued.has(`${a.id}:${i.id}`));
-  const boosts = boostsAt(hero, moment.souls, held, onThis);
-  const { values, spirit, cdr, charged } = withBoosts(a, upg.values, scales, boosts);
-  const gains = [
-    `Level ${boosts.level}`,
-    spirit ? `Spirit power ${round(spirit)}` : null,
-    cdr ? `Cooldown -${round(cdr * 100)}%` : null,
-    boosts.duration ? `Duration +${round(boosts.duration)}%` : null,
-    boosts.range ? `Range +${round(boosts.range)}%` : null,
-    (charged ? boosts.charges : boosts.newCharges) ? `Charges +${charged ? boosts.charges : boosts.newCharges}` : null,
-  ].filter((g): g is string => !!g);
+  // every imbue item in the build is listed from the start (so the card keeps its size); it can be ticked once bought
+  const imbues = items.map((b) => b.item).filter((i, n, all) => itemBoosts(i).imbue && all.findIndex((o) => o.id === i.id) === n);
+  const boostsFor = (p: number, h: typeof held) =>
+    boostsAt(
+      hero,
+      moments[p].souls,
+      h,
+      h.filter((i) => itemBoosts(i).imbue && imbued.has(`${a.id}:${i.id}`)),
+    );
+  const boosts = boostsFor(pos, held);
+  const { values } = withBoosts(a, upg.values, scales, boosts);
+  // the end of the build: every point and item in, usually the card at its tallest
+  const last = moments.length - 1;
+  const levelAtPos = (p: number) => Math.max(0, ...ownPoints.filter((s) => posOf(s.index) <= p).map((s) => LEVEL[s.kind]));
+  const endUpg = upgraded(a, levelAtPos(last));
+  const endValues = withBoosts(
+    a,
+    endUpg.values,
+    endUpg.scales,
+    boostsFor(
+      last,
+      heldItems(moments, last).map((x) => x.item),
+    ),
+  ).values;
+  // what the hero has at moment p, as the short lines under the slider
+  const gainsAt = (p: number) => {
+    const b =
+      p === pos
+        ? boosts
+        : boostsFor(
+            p,
+            heldItems(moments, p).map((x) => x.item),
+          );
+    const u = p === pos ? upg : upgraded(a, levelAtPos(p));
+    const { spirit, cdr, charged } = withBoosts(a, u.values, u.scales, b);
+    return [
+      `Level ${b.level}`,
+      spirit ? `Spirit power ${round(spirit)}` : null,
+      cdr ? `Cooldown -${round(cdr * 100)}%` : null,
+      b.duration ? `Duration +${round(b.duration)}%` : null,
+      b.range ? `Range +${round(b.range)}%` : null,
+      (charged ? b.charges : b.newCharges) ? `Charges +${charged ? b.charges : b.newCharges}` : null,
+    ].filter((g): g is string => !!g);
+  };
+  const gains = gainsAt(pos);
+  // every moment's lines, laid under the shown ones unseen, so the box is as tall as its tallest moment and the card keeps its size
+  const lockedAt = (p: number) => ownPoints.length > 0 && !ownPoints.some((s) => posOf(s.index) <= p);
+  const allGains = [...new Set(moments.map((_, p) => [...gainsAt(p), ...(lockedAt(p) ? ['Not unlocked yet'] : [])].join('|')))];
   // items sold to make room for this buy
   const soldFor = (b: BuildItem) => items.filter((o) => o.sellFor?.id === b.item.id);
   const say = (m: Moment) =>
@@ -212,172 +248,27 @@ export function AbilityCard({
           : `Point ${m.point + 1}: ${order[m.point].ability.name} ${STEP_LABEL[order[m.point].kind].toLowerCase()}`;
 
   const prop = (k: string) => a.properties[k];
-  const shown = (k: string) => {
-    const p = prop(k);
-    return !!p && !isOff({ ...p, value: values[k] }, values[k]);
-  };
-  const valueOf = (k: string) => fmt(prop(k), values[k]);
-  const upClass = (k: string) => (changed.has(k) ? 'ab-up' : undefined);
+  // the stat lines and effect tiles for one set of values; drawn for now, and unseen for the end of the build to hold the card's size
+  const statsView = (values: Record<string, number>, changed: Set<string>, scales: Record<string, number>) => {
+    const shown = (k: string) => {
+      const p = prop(k);
+      return !!p && !isOff({ ...p, value: values[k] }, values[k]);
+    };
+    const valueOf = (k: string) => fmt(prop(k), values[k]);
+    const upClass = (k: string) => (changed.has(k) ? 'ab-up' : undefined);
 
-  const head = [
-    'AbilityCooldown',
-    ...(values.AbilityCharges > 1 ? ['AbilityCharges', 'AbilityCooldownBetweenCharge'] : []),
-    'AbilityDuration',
-    'AbilityCastRange',
-    ...(a.tooltip?.header ?? []),
-  ]
-    .filter((k, i, all) => all.indexOf(k) === i)
-    .filter(shown);
-  const sections = (a.tooltip?.sections ?? []).filter((s) => !s.requires || changed.has(s.requires));
-
-  // point view: the next or previous ability point from where the slider is
-  const pointFrom = (d: -1 | 1) => {
-    const ps = order.map((s) => ({ s, at: posOf(s.index) }));
-    return d > 0 ? ps.find((p) => p.at > pos)?.s : ps.filter((p) => p.at < pos).pop()?.s;
-  };
-  const step1 = (d: -1 | 1) => {
-    if (view.point !== null) {
-      const next = pointFrom(d);
-      if (next) onNavigate({ abilityId: next.ability.id, point: next.index });
-    } else {
-      const i = abilities.indexOf(a) + d;
-      if (i >= 0 && i < abilities.length) onNavigate({ abilityId: abilities[i].id, point: null });
-    }
-  };
-
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        if (!next) onClose();
-      }}
-    >
-      <DialogContent
-        className="sheet sheet-content ability-sheet max-[899px]:translate-none"
-        aria-describedby={undefined}
-        // focus the card itself so the arrow keys step points; Tab reaches the slider
-        onOpenAutoFocus={(e) => {
-          e.preventDefault();
-          (e.currentTarget as HTMLElement | null)?.focus();
-        }}
-        onCloseAutoFocus={(e) => {
-          e.preventDefault();
-          returnFocus(view);
-        }}
-        onKeyDown={(e) => {
-          if ((e.target as HTMLElement).tagName === 'INPUT') return;
-          if (e.key === 'ArrowRight') {
-            e.preventDefault();
-            step1(1);
-          } else if (e.key === 'ArrowLeft') {
-            e.preventDefault();
-            step1(-1);
-          }
-        }}
-      >
-        <div className="ab-head">
-          <span className="ab-icon">
-            <img src={img(a.image_webp)} alt="" width={48} height={48} />
-          </span>
-          <div className="ab-title">
-            <DialogTitle asChild>
-              <h2>{a.name}</h2>
-            </DialogTitle>
-            {a.quip && <p className="ab-quip">{plain(a.quip)}</p>}
-          </div>
-        </div>
-
-        {moment.kind === 'point' && step && (
-          <div className="ab-point">
-            <span className={['ab-point-chip', step.kind === 'unlock' ? 'unlock' : null].filter(Boolean).join(' ')}>
-              <PointGlyph />
-              {step.kind === 'unlock' ? null : TIER_COST[LEVEL[step.kind] - 1]}
-            </span>
-            <span>
-              Point {moment.point + 1} of {order.length}:{' '}
-              <b>{step.ability.id === a.id ? STEP_LABEL[step.kind] : `${step.ability.name} ${STEP_LABEL[step.kind].toLowerCase()}`}</b>
-            </span>
-          </div>
-        )}
-        {moment.kind === 'item' && (
-          <div className="ab-point ab-bought">
-            <img src={img(moment.item.item.shop_image_webp || moment.item.item.image_webp)} alt="" width={24} height={24} />
-            <span>
-              Bought <b>{moment.item.item.name}</b>
-              {soldFor(moment.item).map((b) => (
-                <Fragment key={b.item.id}>
-                  , sold <b>{b.item.name}</b>
-                </Fragment>
-              ))}
-            </span>
-          </div>
-        )}
-        {moment.kind === 'level' && (
-          <div className="ab-point">
-            <span>
-              Reached <b>level {moment.level}</b>
-            </span>
-          </div>
-        )}
-
-        <div className="ab-progress">
-          <label className="ab-progress-head" htmlFor="ab-progress">
-            <span>Build progress</span>
-            <span>{moment.souls.toLocaleString('en-US')} souls</span>
-          </label>
-          <div className="ab-track">
-            <input
-              id="ab-progress"
-              type="range"
-              min={0}
-              max={moments.length - 1}
-              value={pos}
-              aria-valuetext={say(moment)}
-              onChange={(e) => setPos(Number(e.target.value))}
-            />
-            <div className="ab-track-marks" aria-hidden="true">
-              {ownPoints.map((s) => (
-                <span
-                  key={s.index}
-                  className={['ab-track-mark', posOf(s.index) <= pos ? 'done' : null].filter(Boolean).join(' ')}
-                  style={{ left: `${(posOf(s.index) / Math.max(1, moments.length - 1)) * 100}%` }}
-                >
-                  <PointGlyph />
-                </span>
-              ))}
-            </div>
-          </div>
-          <div className="ab-gains">
-            {gains.map((g) => (
-              <span key={g}>{g}</span>
-            ))}
-            {!unlocked && <span className="ab-locked">Not unlocked yet</span>}
-          </div>
-          {imbues.length > 0 && (
-            <div className="ab-imbues">
-              {imbues.map((i) => {
-                const k = `${a.id}:${i.id}`;
-                return (
-                  <label key={i.id}>
-                    <input
-                      type="checkbox"
-                      checked={imbued.has(k)}
-                      onChange={() =>
-                        setImbued((was) => {
-                          const next = new Set(was);
-                          if (!next.delete(k)) next.add(k);
-                          return next;
-                        })
-                      }
-                    />
-                    {i.name} on this ability
-                  </label>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
+    const head = [
+      'AbilityCooldown',
+      ...(values.AbilityCharges > 1 ? ['AbilityCharges', 'AbilityCooldownBetweenCharge'] : []),
+      'AbilityDuration',
+      'AbilityCastRange',
+      ...(a.tooltip?.header ?? []),
+    ]
+      .filter((k, i, all) => all.indexOf(k) === i)
+      .filter(shown);
+    const sections = (a.tooltip?.sections ?? []).filter((s) => !s.requires || changed.has(s.requires));
+    return (
+      <>
         {head.length > 0 && (
           <div className="ab-stats-head">
             {head.map((k) => (
@@ -440,6 +331,198 @@ export function AbilityCard({
               </div>
             );
           })}
+        </div>
+      </>
+    );
+  };
+
+  // point view: the next or previous ability point from where the slider is
+  const pointFrom = (d: -1 | 1) => {
+    const ps = order.map((s) => ({ s, at: posOf(s.index) }));
+    return d > 0 ? ps.find((p) => p.at > pos)?.s : ps.filter((p) => p.at < pos).pop()?.s;
+  };
+  const step1 = (d: -1 | 1) => {
+    if (view.point !== null) {
+      const next = pointFrom(d);
+      if (next) onNavigate({ abilityId: next.ability.id, point: next.index });
+    } else {
+      const i = abilities.indexOf(a) + d;
+      if (i >= 0 && i < abilities.length) onNavigate({ abilityId: abilities[i].id, point: null });
+    }
+  };
+
+  // the card never shrinks while the slider moves: it keeps the tallest height it has had for this ability at this width
+  const sheet = useRef<HTMLDivElement>(null);
+  const tallest = useRef({ key: '', h: 0 });
+  useLayoutEffect(() => {
+    const el = sheet.current;
+    if (!el) return;
+    const key = `${a.id}:${window.innerWidth}`;
+    if (tallest.current.key !== key) {
+      tallest.current = { key, h: 0 };
+      el.style.minHeight = '';
+    }
+    const h = el.getBoundingClientRect().height;
+    if (h > tallest.current.h) {
+      tallest.current.h = h;
+      el.style.minHeight = `${h}px`;
+    }
+  });
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
+      <DialogContent
+        ref={sheet}
+        className="sheet sheet-content ability-sheet max-[899px]:translate-none"
+        aria-describedby={undefined}
+        // focus the card itself so the arrow keys step points; Tab reaches the slider
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          (e.currentTarget as HTMLElement | null)?.focus();
+        }}
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+          returnFocus(view);
+        }}
+        onKeyDown={(e) => {
+          if ((e.target as HTMLElement).tagName === 'INPUT') return;
+          if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            step1(1);
+          } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            step1(-1);
+          }
+        }}
+      >
+        <div className="ab-head">
+          <span className="ab-icon">
+            <img src={img(a.image_webp)} alt="" width={48} height={48} />
+          </span>
+          <div className="ab-title">
+            <DialogTitle asChild>
+              <h2>{a.name}</h2>
+            </DialogTitle>
+            {a.quip && <p className="ab-quip">{plain(a.quip)}</p>}
+          </div>
+        </div>
+
+        {moment.kind === 'start' && (
+          <div className="ab-point">
+            <span>Start of the game</span>
+          </div>
+        )}
+        {moment.kind === 'point' && step && (
+          <div className="ab-point">
+            <span className={['ab-point-chip', step.kind === 'unlock' ? 'unlock' : null].filter(Boolean).join(' ')}>
+              <PointGlyph />
+              {step.kind === 'unlock' ? null : TIER_COST[LEVEL[step.kind] - 1]}
+            </span>
+            <span>
+              Point {moment.point + 1} of {order.length}:{' '}
+              <b>{step.ability.id === a.id ? STEP_LABEL[step.kind] : `${step.ability.name} ${STEP_LABEL[step.kind].toLowerCase()}`}</b>
+            </span>
+          </div>
+        )}
+        {moment.kind === 'item' && (
+          <div className="ab-point ab-bought">
+            <img src={img(moment.item.item.shop_image_webp || moment.item.item.image_webp)} alt="" width={24} height={24} />
+            <span>
+              Bought <b>{moment.item.item.name}</b>
+              {soldFor(moment.item).map((b) => (
+                <Fragment key={b.item.id}>
+                  , sold <b>{b.item.name}</b>
+                </Fragment>
+              ))}
+            </span>
+          </div>
+        )}
+        {moment.kind === 'level' && (
+          <div className="ab-point">
+            <span>
+              Reached <b>level {moment.level}</b>
+            </span>
+          </div>
+        )}
+
+        <div className="ab-progress">
+          <label className="ab-progress-head" htmlFor="ab-progress">
+            <span>Build progress</span>
+            <span>{moment.souls.toLocaleString('en-US')} souls</span>
+          </label>
+          <div className="ab-track">
+            <input
+              id="ab-progress"
+              type="range"
+              min={0}
+              max={moments.length - 1}
+              value={pos}
+              aria-valuetext={say(moment)}
+              onChange={(e) => setPos(Number(e.target.value))}
+            />
+            <div className="ab-track-marks" aria-hidden="true">
+              {ownPoints.map((s) => (
+                <span
+                  key={s.index}
+                  className={['ab-track-mark', posOf(s.index) <= pos ? 'done' : null].filter(Boolean).join(' ')}
+                  style={{ left: `${(posOf(s.index) / Math.max(1, moments.length - 1)) * 100}%` }}
+                >
+                  <PointGlyph />
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="ab-gains-box">
+            <div className="ab-gains">
+              {gains.map((g) => (
+                <span key={g}>{g}</span>
+              ))}
+              {!unlocked && <span className="ab-locked">Not unlocked yet</span>}
+            </div>
+            {allGains.map((g) => (
+              <div className="ab-gains ab-sizer" aria-hidden="true" key={g}>
+                {g.split('|').map((x) => (
+                  <span key={x}>{x}</span>
+                ))}
+              </div>
+            ))}
+          </div>
+          {imbues.length > 0 && (
+            <div className="ab-imbues">
+              {imbues.map((i) => {
+                const k = `${a.id}:${i.id}`;
+                return (
+                  <label key={i.id} className={held.includes(i) ? undefined : 'off'}>
+                    <input
+                      type="checkbox"
+                      disabled={!held.includes(i)}
+                      checked={imbued.has(k) && held.includes(i)}
+                      onChange={() =>
+                        setImbued((was) => {
+                          const next = new Set(was);
+                          if (!next.delete(k)) next.add(k);
+                          return next;
+                        })
+                      }
+                    />
+                    {i.name} on this ability
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="ab-stack">
+          <div>{statsView(values, changed, scales)}</div>
+          <div className="ab-sizer" aria-hidden="true" inert>
+            {statsView(endValues, endUpg.changed, endUpg.scales)}
+          </div>
         </div>
 
         <ol className="ab-tiers" aria-label="Upgrades">

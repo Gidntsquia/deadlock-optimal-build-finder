@@ -900,9 +900,16 @@ button.tile:hover {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
+  height: 40px;
+  padding: 0 12px;
   font-size: 14px;
   background: color-mix(in srgb, var(--spirit-deep) 22%, var(--ab-bg));
+}
+.ab-point > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .ab-point b {
   color: #fff;
@@ -994,6 +1001,18 @@ button.tile:hover {
 .ab-track-mark .ab-glyph .ap-bolt {
   fill: var(--ab-bg);
 }
+/* every moment's stat lines sit in one cell, only the current one seen, so the box is as tall as the tallest */
+.ab-gains-box,
+.ab-stack {
+  display: grid;
+}
+.ab-gains-box > *,
+.ab-stack > * {
+  grid-area: 1 / 1;
+}
+.ab-sizer {
+  visibility: hidden;
+}
 .ab-gains {
   display: flex;
   flex-wrap: wrap;
@@ -1016,6 +1035,9 @@ button.tile:hover {
   gap: 4px;
   min-height: 24px;
   cursor: pointer;
+}
+.ab-imbues label.off {
+  cursor: default;
 }
 .ab-imbues input {
   accent-color: var(--spirit);
