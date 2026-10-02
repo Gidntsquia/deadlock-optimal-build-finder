@@ -1036,8 +1036,8 @@ button.tile:hover {
   min-height: 24px;
   cursor: pointer;
 }
-.ab-imbues label.off {
-  cursor: default;
+.ab-imbues label.unseen {
+  visibility: hidden;
 }
 .ab-imbues input {
   accent-color: var(--spirit);

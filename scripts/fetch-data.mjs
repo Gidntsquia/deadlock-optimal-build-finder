@@ -9,7 +9,8 @@
 //                                          build styles: per-style item/ability stats (see scripts/styles.mjs),
 //                                          and sell stats: how often each item is sold to make room (fetchSellStats),
 //                                          and charge-item ability sequences: sequences from games where a charge item was bought (fetchChargeOrders),
-//                                          and corrupted stats: corrupted vs normal copies of each item (fetchCorruptedStats)
+//                                          and corrupted stats: corrupted vs normal copies of each item (fetchCorruptedStats),
+//                                          and imbue targets: which ability published builds put each imbue item on (fetchImbueTargets)
 //   public/data/validation/<account>-<hero>.json  a top player's ~20 most recent matchmaking matches on one hero
 //                                          with per-match purchases; 5 players per hero, chosen automatically
 //                                          from the Phantom+ scoreboard (see selectValidationPlayers)   (VALIDATION ONLY)
@@ -26,6 +27,7 @@
 //   --sell-stats-only           refresh only the sell stats inside analytics/* (top.sell_stats; --heroes works)
 //   --charge-orders-only        refresh only the charge-item ability sequences inside analytics/* (item_ability_order_stats; --heroes works)
 //   --corrupted-only            refresh only the corrupted-item stats inside analytics/* (corrupted; --heroes works)
+//   --imbues-only               refresh only the imbue targets inside analytics/* (imbue_targets; --heroes works)
 //   --validation-only           re-select players and refetch validation/* for every hero
 //   --since 2026-09-29T20:00Z   (with --analytics-only) only use games from this time on, e.g. a patch going live; the
 //                               hero's analytics file records it (min_unix_timestamp) and the Details dialog shows it
@@ -594,6 +596,41 @@ async function fetchCorruptedStats(heroes) {
   }
 }
 
+// Imbue targets: an imbue item (Quicksilver Reload, Duration Extender...) goes on one ability. Match data does not
+// say which, but published builds do (imbue_target_ability_id). Count, per item, the ability set by the hero's most
+// favorited builds (latest version of each); builds that leave it unset do not count.
+const IMBUE_BUILDS = 500;
+async function fetchImbueTargets(heroes) {
+  const targets = HEROES_ARG ? heroes.filter((h) => HEROES_ARG.includes(h.id)) : heroes;
+  console.log(`imbue targets (${targets.length} heroes, top ${IMBUE_BUILDS} published builds each)`);
+  for (const h of targets) {
+    const builds = await getJson(`${API}/v1/builds?hero_id=${h.id}&limit=${IMBUE_BUILDS}&sort_by=favorites&only_latest=true`);
+    const counts = new Map(); // item id -> ability id -> builds
+    for (const b of builds) {
+      const seen = new Set(); // one vote per build and item
+      for (const c of b.hero_build?.details?.mod_categories ?? [])
+        for (const m of c.mods ?? []) {
+          if (!m.imbue_target_ability_id || seen.has(m.ability_id)) continue;
+          seen.add(m.ability_id);
+          const per = counts.get(m.ability_id) ?? new Map();
+          per.set(m.imbue_target_ability_id, (per.get(m.imbue_target_ability_id) ?? 0) + 1);
+          counts.set(m.ability_id, per);
+        }
+    }
+    const items = [...counts].map(([item_id, per]) => ({
+      item_id,
+      targets: [...per].map(([ability_id, n]) => ({ ability_id, builds: n })).sort((a, b) => b.builds - a.builds),
+    }));
+    const file = path.join(OUT, `analytics/${h.id}.json`);
+    const analytics = JSON.parse(await readFile(file, 'utf8'));
+    analytics.imbue_targets = { builds: builds.length, items };
+    await save(`analytics/${h.id}.json`, analytics);
+    console.log(
+      `   ${h.name}: ${builds.length} builds, ${items.reduce((a, r) => a + r.targets.reduce((x, t) => x + t.builds, 0), 0)} imbue picks over ${items.length} items`,
+    );
+  }
+}
+
 // Tier list input: one request, every hero's wins and matches at badge >= TOP_BADGE over the snapshot window.
 async function fetchHeroStats(heroes) {
   console.log(`hero win rates (badge>=${TOP_BADGE})`);
@@ -870,6 +907,8 @@ async function main() {
     await fetchAllSellStats(heroes, manifest);
     await fetchCorruptedStats(heroes);
     manifest.corrupted_fetched_at = new Date().toISOString();
+    await fetchImbueTargets(heroes);
+    manifest.imbue_targets_fetched_at = new Date().toISOString();
     // the tier lists cover every hero, so a --heroes or --since run leaves them on the snapshot window
     if (!HEROES_ARG && !SINCE_ARG) {
       await fetchHeroStats(heroes);
@@ -892,6 +931,14 @@ async function main() {
     const heroes = JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8'));
     await fetchCorruptedStats(heroes);
     manifest.corrupted_fetched_at = new Date().toISOString();
+    await save('manifest.json', manifest);
+    return;
+  }
+  if (process.argv.includes('--imbues-only')) {
+    const manifest = JSON.parse(await readFile(path.join(OUT, 'manifest.json'), 'utf8'));
+    const heroes = JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8'));
+    await fetchImbueTargets(heroes);
+    manifest.imbue_targets_fetched_at = new Date().toISOString();
     await save('manifest.json', manifest);
     return;
   }
@@ -949,6 +996,8 @@ async function main() {
   await fetchAllSellStats(heroes, manifest); // after validation: needs the panel ids to leave them out
   await fetchCorruptedStats(heroes);
   manifest.corrupted_fetched_at = new Date().toISOString();
+  await fetchImbueTargets(heroes);
+  manifest.imbue_targets_fetched_at = new Date().toISOString();
 
   await save('manifest.json', manifest);
   console.log('done', manifest.counts);

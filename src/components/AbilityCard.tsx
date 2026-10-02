@@ -1,6 +1,7 @@
 import { Fragment, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { img } from '../data/load';
 import type { Ability, AbilityProperty, AbilityStep, BuildItem } from '../types';
+import { isImbueItem } from '../generator/build';
 import { boostsAt, heldItems, itemBoosts, timeline, type Boosts, type HeroLevels, type Moment } from '../abilityProgress';
 import { labelFor } from '../text';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
@@ -185,17 +186,23 @@ export function AbilityCard({
   const upg = upgraded(a, level);
   const { changed, scales } = upg;
 
-  // imbue items held now: the player picks whether this ability is the one they went on
-  const [imbued, setImbued] = useState<Set<string>>(() => new Set());
+  // imbue items: each goes on one ability, the one the build names (imbueOn) unless the player moves it here
+  const recommended = useMemo(() => new Map(items.flatMap((b) => (b.imbueOn ? [[b.item.id, b.imbueOn.ability.id] as const] : []))), [items]);
+  const [imbuedOn, setImbuedOn] = useState(recommended);
+  const [seenItems, setSeenItems] = useState(items);
+  if (seenItems !== items) {
+    setSeenItems(items);
+    setImbuedOn(recommended);
+  }
   const held = heldItems(moments, pos).map((b) => b.item);
-  // every imbue item in the build is listed from the start (so the card keeps its size); it can be ticked once bought
-  const imbues = items.map((b) => b.item).filter((i, n, all) => itemBoosts(i).imbue && all.findIndex((o) => o.id === i.id) === n);
+  // every imbue item in the build keeps its row from the start (so the card keeps its size); it shows once bought
+  const imbues = items.map((b) => b.item).filter((i, n, all) => isImbueItem(i) && all.findIndex((o) => o.id === i.id) === n);
   const boostsFor = (p: number, h: typeof held) =>
     boostsAt(
       hero,
       moments[p].souls,
       h,
-      h.filter((i) => itemBoosts(i).imbue && imbued.has(`${a.id}:${i.id}`)),
+      h.filter((i) => itemBoosts(i).imbue && imbuedOn.get(i.id) === a.id),
     );
   const boosts = boostsFor(pos, held);
   const { values } = withBoosts(a, upg.values, scales, boosts);
@@ -495,17 +502,19 @@ export function AbilityCard({
           {imbues.length > 0 && (
             <div className="ab-imbues">
               {imbues.map((i) => {
-                const k = `${a.id}:${i.id}`;
+                const have = held.includes(i);
+                const on = imbuedOn.get(i.id) === a.id;
                 return (
-                  <label key={i.id} className={held.includes(i) ? undefined : 'off'}>
+                  <label key={i.id} className={have ? undefined : 'unseen'} aria-hidden={have ? undefined : true}>
                     <input
                       type="checkbox"
-                      disabled={!held.includes(i)}
-                      checked={imbued.has(k) && held.includes(i)}
+                      disabled={!have}
+                      checked={have && on}
                       onChange={() =>
-                        setImbued((was) => {
-                          const next = new Set(was);
-                          if (!next.delete(k)) next.add(k);
+                        setImbuedOn((was) => {
+                          const next = new Map(was);
+                          if (on) next.delete(i.id);
+                          else next.set(i.id, a.id); // one ability per item: moving it here takes it off the other
                           return next;
                         })
                       }

@@ -16,6 +16,9 @@ const shrink = (wins: number, matches: number, K: number, mean: number) => (wins
 
 const num = (v: unknown) => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '').replace(/[^-\d.]/g, '')); return Number.isFinite(n) ? n : 0; };
 
+/** An item that is put on one ability (Quicksilver Reload, Duration Extender...): its text says "imbue". */
+export const isImbueItem = (i: Item) => (i.tooltip_sections ?? []).some((s) => (s.section_attributes ?? []).some((a) => /imbue/i.test(a.loc_string ?? '')));
+
 /** Soul-equivalent value of an item's stat lines under a set of per-stat multipliers. */
 export function statValue(item: Item, mult: Record<string, number>): number {
   let v = 0;
@@ -409,6 +412,21 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
     .flatMap((b) => pop.chargeOrders.map((m) => ({ item: b.item, kind: m.kind, rows: m.rows[String(b.item.id)] })))
     .find((c) => seqMax(c.rows) >= MIN_TOP_SEQ_MATCHES);
   const ab = pickAbilityOrder(hero, abilities, charged ? charged.rows! : pop.abilities.ability_order_stats);
+  // Imbue items go on one ability. Published builds say which (fetchImbueTargets): the ability most of them pick for
+  // this item, else the one they pick most for any imbue item, else the first non-ultimate ability the order maxes.
+  const imbueRows = input.analytics.imbue_targets?.items ?? [];
+  const inKit = (id: number) => ab.steps.some((s) => s.ability.id === id);
+  const anyImbue = new Map<number, number>();
+  for (const r of imbueRows) for (const t of r.targets) if (inKit(t.ability_id)) anyImbue.set(t.ability_id, (anyImbue.get(t.ability_id) ?? 0) + t.builds);
+  const heroPick = [...anyImbue].sort((x, y) => y[1] - x[1])[0]?.[0];
+  const maxed = ab.steps.find((s) => s.kind === 'tier3' && s.ability.ability_type !== 'ultimate') ?? ab.steps.find((s) => s.ability.ability_type !== 'ultimate');
+  for (const b of buildItems) {
+    if (!isImbueItem(b.item)) continue;
+    const top = imbueRows.find((r) => r.item_id === b.item.id)?.targets.find((t) => inKit(t.ability_id));
+    const id = top?.ability_id ?? heroPick ?? maxed?.ability.id;
+    const ability = ab.steps.find((s) => s.ability.id === id)?.ability;
+    if (ability) b.imbueOn = { ability, builds: top?.builds ?? 0 };
+  }
   const info: BuildPopulation = charged ? { ...pop.info, abilitySequenceKind: charged.kind, abilitySequenceItem: charged.item } : pop.info;
   const style = pop.info.style;
   return {

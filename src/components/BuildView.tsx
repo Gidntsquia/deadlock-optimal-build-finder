@@ -1,5 +1,5 @@
 import { heroBackdrop, img } from '../data/load';
-import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { Build, Hero, Phase } from '../types';
 import type { PanelValidation } from '../validation/heldout';
 import { ItemCard } from './ItemCard';
@@ -103,6 +103,8 @@ export function BuildView({
       /* storage blocked: the choice lasts this visit only */
     }
   };
+  // the item sheet shows the base item outside detailed view, like the tiles do
+  const cardItems = useMemo(() => (detailed ? build.items : build.items.map((b) => ({ ...b, corrupt: undefined }))), [detailed, build.items]);
   const switchRef = useRef<HTMLDivElement | null>(null);
   useLayoutEffect(() => {
     const el = switchRef.current;
@@ -311,7 +313,7 @@ export function BuildView({
       </div>
       <ItemCard
         open={openIndex !== null}
-        items={build.items}
+        items={cardItems}
         index={openIndex ?? lastOpenIndex}
         onClose={() => setOpenIndex(null)}
         onNavigate={selectIndex}

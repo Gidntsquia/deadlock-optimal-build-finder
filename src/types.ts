@@ -135,6 +135,8 @@ export interface HeroAnalytics extends AnalyticsPopulation {
     sell_stats?: { players: number; matches: number; items: SellStat[] };
   };
   corrupted?: { since_unix_timestamp: number; min_duration_s: number; items: CorruptedStat[] };
+  /** which ability the hero's most favorited published builds put each imbue item on (fetchImbueTargets) */
+  imbue_targets?: { builds: number; items: { item_id: number; targets: { ability_id: number; builds: number }[] }[] };
 }
 /** Corrupted vs normal copies of one item for a hero, all ranks, games that lasted min_duration_s+ (fetchCorruptedStats). */
 export interface CorruptedStat {
@@ -206,6 +208,7 @@ export interface BuildItem {
   sellFor?: Item; // sell this item to make room when buying that one (it does not stay to the end)
   sellRate?: number; // share of sampled top players who sell it to make room
   corrupt?: { rank: number; gain: number; matches: number; normalWinRate: number; corruptedWinRate: number }; // swap for the corrupted copy at the Broker; rank 1 first
+  imbueOn?: { ability: Ability; builds: number }; // put this imbue item on that ability; builds = published builds that do (0: fallback pick)
   score: number;
   reasons: string[];
   usageRate: number;

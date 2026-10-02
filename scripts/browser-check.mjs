@@ -333,9 +333,11 @@ try {
     const corrupts = await page.$$eval('.tiles .tile .corrupt-tag', (els) => els.map((e) => e.textContent ?? ''));
     const ranks = corrupts.map((t) => Number(t.replace('corrupt', ''))).sort((a, b) => a - b);
     let firstNote = '';
+    let firstName = '';
     if (ranks.length) {
       await page.locator('.tiles .tile', { has: page.locator('.corrupt-tag', { hasText: /^corrupt 1$/ }) }).click();
       await page.waitForSelector('.sheet');
+      firstName = (await page.textContent('.sheet h2')) ?? '';
       firstNote = await page.$$eval(
         '[data-slot="dialog-content"] .tt-section',
         (els) => els.find((e) => e.querySelector('h3')?.textContent === 'Corrupt it')?.textContent ?? '',
@@ -353,6 +355,21 @@ try {
     check(
       'detailed: toggling off hides the marks again and is remembered',
       (await page.$$('.tiles .sell-tag, .tiles .corrupt-frame')).length === 0 && (await page.evaluate(() => localStorage.getItem('detailed'))) === '0',
+    );
+    // outside detailed view the item sheet shows the base item: no corrupted frame, no "Corrupt it" note
+    await page.locator('.tiles .tile', { hasText: firstName }).first().click();
+    await page.waitForSelector('.sheet');
+    const base = await page.evaluate(() => ({
+      name: document.querySelector('.sheet h2')?.textContent,
+      framed: !!document.querySelector('.sheet-head .tile.corrupted'),
+      note: [...document.querySelectorAll('.sheet .tt-section h3')].some((h) => h.textContent === 'Corrupt it'),
+    }));
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('.sheet', { state: 'detached' });
+    check(
+      'detailed off: a corrupt item opens as the base item (no frame, no corrupt note)',
+      base.name === firstName && !base.framed && !base.note,
+      JSON.stringify(base),
     );
     // focus ring on a tile (a real Tab first so :focus-visible applies)
     const tile = await page.$('.tiles .tile');
@@ -443,9 +460,31 @@ try {
           duration: /Duration \+/.test(g),
         };
       });
+    const imbue = () =>
+      page.evaluate(() =>
+        [...document.querySelectorAll('.ab-imbues label')].map((l) => ({
+          text: l.textContent,
+          shown: getComputedStyle(l).visibility === 'visible',
+          on: l.querySelector('input').checked,
+        })),
+      );
     const b0 = await burn();
+    const i0 = await imbue();
     await page.fill('#ab-progress', await page.getAttribute('#ab-progress', 'max'));
     const b1 = await burn();
+    const ext = (list) => list.find((l) => l.text.startsWith('Duration Extender'));
+    // the first moment it is held (it can be upgraded or sold before the end)
+    let i1 = [];
+    for (let i = 0, max = Number(await page.getAttribute('#ab-progress', 'max')); i <= max && !ext(i1)?.shown; i++) {
+      await page.fill('#ab-progress', String(i));
+      i1 = await imbue();
+    }
+    await page.fill('#ab-progress', await page.getAttribute('#ab-progress', 'max'));
+    check(
+      'ability card: an imbue item is hidden until bought, then already on the ability the build names (Duration Extender on Afterburn)',
+      ext(i0) && !ext(i0).shown && ext(i1)?.shown && ext(i1).on,
+      JSON.stringify({ i0, i1 }),
+    );
     check(
       'ability card: Afterburn damage adds 0.66 x spirit power and its burn time grows with duration items by the end',
       b1.spirit > 0 && b1.dps >= b0.dps + 0.66 * b1.spirit - 0.5 && (!b1.duration || b1.burn > b0.burn),

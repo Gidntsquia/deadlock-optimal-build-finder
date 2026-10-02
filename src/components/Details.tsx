@@ -130,6 +130,9 @@ export function Details({
                       {b.corrupt
                         ? ` (corrupt #${b.corrupt.rank}: ${pct(b.corrupt.corruptedWinRate, 1)} win rate corrupted vs ${pct(b.corrupt.normalWinRate, 1)} normal over ${b.corrupt.matches.toLocaleString()} games of 30+ min, all ranks)`
                         : ''}
+                      {b.imbueOn
+                        ? ` (imbue on ${b.imbueOn.ability.name}${b.imbueOn.builds ? `: ${b.imbueOn.builds} of the hero's top published builds do` : ': no published build names one, so the first ability the order maxes'})`
+                        : ''}
                     </td>
                     <td>{b.order}</td>
                     <td>{PHASE[b.phase]}</td>

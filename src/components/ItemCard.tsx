@@ -24,7 +24,7 @@ export function ItemCard({
   extra,
 }: {
   open: boolean;
-  items: Pick<BuildItem, 'item' | 'sellFor' | 'corrupt'>[];
+  items: Pick<BuildItem, 'item' | 'sellFor' | 'corrupt' | 'imbueOn'>[];
   index: number;
   onClose: () => void;
   onNavigate: (index: number) => void;
@@ -91,6 +91,13 @@ export function ItemCard({
           <div className="tt-section">
             <h3>Sell later</h3>
             <p>Sell this when you buy {bi.sellFor.name}. It helps early, then frees its slot.</p>
+          </div>
+        )}
+
+        {bi.imbueOn && (
+          <div className="tt-section">
+            <h3>Imbue</h3>
+            <p>Put this on {bi.imbueOn.ability.name}.</p>
           </div>
         )}
 
