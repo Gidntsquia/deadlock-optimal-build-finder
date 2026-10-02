@@ -936,6 +936,90 @@ button.tile:hover {
   fill: var(--ap-track-unlock);
   stroke: var(--ap-track-unlock);
 }
+/* build progress: a slider over the build's item buys and ability points, this ability's points marked on the track */
+.ab-bought img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+.ab-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ab-ink) 12%, transparent);
+  font-size: 13px;
+}
+.ab-progress-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--ab-dim);
+  font-weight: 900;
+}
+.ab-track {
+  position: relative;
+  padding-top: 12px;
+}
+.ab-track input {
+  display: block;
+  width: 100%;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--spirit);
+  cursor: pointer;
+}
+.ab-track-marks {
+  position: absolute;
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 12px;
+  pointer-events: none;
+}
+.ab-track-mark {
+  position: absolute;
+  top: 0;
+  translate: -50% 0;
+  line-height: 0;
+}
+.ab-track-mark .ab-glyph {
+  fill: var(--ab-dim);
+  stroke: var(--ab-dim);
+}
+.ab-track-mark.done .ab-glyph {
+  fill: var(--spirit);
+  stroke: var(--spirit);
+}
+.ab-track-mark .ab-glyph .ap-bolt {
+  fill: var(--ab-bg);
+}
+.ab-gains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  color: var(--ab-ink);
+  font-weight: 900;
+}
+.ab-locked {
+  color: var(--warn);
+}
+.ab-imbues {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  color: var(--ab-dim);
+}
+.ab-imbues label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  cursor: pointer;
+}
+.ab-imbues input {
+  accent-color: var(--spirit);
+}
 .ab-stats-head {
   display: flex;
   flex-wrap: wrap;

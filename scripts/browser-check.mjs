@@ -389,6 +389,37 @@ try {
     const r = await rectOf('[role="dialog"]');
     check('ability card: centred and inside the window', inside(r, 1440, 900) && Math.abs((r.left + r.right) / 2 - 720) <= 2, JSON.stringify(r));
     await axe('desktop, ability card open');
+    // build progress slider: the start has nothing; the end of the build has every upgrade, items' spirit power, new values
+    const progress = () =>
+      page.evaluate(() => ({
+        val: Number(document.querySelector('#ab-progress')?.value),
+        max: Number(document.querySelector('#ab-progress')?.max),
+        gains: document.querySelector('.ab-gains')?.textContent ?? '',
+        lit: document.querySelectorAll('.ab-tier.bought').length,
+        vals: [...document.querySelectorAll('.ab-hstat b, .ab-tile b')].map((e) => e.textContent).join('|'),
+        text: document.querySelector('.ability-sheet').innerText,
+      }));
+    const p0 = await progress();
+    await page.fill('#ab-progress', String(p0.max));
+    const p1 = await progress();
+    check(
+      'ability card: build progress slider runs from the start (level 1) to the end of the build (3 upgrades, spirit power, values change)',
+      p0.val === 0 &&
+        p0.max > 16 &&
+        /Level 1(?!\d)/.test(p0.gains) &&
+        p1.val === p0.max &&
+        p1.lit === 3 &&
+        /Spirit power \d/.test(p1.gains) &&
+        p1.vals !== p0.vals &&
+        !/NaN|undefined|\{s:/.test(p1.text),
+      JSON.stringify({ p0: { ...p0, text: undefined }, p1: { ...p1, text: undefined } }),
+    );
+    await page.focus('#ab-progress');
+    await page.keyboard.press('ArrowLeft');
+    check(
+      'ability card: arrow keys on the slider move it, not the card',
+      (await progress()).val === p0.max - 1 && (await page.textContent('.ability-sheet h2')) === row,
+    );
     await page.keyboard.press('Escape');
     await page.waitForSelector('.ability-sheet', { state: 'detached' });
     check('ability card: Escape returns focus to the ability icon', await page.evaluate(() => document.activeElement?.classList.contains('ap-icon')));

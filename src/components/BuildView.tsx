@@ -78,7 +78,7 @@ export function BuildView({
   onOpenHeroes: () => void;
   onStepHero: (d: -1 | 1) => void;
   panel: PanelValidation | null;
-  hero: Pick<Hero, 'id' | 'name' | 'images' | 'abilities'>;
+  hero: Pick<Hero, 'id' | 'name' | 'images' | 'abilities' | 'level_info' | 'standard_level_up_upgrades'>;
   windowDays?: number;
   sinceDate: string | null;
   fetchedDate: string | null;
@@ -323,6 +323,8 @@ export function BuildView({
           view={lastAbilityView}
           abilities={abilities}
           order={build.abilityOrder}
+          hero={hero}
+          items={build.items}
           onClose={() => setAbilityView(null)}
           onNavigate={showAbility}
           returnFocus={(v) => (abilityRefs.current[abilityKey(v)] ?? abilityRefs.current[`a${v.abilityId}`])?.focus()}
