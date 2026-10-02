@@ -397,7 +397,8 @@ async function fetchAllSellStats(heroes, manifest) {
 // about minute 30). For each item: games where the hero ran the corrupted copy vs games with the normal
 // copy, both limited to games that lasted >= 30 min so the normal side also reached the Broker. All ranks:
 // at Phantom+ there are too few corrupted games yet. Since the corrupted launch only.
-const CORRUPTED_SINCE = Math.floor(Date.UTC(2026, 8, 29) / 1000);
+// the 09-29-2026 patch went live ~19:30 UTC (first corrupted buys); 20:00 keeps pre-patch games out
+const CORRUPTED_SINCE = Math.floor(Date.UTC(2026, 8, 29, 20) / 1000);
 const CORRUPTED_MIN_DURATION_S = 1800;
 async function fetchCorruptedStats(heroes) {
   const targets = HEROES_ARG ? heroes.filter((h) => HEROES_ARG.includes(h.id)) : heroes;
@@ -477,11 +478,25 @@ async function fetchAnalytics(heroes, manifest) {
 }
 
 // Steps 1-4 of the selection for one hero: scoreboard candidates -> hero-stats -> score/filter -> names.
-async function selectValidationPlayers(hero) {
-  const base = `${API}/v1/analytics/scoreboards/players?hero_id=${hero.id}&min_average_badge=${TOP_BADGE}&min_unix_timestamp=${MIN_TS}&limit=${VALIDATION_CANDIDATES}`;
-  const byMatches = await getJson(`${base}&sort_by=matches`);
-  const byWins = await getJson(`${base}&sort_by=wins`);
-  const wins = new Map(byWins.map((r) => [r.account_id, r.value]));
+async function selectValidationPlayers(hero, since, histories) {
+  const board = async (from) => {
+    const base = `${API}/v1/analytics/scoreboards/players?hero_id=${hero.id}&min_average_badge=${TOP_BADGE}&min_unix_timestamp=${from}&limit=${VALIDATION_CANDIDATES}`;
+    return [await getJson(`${base}&sort_by=matches`), await getJson(`${base}&sort_by=wins`)];
+  };
+  let [byMatches, byWins] = await board(since);
+  let wins = new Map(byWins.map((r) => [r.account_id, r.value]));
+  // Right after a patch the scoreboard is empty (it needs a minimum of games per player): take the snapshot
+  // window's top players and count only their games since the patch, from their match history.
+  if (byMatches.length < VALIDATION_PLAYERS_PER_HERO && since > MIN_TS) {
+    [byMatches] = await board(MIN_TS);
+    wins = new Map();
+    for (const r of byMatches) {
+      const games = playable(await historyOf(r.account_id, histories), hero.id, since);
+      r.matches = games.length;
+      wins.set(r.account_id, games.filter((m) => m.match_result === m.player_team).length);
+    }
+    byMatches = byMatches.filter((r) => r.matches > 0);
+  }
   const now = Date.now() / 1000;
   const cands = [];
   for (const r of byMatches) {
@@ -530,12 +545,19 @@ function printSelection(hero, sel) {
   })));
 }
 
+async function historyOf(accountId, histories) {
+  if (!histories.has(accountId)) histories.set(accountId, await getJson(`${API}/v1/players/${accountId}/match-history`));
+  return histories.get(accountId);
+}
+// normal-mode games on the hero from `since` on: unranked (1), private lobby (2), ranked (4); newest first
+const playable = (hist, heroId, since) =>
+  hist.filter((m) => m.hero_id === heroId && [1, 2, 4].includes(m.match_mode) && m.game_mode === 1 && m.start_time >= since).sort((a, b) => b.start_time - a.start_time);
+
 // Step 5: the player's most recent matchmaking matches on the hero, with per-match purchases.
-async function fetchPlayerMatches(v, histories) {
-  if (!histories.has(v.account_id)) histories.set(v.account_id, await getJson(`${API}/v1/players/${v.account_id}/match-history`));
-  const hist = histories.get(v.account_id);
+async function fetchPlayerMatches(v, histories, since) {
+  const hist = await historyOf(v.account_id, histories);
   const onHero = hist.filter((m) => m.hero_id === v.hero_id);
-  const real = onHero.filter((m) => (m.match_mode === 1 || m.match_mode === 2) && m.game_mode === 1).sort((a, b) => b.start_time - a.start_time);
+  const real = playable(hist, v.hero_id, since);
   const purchases = [];
   for (const m of real) {
     if (purchases.length >= VALIDATION_MATCH_TARGET) break;
@@ -558,17 +580,23 @@ async function fetchPlayerMatches(v, histories) {
 async function fetchValidation(heroes, manifest) {
   const targets = HEROES_ARG ? heroes.filter((h) => HEROES_ARG.includes(h.id)) : heroes;
   console.log(`5/5 held-out top-player matches (validation only): ${targets.length} heroes x ${VALIDATION_PLAYERS_PER_HERO} players x ${VALIDATION_MATCH_TARGET} matches${SELECT_ONLY ? ' [select-only]' : ''}`);
+  // a hero whose analytics were fetched with --since (a patch) is validated on games from then on only
+  const sinceOf = new Map();
+  for (const h of targets) {
+    const a = JSON.parse(await readFile(path.join(OUT, 'analytics', `${h.id}.json`), 'utf8').catch(() => '{}'));
+    sinceOf.set(h.id, SINCE_ARG ?? a.min_unix_timestamp ?? MIN_TS);
+  }
+  const histories = new Map();
   const selected = [];
   for (const h of targets) {
-    const sel = await selectValidationPlayers(h);
+    const sel = await selectValidationPlayers(h, sinceOf.get(h.id), histories);
     printSelection(h, sel);
     selected.push(...sel);
   }
   if (SELECT_ONLY) return;
-  const histories = new Map();
   const entries = [];
   for (const v of selected) {
-    const data = await fetchPlayerMatches(v, histories);
+    const data = await fetchPlayerMatches(v, histories, sinceOf.get(v.hero_id));
     const file = `validation/${v.account_id}-${v.hero_id}.json`;
     await save(file, { ...v, ...data });
     entries.push({ ...v, file, matches: data.matches.length });

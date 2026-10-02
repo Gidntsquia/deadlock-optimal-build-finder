@@ -12,12 +12,14 @@ const items = read('items.json'), heroes = read('heroes.json'), abilities = read
 check('item catalog has >=200 items', items.length >= 200, `${items.length} items, ${items.filter((i: any) => i.shopable && !i.disabled).length} currently shopable`);
 check('analytics snapshot for every active hero', heroes.every((h: any) => existsSync(`public/data/analytics/${h.id}.json`)), `${heroes.length} heroes`);
 const vsets: any[] = manifest.validation_sets ?? [];
-const short = heroes.filter((h: any) => vsets.filter((v) => v.hero_id === h.id && v.matches >= 10).length < 3).map((h: any) => `${h.name} (${vsets.filter((v) => v.hero_id === h.id).length})`);
-check('every active hero has >=3 validation sets with >=10 matches', short.length === 0, short.length ? `short: ${short.join(', ')}` : `${vsets.length} sets over ${heroes.length} heroes`);
+// a hero refetched from a patch on (analytics min_unix_timestamp) has had only days to collect games: >=5 each
+const minSetMatches = (h: any) => (read(`analytics/${h.id}.json`).min_unix_timestamp ? 5 : 10);
+const short = heroes.filter((h: any) => vsets.filter((v) => v.hero_id === h.id && v.matches >= minSetMatches(h)).length < 3).map((h: any) => `${h.name} (${vsets.filter((v) => v.hero_id === h.id).length})`);
+check('every active hero has >=3 validation sets with >=10 matches (>=5 since a patch)', short.length === 0, short.length ? `short: ${short.join(', ')}` : `${vsets.length} sets over ${heroes.length} heroes`);
 for (const v of vsets) {
   const z = read(v.file);
   check(`${v.player} ${v.hero}: >=5 matches, all with purchases`, z.matches.length >= 5 && z.matches.every((m: any) => m.items.length > 0), `${z.matches.length} matches`);
-  check(`${v.player} ${v.hero}: matchmaking-only, hero matches`, z.hero_id === v.hero_id && z.account_id === v.account_id && z.matches.every((m: any) => [1, 2].includes(m.match_mode) && m.game_mode === 1));
+  check(`${v.player} ${v.hero}: matchmaking-only, hero matches`, z.hero_id === v.hero_id && z.account_id === v.account_id && z.matches.every((m: any) => [1, 2, 4].includes(m.match_mode) && m.game_mode === 1));
 }
 
 // generator must not reference any held-out player or snapshot
