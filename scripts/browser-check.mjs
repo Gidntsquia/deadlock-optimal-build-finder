@@ -448,6 +448,24 @@ try {
       b1.spirit > 0 && b1.dps >= b0.dps + 0.66 * b1.spirit - 0.5 && (!b1.duration || b1.burn > b0.burn),
       JSON.stringify({ b0, b1 }),
     );
+    // walk the slider: every level shows up, and spirit power only drops at a buy that sells an item
+    const walk = [];
+    for (let i = 0; i <= Number(await page.getAttribute('#ab-progress', 'max')); i++) {
+      await page.fill('#ab-progress', String(i));
+      const g = (await page.textContent('.ab-gains')) ?? '';
+      walk.push({
+        level: Number(g.match(/Level (\d+)/)?.[1]),
+        spirit: parseFloat(g.match(/Spirit power ([\d.]+)/)?.[1] ?? '0'),
+        say: await page.getAttribute('#ab-progress', 'aria-valuetext'),
+      });
+    }
+    const levelGap = walk.find((w, i) => i && w.level > walk[i - 1].level + 1);
+    const badDrop = walk.find((w, i) => i && w.spirit < walk[i - 1].spirit && !/sold/.test(w.say));
+    check(
+      'ability card: the slider stops at every level and spirit power drops only when an item is sold',
+      !levelGap && !badDrop,
+      JSON.stringify({ levelGap, badDrop }),
+    );
     await page.keyboard.press('Escape');
     await page.waitForSelector('.ability-sheet', { state: 'detached' });
     const mark = page.locator('.ap-mark.tier2').first();

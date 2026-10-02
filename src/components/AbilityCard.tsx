@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import { img } from '../data/load';
 import type { Ability, AbilityProperty, AbilityStep, BuildItem } from '../types';
 import { boostsAt, heldItems, itemBoosts, timeline, type Boosts, type HeroLevels, type Moment } from '../abilityProgress';
@@ -200,12 +200,16 @@ export function AbilityCard({
     boosts.range ? `Range +${round(boosts.range)}%` : null,
     (charged ? boosts.charges : boosts.newCharges) ? `Charges +${charged ? boosts.charges : boosts.newCharges}` : null,
   ].filter((g): g is string => !!g);
+  // items sold to make room for this buy
+  const soldFor = (b: BuildItem) => items.filter((o) => o.sellFor?.id === b.item.id);
   const say = (m: Moment) =>
     m.kind === 'start'
       ? 'Start of the game'
       : m.kind === 'item'
-        ? `Bought ${m.item.item.name}`
-        : `Point ${m.point + 1}: ${order[m.point].ability.name} ${STEP_LABEL[order[m.point].kind].toLowerCase()}`;
+        ? [`Bought ${m.item.item.name}`, ...soldFor(m.item).map((b) => `sold ${b.item.name}`)].join(', ')
+        : m.kind === 'level'
+          ? `Level ${m.level}`
+          : `Point ${m.point + 1}: ${order[m.point].ability.name} ${STEP_LABEL[order[m.point].kind].toLowerCase()}`;
 
   const prop = (k: string) => a.properties[k];
   const shown = (k: string) => {
@@ -300,6 +304,18 @@ export function AbilityCard({
             <img src={img(moment.item.item.shop_image_webp || moment.item.item.image_webp)} alt="" width={24} height={24} />
             <span>
               Bought <b>{moment.item.item.name}</b>
+              {soldFor(moment.item).map((b) => (
+                <Fragment key={b.item.id}>
+                  , sold <b>{b.item.name}</b>
+                </Fragment>
+              ))}
+            </span>
+          </div>
+        )}
+        {moment.kind === 'level' && (
+          <div className="ab-point">
+            <span>
+              Reached <b>level {moment.level}</b>
             </span>
           </div>
         )}

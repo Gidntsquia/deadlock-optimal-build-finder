@@ -4,7 +4,11 @@ import type { AbilityStep, BuildItem, Hero, Item } from './types';
 // and what the hero has at each moment (level, items held, the stats those give abilities).
 // Souls are the build's running item cost; ability points come at the hero's level thresholds.
 
-export type Moment = { kind: 'start'; souls: 0 } | { kind: 'item'; souls: number; item: BuildItem } | { kind: 'point'; souls: number; point: number };
+export type Moment =
+  | { kind: 'start'; souls: 0 }
+  | { kind: 'item'; souls: number; item: BuildItem }
+  | { kind: 'point'; souls: number; point: number }
+  | { kind: 'level'; souls: number; level: number };
 
 export type HeroLevels = Pick<Hero, 'level_info' | 'standard_level_up_upgrades'>;
 
@@ -36,13 +40,19 @@ export function pointSouls(order: AbilityStep[], hero: HeroLevels): number[] {
   });
 }
 
-/** Start, then every item buy and ability point in souls order (an item before a point at the same souls). */
+/**
+ * Start, then every item buy and ability point in souls order (an item before a point at the same souls), plus a stop
+ * for each level reached where nothing else happens, so no level is skipped.
+ */
 export function timeline(items: BuildItem[], order: AbilityStep[], hero: HeroLevels): Moment[] {
   const at = pointSouls(order, hero);
   const rest: Moment[] = [
     ...items.map((item): Moment => ({ kind: 'item', souls: item.runningTotal, item })),
     ...order.map((_, point): Moment => ({ kind: 'point', souls: at[point], point })),
   ];
+  const end = Math.max(0, ...rest.map((m) => m.souls));
+  const taken = new Set(rest.map((m) => m.souls));
+  for (const l of levelsOf(hero)) if (l.souls > 0 && l.souls <= end && !taken.has(l.souls)) rest.push({ kind: 'level', souls: l.souls, level: l.level });
   rest.sort((a, b) => a.souls - b.souls || (a.kind === b.kind ? 0 : a.kind === 'item' ? -1 : 1));
   return [{ kind: 'start', souls: 0 }, ...rest];
 }
