@@ -47,12 +47,7 @@ function upgraded(a: Ability, bought: number) {
   return { values, scales, changed };
 }
 
-// charge counts and the delay between charges often carry no scale tag in the data; go by name for those
-const BY_NAME: Record<string, string> = { AbilityCharges: 'EMaxChargesIncrease', AbilityCooldownBetweenCharge: 'ETechCooldownBetweenChargeUses' };
-const kinds = (k: string, p: AbilityProperty) => {
-  const own = Array.isArray(p.scale) ? p.scale : [p.scale];
-  return BY_NAME[k] && !own.includes(BY_NAME[k]) ? [...own, BY_NAME[k]] : own;
-};
+const kinds = (p: AbilityProperty) => (Array.isArray(p.scale) ? p.scale : [p.scale]);
 const shareOf = (cuts: number[]) => 1 - cuts.reduce((m, c) => m * (1 - c), 1);
 
 /** Values with what the hero has at this point of the build: spirit power, cooldown, duration, range, charges. */
@@ -63,7 +58,7 @@ function withBoosts(a: Ability, values: Record<string, number>, scales: Record<s
   const cdr = [...b.cdr, charged ? b.chargedCdr / 100 : 0, a.ability_type === 'ultimate' ? b.ultCdr / 100 : 0].filter(Boolean);
   for (const [k, p] of Object.entries(a.properties)) {
     if (!Number.isFinite(out[k])) continue;
-    for (const s of kinds(k, p)) {
+    for (const s of kinds(p)) {
       if (s === 'ETechPower' && scales[k]) out[k] += scales[k] * spirit;
       else if (s === 'ETechCooldown') out[k] *= 1 - shareOf(cdr);
       else if (s === 'ETechDuration') out[k] *= 1 + b.duration / 100;

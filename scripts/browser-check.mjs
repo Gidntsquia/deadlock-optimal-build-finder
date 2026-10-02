@@ -423,6 +423,33 @@ try {
     await page.keyboard.press('Escape');
     await page.waitForSelector('.ability-sheet', { state: 'detached' });
     check('ability card: Escape returns focus to the ability icon', await page.evaluate(() => document.activeElement?.classList.contains('ap-icon')));
+    // values whose scale kind is only in the data's class name: Afterburn's damage grows with spirit power, its burn time with duration items
+    await page.click('.ap-row[data-ability="Afterburn"] .ap-icon');
+    await page.waitForSelector('.ability-sheet');
+    const burn = () =>
+      page.evaluate(() => {
+        const stat = (label) =>
+          parseFloat(
+            [...document.querySelectorAll('.ab-hstat, .ab-tile')].find((e) => e.querySelector('span')?.textContent === label)?.querySelector('b')?.textContent,
+          );
+        const g = document.querySelector('.ab-gains')?.textContent ?? '';
+        return {
+          dps: stat('Damage Per Second'),
+          burn: stat('Max Burn Duration'),
+          spirit: parseFloat(g.match(/Spirit power ([\d.]+)/)?.[1] ?? '0'),
+          duration: /Duration \+/.test(g),
+        };
+      });
+    const b0 = await burn();
+    await page.fill('#ab-progress', await page.getAttribute('#ab-progress', 'max'));
+    const b1 = await burn();
+    check(
+      'ability card: Afterburn damage adds 0.66 x spirit power and its burn time grows with duration items by the end',
+      b1.spirit > 0 && b1.dps >= b0.dps + 0.66 * b1.spirit - 0.5 && (!b1.duration || b1.burn > b0.burn),
+      JSON.stringify({ b0, b1 }),
+    );
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('.ability-sheet', { state: 'detached' });
     const mark = page.locator('.ap-mark.tier2').first();
     const idx = Number(await mark.getAttribute('data-index'));
     await mark.click();
