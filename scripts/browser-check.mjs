@@ -3,9 +3,10 @@
 // error recovery -> phone layout -> unknown slug / reduced motion -> axe. One browser, one page, one sequence.
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
-import { mkdirSync, readdirSync, existsSync } from 'node:fs';
+import { mkdirSync, readdirSync, existsSync, readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 
+const HERO_COUNT = JSON.parse(readFileSync('public/data/heroes.json', 'utf8')).length;
 const URL0 = 'http://localhost:4173/';
 const SHOT_DIR = process.env.SHOT_DIR || 'screenshots';
 mkdirSync(SHOT_DIR, { recursive: true });
@@ -936,7 +937,7 @@ try {
   await page.click('.nav-link:has-text("Tier List")');
   {
     const r = await page.evaluate(pageSwitchProbe);
-    check('Build -> Tier List shows all 38 heroes at once, no skeleton, no animation', r.heroes === 38 && !r.skel && !r.anims.length, JSON.stringify(r));
+    check('Build -> Tier List shows all heroes at once, no skeleton, no animation', r.heroes === HERO_COUNT && !r.skel && !r.anims.length, JSON.stringify(r));
   }
   await page.waitForSelector('.tier-hero', T);
   {
@@ -1018,7 +1019,7 @@ try {
       }));
       check(
         `tier list fits ${w}x${h} without scrolling; rule link and credit visible`,
-        r.v <= 0 && r.h <= 0 && !r.inner && r.n === 38 && r.foot && r.credit === 'https://github.com/GidntSquia' && r.icon,
+        r.v <= 0 && r.h <= 0 && !r.inner && r.n === HERO_COUNT && r.foot && r.credit === 'https://github.com/GidntSquia' && r.icon,
         JSON.stringify(r),
       );
     }
@@ -1147,7 +1148,7 @@ try {
     await frames();
     check(
       'tier list: Heroes switch brings the hero list back and drops ?list',
-      (await page.$$('.tier-hero')).length === 38 && !(await page.$('.tier-item')) && !new URL(page.url()).searchParams.has('list'),
+      (await page.$$('.tier-hero')).length === HERO_COUNT && !(await page.$('.tier-item')) && !new URL(page.url()).searchParams.has('list'),
     );
   }
   {
@@ -1209,7 +1210,7 @@ try {
   }
   await page.goto(URL0 + 'tier-list/');
   await page.waitForSelector('.tier-hero', T);
-  check('loading the tier list URL directly opens the tier list', (await page.$$('.tier-hero')).length === 38);
+  check('loading the tier list URL directly opens the tier list', (await page.$$('.tier-hero')).length === HERO_COUNT);
   {
     const fs = await import('node:fs');
     check('build output has tier-list/index.html and 404.html for GitHub Pages', fs.existsSync('dist/tier-list/index.html') && fs.existsSync('dist/404.html'));
