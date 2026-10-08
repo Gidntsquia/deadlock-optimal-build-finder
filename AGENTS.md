@@ -17,7 +17,7 @@ Static React app that generates Deadlock hero builds in the browser from a local
   sampled fit check, share, error recovery, phone layout, axe (~48 checks, ~12s; no fixed sleeps, use `frames()`/`waitFor*`; screenshots only when `SHOT_DIR` is set; motion is reduced from the phone step on). It starts its own `vite preview`. Set `SHOT_DIR=docs/ui/after` (or any dir) to control
   where screenshots land; default is `screenshots/` (gitignored). Add new checks as steps in that tour, not as new page loads.
   Includes `@axe-core/playwright` scans (desktop, phone with item sheet open and closed) — must report 0 serious/critical violations.
-  `npm test` = verify and the tour run side by side via `scripts/test.mjs` (~15s). `npm run test:full` = tsc + the same (before merge). A guard (`.claude/test-commands.sh`) blocks bare full-suite runs by agents; `TS_FULL=1` overrides.
+  `npm test` = verify and the tour run side by side via `scripts/test.mjs` (~15s). `npm run test:full` = tsc + the same (before merge).
   Logic checks: `npm run verify`. Typecheck: `npx tsc -b`. Format: `npx prettier --check/--write`.
 - Pages: `src/Shell.tsx` owns the page (URL path under the Vite base, `pushState` + `popstate`): the build finder at `<base>`
   (`?hero=&style=` unchanged) and the tier list at `<base>tier-list/` (`src/pages/TierList.tsx`, rule in `src/tiers.ts` and
