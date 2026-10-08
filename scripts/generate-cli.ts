@@ -19,7 +19,7 @@ const useV2 = args.includes('--v2');
 const v2 = useV2 ? { data: read(`v2/${heroId}.json`), modes: read('v2/modes.json') } : null;
 if (v2 && args.includes('--sweep')) {
   const keep = V2_PARAMS.brawlWeight;
-  for (const w of [0.5, 1, 1.5, 2, 3, 4]) {
+  for (const w of (process.env.SWEEP ?? '0.5,1,2,3,4,5,6').split(',').map(Number)) {
     V2_PARAMS.brawlWeight = w;
     const o = buildV2({ hero, heroes, abilities, items, analytics, data: v2.data, modes: v2.modes });
     const l = litmusCheck(o.build, o.report);
@@ -59,11 +59,11 @@ if (v2Out && args.includes('--explain')) {
   const r = v2Out.report;
   console.log(`# v2 explain: patch ${r.patch.name}, ${r.counts.standard} games on the top standard item, ${r.counts.brawl} on the top brawl item`);
   console.log(`fight window starts ${Math.round(r.curve.farmEndS / 60)} min (${r.curve.source}, ${r.curve.games} games)`);
-  console.log('item                      cat           std%   popRel  stdΔ    brawlΔ  modeG   term   rule (term = (brawlΔ - modeG) x support x role scale)');
+  console.log('item                      cat           std%   popRel  stdΔ    brawlΔ  othersΔ term   rule (term = (brawlΔ - othersΔ) x support x role scale)');
   const f = (x: number | null) => (x === null ? '   -  ' : `${(x * 100).toFixed(1).padStart(6)}`);
   for (const x of r.rows)
     console.log(
-      `${x.name.padEnd(25)} ${x.category.padEnd(13)} ${String(x.stdMatches).padStart(5)} ${(x.popRel * 100).toFixed(0).padStart(5)}% ${f(x.stdDelta)} ${f(x.brawlRel)} ${f(x.globalModeLift)} ${f(x.brawlLift)}  ${x.denied ?? `x${x.supportScale.toFixed(2)} support (min(1, popRel/0.20)) x${x.roleScale} role${x.spiritRule ? '; ' + x.spiritRule : ''}`}`,
+      `${x.name.padEnd(25)} ${x.category.padEnd(13)} ${String(x.stdMatches).padStart(5)} ${(x.popRel * 100).toFixed(0).padStart(5)}% ${f(x.stdDelta)} ${f(x.brawlRel)} ${f(x.globalModeLift)} ${f(x.brawlLift)}  ${x.denied ?? `x${x.supportScale.toFixed(2)} support (min(1, popRel/0.03)) x${x.roleScale} role${x.spiritRule ? '; ' + x.spiritRule : ''}`}`,
     );
 }
 if (v2Out && args.includes('--explain')) {

@@ -4,12 +4,13 @@ import type { Ability, Build, Hero, HeroAnalytics, Item, ItemStat, SlotType } fr
 import { generateBuild, choosePopulation } from '../build';
 import { ARCHETYPES } from '../stats';
 import { categorize, ROLE_FIT, STANDARD_ONLY } from './categories';
+import { completeChains } from './chains';
 import { reorder } from './order';
 import { farmShareAt, fmtMin, roleCurve } from './roles';
 import type { Category, EnemyReport, ExplainRow, ItemCategory, SlimStat, Swap, V2Data, V2Modes, V2Report, ZergggyReport } from './types';
 
 export const V2_PARAMS = {
-  brawlWeight: 2,        // score per percentage point of brawl term (direct score term beside the standard term)
+  brawlWeight: 5,        // score per percentage point of brawl term (direct score term beside the standard term)
   roleWeight: 1.0,       // score at full role fit (the role term runs -0.5..+0.5 of this)
   spikeWeight: 0.35,     // bonus for the item that takes a colour across a spike
   spikeMomentum: 0.1,    // bonus for moving the leading colour toward its spike
@@ -47,18 +48,20 @@ export function buildV2(input: V2Input): { build: Build; report: V2Report } {
   const stdRel = relMap(std), brawlRel = relMap(brawlRows);
   const stdBy = new Map(std.map((s) => [s.item_id, s]));
 
-  // game-mode effect: the same item's (brawl rel - standard rel) over every OTHER hero
+  // game-mode effect: the same item's brawl rel over every OTHER hero (how much Street Brawl favours the item for anyone).
+  // It used to be brawl rel minus standard rel, but standard win rates of late, rarely bought items are inflated (Phantom+
+  // items bought after 31 min win 54.6% vs 47.4% for those bought by 10 min), which made the effect negative for late
+  // items and handed them their whole brawl rel (Indomitable).
   const globalLift = new Map<number, number>();
   {
     const acc = new Map<number, { w: number; s: number }>();
     for (const [hid, h] of Object.entries(modes.heroes)) {
       if (Number(hid) === hero.id) continue;
-      const rs = relMap(h.standard), rb = relMap(h.brawl);
+      const rb = relMap(h.brawl);
       for (const [id, b] of rb) {
-        const s = rs.get(id);
-        if (!s || s.matches < P.modeMinMatches || b.matches < P.modeMinMatches) continue;
-        const w = Math.min(s.matches, b.matches), a = acc.get(id) ?? { w: 0, s: 0 };
-        a.w += w; a.s += w * (b.rel - s.rel); acc.set(id, a);
+        if (b.matches < P.modeMinMatches) continue;
+        const w = b.matches, a = acc.get(id) ?? { w: 0, s: 0 };
+        a.w += w; a.s += w * b.rel; acc.set(id, a);
       }
     }
     for (const [id, a] of acc) globalLift.set(id, a.s / a.w);
@@ -82,6 +85,8 @@ export function buildV2(input: V2Input): { build: Build; report: V2Report } {
     if (STANDARD_ONLY.includes(cat.primary) || !fightOnly.length) return { term: 0, denied: `standard-only mechanic (${CAT_WORD[cat.primary]})`, ...b2 };
     const spiritOnly = cat.source === 'stats' && cat.all.every((c) => c === 'spiritDamage');
     if (spiritOnly && s.rel <= 0) return { term: 0, denied: `spirit-scaling item (only spirit stat lines) with standard delta ${pts(s.rel)} (needs above 0)`, ...b2, spiritRule: 'fired' };
+    // Street Brawl may lift an item in but never pushes out one that wins in standard (Ricochet: +2.0 pts in standard)
+    if (b.rel - Math.max(0, g) < 0 && s.rel > 0) return { term: 0, denied: `wins in standard (${pts(s.rel)}), so a weaker Street Brawl result does not count against it`, ...b2 };
     return { term: b.rel - Math.max(0, g), denied: null, ...b2, spiritRule: spiritOnly ? `spirit-scaling item, kept because standard delta ${pts(s.rel)} is above 0` : null };
   };
   for (const s of std) {
@@ -136,6 +141,7 @@ export function buildV2(input: V2Input): { build: Build; report: V2Report } {
   const build = generateBuild({ hero, abilities: input.abilities, items, analytics, v2: hooks }, ARCHETYPES[0], popn);
   const baseline = generateBuild({ hero, abilities: input.abilities, items, analytics, v2: makeHooks(false) }, ARCHETYPES[0], popn);
   build.population = { ...build.population, kind: 'top', minBadge: data.standard.min_average_badge };
+  completeChains(build, items, std); completeChains(baseline, items, std);
 
   // order: brawl-lifted items take the displaced item's spot; sells, phases and the colour spike (held at the moment of each buy) follow
   const T = P.spikeThresholds;

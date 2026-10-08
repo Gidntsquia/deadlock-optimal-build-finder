@@ -1,4 +1,4 @@
-// Litmus items the user fixed for Infernus (plans/PLAN.md pass 2). A miss is a verify failure.
+// Litmus items the user fixed for Infernus (plans/PLAN.md pass 2, plus two from the user after pass 3). A miss is a verify failure.
 import type { Build } from '../../types';
 import type { V2Report } from './types';
 
@@ -10,6 +10,9 @@ export const LITMUS: { name: string; want: 'in' | 'out'; noDeny?: boolean }[] = 
   { name: 'Escalating Exposure', want: 'in' },
   { name: 'Greater Expansion', want: 'out' },
   { name: 'Mystic Expansion', want: 'out' },
+  // added by the user after pass 3 (2026-10-08): "Ricochet is one of the best Infernus items"; "Indomitable is neither good in standard or in street brawl"
+  { name: 'Ricochet', want: 'in' },
+  { name: 'Indomitable', want: 'out' },
 ];
 
 export interface LitmusResult { name: string; want: 'in' | 'out'; inBuild: boolean; ok: boolean; rule: string }

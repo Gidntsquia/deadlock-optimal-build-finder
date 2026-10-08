@@ -29,6 +29,8 @@ function itemLine(b: BuildItem, r: V2Report): string {
   const p = r.placement.rows.find((y) => y.itemId === b.item.id);
   const bits: string[] = [];
   if (p?.lifted) bits.push(`In: wins more in Street Brawl${x ? `, bought by ${pct(x.popRel)}` : ''}`);
+  else if (p?.source.startsWith('bought first')) bits.push(`Buy first, upgrades into ${p.source.replace(/^bought first, upgrades into ([^;]+).*$/, '$1')}`);
+  else if (x?.denied?.startsWith('wins in standard')) bits.push(`Strong in standard games, bought by ${pct(x.popRel)}`);
   else if (x && x.denied && x.brawlMatches > 0)
     bits.push(`Brawl bonus dropped: ${x.denied.startsWith('rarely') || x.denied.startsWith('no brawl') ? 'too rarely bought' : 'it does not fit'}`);
   else if (x) bits.push(`Common pick: bought by ${pct(x.popRel)}`);
@@ -80,7 +82,7 @@ export function DetailsV2({ build, heroName }: { build: Build; heroName: string 
 
         <h3>Street Brawl weight and checks</h3>
         <p>
-          Street Brawl win rate is a direct score term, weight {V2_PARAMS.brawlWeight} (the lowest weight in the sweep 0.5, 1, 1.5, 2, 3, 4 that keeps every
+          Street Brawl win rate is a direct score term, weight {V2_PARAMS.brawlWeight} (the only weight in the sweep 0.5, 1, 2, 3, 4, 5, 6 that keeps every
           check below right). Must-have and must-not items:
         </p>
         <ul className="litmus">
@@ -160,7 +162,7 @@ export function DetailsV2({ build, heroName }: { build: Build; heroName: string 
                       {x
                         ? x.denied
                           ? `none: ${x.denied}`
-                          : `${pts(x.brawlRaw)} (brawl ${x.heroModeLift === null ? '-' : pts(x.heroModeLift)} minus game-mode ${x.globalModeLift === null ? '-' : pts(x.globalModeLift)}) x ${x.supportScale.toFixed(2)} standard support x ${x.roleScale} ${x.roleScale === 1 ? 'fight' : 'farm'} window = ${pts(x.brawlLift)}${x.spiritRule ? `; ${x.spiritRule}` : ''}`
+                          : `${pts(x.brawlRaw)} (brawl ${x.heroModeLift === null ? '-' : pts(x.heroModeLift)} minus other heroes' brawl ${x.globalModeLift === null ? '-' : pts(x.globalModeLift)}) x ${x.supportScale.toFixed(2)} standard support x ${x.roleScale} ${x.roleScale === 1 ? 'fight' : 'farm'} window = ${pts(x.brawlLift)}${x.spiritRule ? `; ${x.spiritRule}` : ''}`
                         : ''}
                     </td>
                     <td>{b.spike ? `takes ${b.spike.slot} past ${fmtSouls(b.spike.threshold)}` : ''}</td>

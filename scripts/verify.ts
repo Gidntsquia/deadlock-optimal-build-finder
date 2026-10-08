@@ -316,11 +316,33 @@ for (const hero of heroes.filter((h: any) => usesV2(h.id))) {
       `v2 ${hero.name}: running totals follow the order`,
       run.every((t, i) => t === (run[i - 1] ?? 0) + build.items[i].paidCost),
     );
-    const vit = r.colours.find((c) => c.slot === 'vitality')?.crossing?.name;
+    // spike tiles recomputed here from the final order and sell points (held at the moment of each buy), against the report
+    const cash: Record<string, number> = { weapon: 0, vitality: 0, spirit: 0 },
+      cross: Record<string, string> = {};
+    for (const b of build.items) {
+      for (const o of build.items) if (o.sellFor?.id === b.item.id) cash[o.item.item_slot_type] -= o.item.cost;
+      const before = cash[b.item.item_slot_type];
+      cash[b.item.item_slot_type] += b.paidCost;
+      if (before < 4800 && cash[b.item.item_slot_type] >= 4800 && !cross[b.item.item_slot_type]) cross[b.item.item_slot_type] = b.item.name;
+    }
     check(
-      `v2 ${hero.name}: vitality spike is on Reactive Barrier (spend held at the moment of each buy)`,
-      vit === 'Reactive Barrier',
+      `v2 ${hero.name}: each colour's spike tile matches a recount of what is held at each buy`,
+      r.colours.every((c) => (c.crossing?.name ?? undefined) === cross[c.slot]) &&
+        build.items.filter((b) => b.spike).every((b) => cross[b.spike!.slot] === b.item.name),
       `crossings: ${r.colours.map((c) => `${c.slot} ${c.crossing?.name ?? 'none'}`).join('; ')}`,
+    );
+    const byClass = new Map(items.filter((i: any) => i.shopable && !i.disabled).map((i: any) => [i.class_name, i]));
+    const missing = build.items.filter((b) => b.item.component_items.some((c) => byClass.has(c)) && !b.upgradesFrom).map((b) => b.item.name);
+    check(
+      `v2 ${hero.name}: every upgrade in the build is bought from its component`,
+      missing.length === 0,
+      missing.length ? `no component: ${missing.join(', ')}` : '',
+    );
+    const compNames = new Set(build.items.flatMap((b) => (b.upgradesFrom ? [b.upgradesFrom.name] : [])));
+    check(
+      `v2 ${hero.name}: no component of a build item is counted as displaced or lifted`,
+      pl.displaced.every((n) => !compNames.has(n)) && pl.lifted.every((n) => !compNames.has(n)),
+      `lifted ${pl.lifted.join(', ')}; displaced ${pl.displaced.join(', ') || 'none'}`,
     );
   }
   const z = r.zergggy;
