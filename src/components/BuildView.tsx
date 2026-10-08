@@ -230,6 +230,7 @@ export function BuildView({
                       cost={b.paidCost}
                       sell={detailed ? b.sellFor?.name : undefined}
                       corrupt={detailed ? b.corrupt?.rank : undefined}
+                      spike={!!b.spike}
                       onClick={() => selectIndex(build.items.indexOf(b))}
                     />
                   ))}

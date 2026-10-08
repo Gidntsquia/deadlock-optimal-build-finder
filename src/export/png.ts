@@ -207,6 +207,24 @@ export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob>
       const rn = ROMAN[b.item.item_tier] ?? String(b.item.item_tier);
       g.fillText(rn, x + TILE - 3 - g.measureText(rn).width, ty + 11);
       g.textAlign = 'center';
+      if (b.spike) {
+        // spike mark: a small cream diamond in a dark one, bottom-left of the art
+        const dx = x + 12,
+          dy = ty + TILE - 12;
+        for (const [r, col] of [
+          [8, '#2d2418'],
+          [4, '#f2e7cf'],
+        ] as const) {
+          g.fillStyle = col;
+          g.beginPath();
+          g.moveTo(dx, dy - r);
+          g.lineTo(dx + r, dy);
+          g.lineTo(dx, dy + r);
+          g.lineTo(dx - r, dy);
+          g.closePath();
+          g.fill();
+        }
+      }
       if (o.detailed && b.corrupt) {
         if (corruptFrame) g.drawImage(corruptFrame, x, ty, TILE, TILE);
         // swap order in a corner flag mirroring the tier flag

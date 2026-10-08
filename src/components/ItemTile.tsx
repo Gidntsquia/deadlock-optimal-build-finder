@@ -14,9 +14,10 @@ export const ItemTile = forwardRef<
     total?: number;
     cost?: number;
     sell?: string; // bought early and sold later to free the slot: the name of the item it makes room for
+    spike?: boolean; // this buy takes its colour's spend past a spike (a mark only: no words on the build screen)
     corrupt?: number | true; // swap for the corrupted copy at the Broker, in this order (1 first); true = the corrupted frame alone
   }
->(function ItemTile({ item, onClick, total, cost, sell, corrupt }, ref) {
+>(function ItemTile({ item, onClick, total, cost, sell, corrupt, spike }, ref) {
   const Tag = onClick ? 'button' : 'div';
   return (
     <Tag
@@ -30,6 +31,11 @@ export const ItemTile = forwardRef<
       <span className="art">
         <img src={img(item.shop_image_webp || item.image_webp)} alt="" loading="lazy" width={96} height={96} />
         {corrupt !== undefined && <img className="corrupt-frame" src={img(CORRUPT_FRAME)} alt="" width={96} height={96} />}
+        {spike && (
+          <span className="spike-tag" aria-hidden="true">
+            <b />
+          </span>
+        )}
       </span>
       <span className="tier">
         <span>{ROMAN[item.item_tier] ?? item.item_tier}</span>

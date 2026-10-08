@@ -32,6 +32,7 @@
 //   --since 2026-09-29T20:00Z   (with --analytics-only) only use games from this time on, e.g. a patch going live; the
 //                               hero's analytics file records it (min_unix_timestamp) and the Details dialog shows it
 //   --heroes 1,31               (with --validation-only or --analytics-only) only these hero ids; with --validation-only their entries are merged into manifest.validation_sets
+//   --v2-only                   refetch only the v2 data (public/data/v2/*: brawl, role curve inputs, Zergggy; --heroes works)
 //   --select-only               (with --validation-only) run the selection, print the table per hero, write nothing
 //   --matchups 6:20,12,50;60:3,17,20   opt-in enemy-counter experiment fetch (plans/matchup-builds.md).
 //                                Repeatable per hero (';'-separated groups, enemies ','-separated); writes
@@ -74,6 +75,8 @@ const HEROES_ARG = (() => {
 })();
 // Analytics window: last 30 days (live data; the window is recorded in manifest.json).
 const WINDOW_DAYS = 30;
+const V2_HEROES = [1]; // heroes switched to the v2 build (src/generator/pipeline.ts); --heroes overrides
+
 // High-rank population: average lobby badge >= 90 (Phantom and above). Chosen as the highest bracket
 // where all three analytics endpoints are still well populated for every hero (Ascendant+ leaves
 // ability-order sequences with <100 matches). Builds are generated from this population when it is
@@ -883,6 +886,13 @@ async function main() {
     await fetchMatchups(MATCHUPS_ARG);
     return;
   }
+  if (process.argv.includes('--v2-only')) {
+    const manifest = JSON.parse(await readFile(path.join(OUT, 'manifest.json'), 'utf8'));
+    const heroes = JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8'));
+    const { fetchV2 } = await import('./fetch-v2.mjs');
+    await fetchV2(heroes, HEROES_ARG ?? V2_HEROES, manifest);
+    return;
+  }
   if (VALIDATION_ONLY) {
     const manifest = JSON.parse(await readFile(path.join(OUT, 'manifest.json'), 'utf8'));
     const heroes = JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8'));
@@ -1004,6 +1014,9 @@ async function main() {
   manifest.corrupted_fetched_at = new Date().toISOString();
   await fetchImbueTargets(heroes);
   manifest.imbue_targets_fetched_at = new Date().toISOString();
+
+  const { fetchV2 } = await import('./fetch-v2.mjs');
+  await fetchV2(heroes, V2_HEROES, manifest);
 
   await save('manifest.json', manifest);
   console.log('done', manifest.counts);

@@ -10,6 +10,16 @@ export interface GeneratorInput {
   hero: Hero; abilities: Ability[]; items: Item[]; analytics: HeroAnalytics;
   /** Opt-in enemy-counter term (plans/matchup-builds.md). Absent, or PARAMS.weights.matchup === 0, is a strict no-op. */
   matchup?: { enemies: number[]; stats: MatchupStats };
+  /** Build v2 (docs/build-v2.md): extra score terms. Absent for every hero not switched to v2, so their builds do not change. */
+  v2?: V2Hooks;
+}
+/** `delta` is added to the item's base score; `notes` become plain-words reasons if the item is chosen. */
+export interface V2Term { delta: number; notes: string[] }
+export interface V2Hooks {
+  /** fixed per-item terms: brawl lift, role fit */
+  item(item: Item, stat: ItemStat): V2Term;
+  /** terms that depend on what is already chosen: colour spikes */
+  dynamic?(item: Item, chosen: Item[]): V2Term;
 }
 
 const shrink = (wins: number, matches: number, K: number, mean: number) => (wins + K * mean) / (matches + K);
@@ -32,7 +42,7 @@ export function statValue(item: Item, mult: Record<string, number>): number {
 
 /** charge-item ability sequences and the population (high-rank or all ranks) they come from */
 interface ChargeOrders { kind: 'top' | 'all'; rows: ItemAbilityOrderStats }
-interface Scored { item: Item; stat: ItemStat; pop: number; winLift: number; eff: number; kit: number; matchupLift: number; matchupEnemies: number[]; base: number }
+interface Scored { v2: V2Term; item: Item; stat: ItemStat; pop: number; winLift: number; eff: number; kit: number; matchupLift: number; matchupEnemies: number[]; base: number }
 
 /**
  * Picks the aggregate population to generate from. The high-rank population is preferred because
@@ -242,12 +252,13 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
     // the lift is credited in proportion to usage (100% usage: full lift; 5% usage: 5% of it).
     const winLift = (shrunk - meanWR) * 10 * pop;
     const { lift: matchupLift, enemies: matchupEnemies } = matchupLiftFor(item.id);
+    const v2 = input.v2 ? input.v2.item(item, stat) : { delta: 0, notes: [] };
     const base =
       WEIGHTS.popularity * Math.sqrt(pop) + WEIGHTS.winLift * winLift +
       WEIGHTS.efficiency * (eff / effMax) + WEIGHTS.kit * (k / kitMax) +
       WEIGHTS.matchup * matchupLift +
-      (item.is_active_item ? WEIGHTS.active : 0);
-    return { item, stat, pop, winLift, eff: eff / effMax, kit: k / kitMax, matchupLift, matchupEnemies, base: base * arch.slotBias[item.item_slot_type] };
+      (item.is_active_item ? WEIGHTS.active : 0) + v2.delta;
+    return { v2, item, stat, pop, winLift, eff: eff / effMax, kit: k / kitMax, matchupLift, matchupEnemies, base: base * arch.slotBias[item.item_slot_type] };
   });
 
   // 2) pair synergy lookup
@@ -309,7 +320,8 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
       let syn = 0, n = 0;
       for (const c of chosen) { const l = pair.get(`${it.id}:${c.s.item.id}`); if (l !== undefined) { syn += l; n++; } }
       syn = n ? syn / n : 0;
-      const score = s.base + WEIGHTS.synergy * syn;
+      const dyn = input.v2?.dynamic ? input.v2.dynamic(it, chosen.map((c) => c.s.item)) : null;
+      const score = s.base + WEIGHTS.synergy * syn + (dyn?.delta ?? 0);
       if (!best || score > best.score || (score === best.score && it.id < best.s.item.id)) {
         const reasons: string[] = [];
         if (s.pop > 0.5) reasons.push(`bought in ${(s.stat.matches / maxMatches * 100).toFixed(0)}% of ${hero.name} games (relative)`);
@@ -317,6 +329,7 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
         if (s.eff > 0.6) reasons.push('high stat value per soul for this archetype');
         if (s.kit > 0.6) reasons.push(`scales ${hero.name}'s kit`);
         if (syn > 0.2) reasons.push('wins more alongside items already in the build');
+        reasons.push(...s.v2.notes, ...(dyn?.notes ?? []));
         if (matchupActive && s.matchupLift > 0.1) reasons.push(`commonly picked against enemy hero ${s.matchupEnemies.join(', ')}`);
         best = { s, score, reasons, inChain, chain, sell };
       }

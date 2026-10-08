@@ -1,6 +1,7 @@
 import type { Build } from '../types';
 import { consensusThreshold, type PanelValidation } from '../validation/heldout';
 import { fmtSouls } from '../text';
+import { DetailsV2 } from './DetailsV2';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from './ui/dialog';
 
 const pct = (n: number, d = 0) => `${(n * 100).toFixed(d)}%`;
@@ -48,9 +49,11 @@ export function Details({
           {build.items.length} items, <span className="souls">{fmtSouls(build.totalCost)}</span>
         </p>
 
+        <DetailsV2 build={build} heroName={heroName} />
+
         {panel && reps > 0 && (
           <>
-            <h3>Validation vs. top players</h3>
+            <h3>Validation vs. top players{build.v2 ? ' (not targeted)' : ''}</h3>
             <div className="big agreement">
               {pct(panel.agreement)} match with {reps} top {heroName} {reps === 1 ? 'player' : 'players'}
             </div>

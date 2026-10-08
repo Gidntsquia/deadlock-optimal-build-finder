@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { Ability, Build, Hero, HeroAnalytics, Item } from './types';
 import { heroBackdrop, img, loadAnalytics, loadCore, preloadImage, type Manifest } from './data/load';
-import { generateBuilds } from './generator';
+import { buildV2, generateBuilds } from './generator';
 import {
   computeCoreSet,
   loadHeldout,
@@ -76,10 +76,12 @@ function useAnalytics(heroId: number) {
 // Builds are a pure function of (hero, abilities, items, analytics); keyed by the analytics object so
 // a build made during prefetch is the same one the screen shows after the click.
 const buildsCache = new WeakMap<HeroAnalytics, Build[]>();
-function buildsFor(hero: Hero, abilities: Ability[], items: Item[], analytics: HeroAnalytics): Build[] {
+function buildsFor(hero: Hero, heroes: Hero[], abilities: Ability[], items: Item[], analytics: HeroAnalytics): Build[] {
   let b = buildsCache.get(analytics);
   if (!b) {
-    b = generateBuilds({ hero, abilities, items, analytics });
+    b = analytics.v2
+      ? [buildV2({ hero, heroes, abilities, items, analytics, data: analytics.v2.data, modes: analytics.v2.modes }).build]
+      : generateBuilds({ hero, abilities, items, analytics });
     buildsCache.set(analytics, b);
   }
   return b;
@@ -103,7 +105,7 @@ function usePrefetch(hero: Hero | undefined, heroes: Hero[], items: Item[], abil
       if (w.requestIdleCallback) w.requestIdleCallback(fn, { timeout: 1500 });
       else window.setTimeout(fn, 50);
     };
-    if (analytics) idle(() => live && preloadBuildImages(buildsFor(hero, abilities, items, analytics)));
+    if (analytics) idle(() => live && preloadBuildImages(buildsFor(hero, heroes, abilities, items, analytics)));
     const i = heroes.findIndex((h) => h.id === hero.id);
     for (const d of [1, -1]) {
       const n = heroes[(i + d + heroes.length) % heroes.length];
@@ -113,7 +115,7 @@ function usePrefetch(hero: Hero | undefined, heroes: Hero[], items: Item[], abil
       for (const set of manifest?.validation_sets?.filter((v) => v.hero_id === n.id) ?? []) loadHeldout(set).catch(() => {});
       loadAnalytics(n.id)
         .then((a) => {
-          if (live) idle(() => live && preloadBuildImages(buildsFor(n, abilities, items, a).slice(0, 1)));
+          if (live) idle(() => live && preloadBuildImages(buildsFor(n, heroes, abilities, items, a).slice(0, 1)));
         })
         .catch(() => {});
     }
@@ -242,8 +244,8 @@ export default function App({ active = true }: { active?: boolean }) {
 
   const analytics = analyticsState.status === 'ready' ? analyticsState.data : null;
   const builds: Build[] = useMemo(
-    () => (hero && analytics && items.length ? buildsFor(hero, abilities, items, analytics) : []),
-    [hero, abilities, items, analytics],
+    () => (hero && analytics && items.length ? buildsFor(hero, heroes, abilities, items, analytics) : []),
+    [hero, heroes, abilities, items, analytics],
   );
   usePrefetch(hero, heroes, items, abilities, manifest, analytics);
   const panel: { set: HeldoutSet; core: CoreSet }[] = useMemo(

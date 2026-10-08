@@ -43,6 +43,11 @@ Static React app that generates Deadlock hero builds in the browser from a local
 - Deployed to GitHub Pages under `/deadlock-optimal-build-finder/` (`BASE_PATH` env at build time). Always build
   asset URLs through `img()` / `import.meta.env.BASE_URL`.
 
+## Build v2
+- A second generator (`src/generator/v2/`, rules in `docs/build-v2.md`, categories in `docs/item-categories.md`) is on for Infernus only (`src/generator/pipeline.ts`, `V2_HEROES`); other heroes' builds must stay byte-identical (`scripts/builds-snapshot.ts` prints them; diff against an earlier commit in a worktree). Data: `npm run fetch-data -- --v2-only` -> `public/data/v2/`, all from games since `PATCH_SINCE` in `scripts/fetch-v2.mjs`. `npm run generate 1 --v2 --explain`.
+- The Details dialog's v2 section is `DetailsV2.tsx`; its tables must not use the `item-table` class (the browser tour counts `.details .item-table tbody tr` as the build's items).
+- Street Brawl rows are keyed by base item (no enhanced split) and take no rank filter.
+
 ## Layout
 - `src/generator/`, `src/validation/` — build scoring and panel validation. UI work must not change them.
 - `src/components/` — UI. `src/export/png.ts` — canvas share image.
