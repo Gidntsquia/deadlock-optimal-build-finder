@@ -278,6 +278,51 @@ for (const hero of heroes.filter((h: any) => usesV2(h.id))) {
     r.colours.length === 3 && build.items.some((b) => b.spike),
     r.colours.map((c) => `${c.slot} ${c.total}${c.crossing ? ` crosses at ${c.crossing.name}` : ''}`).join('; '),
   );
+  const pl = r.placement;
+  console.log(`v2 ${hero.name} order (brawl-lifted: ${pl.lifted.join(', ')}; displaced: ${pl.displaced.join(', ')}):`);
+  for (const x of pl.rows) console.log(`   ${String(x.slot).padStart(2)} ${x.name.padEnd(24)} ${x.source}`);
+  {
+    const held: string[] = [];
+    let peak = 0,
+      sellsOk = true;
+    for (const b of build.items) {
+      if (b.upgradesFrom) {
+        const k = held.indexOf(b.upgradesFrom.name);
+        if (k >= 0) held.splice(k, 1);
+      }
+      for (const o of build.items)
+        if (o.sellFor?.id === b.item.id) {
+          const k = held.indexOf(o.item.name);
+          if (k < 0) sellsOk = false;
+          else held.splice(k, 1);
+        }
+      held.push(b.item.name);
+      peak = Math.max(peak, held.length);
+    }
+    for (const o of build.items) if (o.sellFor && build.items.findIndex((x) => x.item.id === o.sellFor!.id) <= build.items.indexOf(o)) sellsOk = false;
+    check(`v2 ${hero.name}: never more than 12 items held, every sell comes at the buy it funds`, peak <= 12 && sellsOk, `most held ${peak}`);
+  }
+  {
+    const idx = (n: string) => build.items.findIndex((b) => b.item.name === n) + 1;
+    const three = ['Indomitable', 'Juggernaut', 'Mercurial Magnum'].map(idx).filter((i) => i > 0);
+    const last = build.items.length;
+    check(
+      `v2 ${hero.name}: Indomitable, Juggernaut and Mercurial Magnum do not sit together at the last three slots`,
+      !(three.length === 3 && three.every((i) => i > last - 3)),
+      `slots ${three.join(', ')} of ${last}`,
+    );
+    const run = build.items.map((b) => b.runningTotal);
+    check(
+      `v2 ${hero.name}: running totals follow the order`,
+      run.every((t, i) => t === (run[i - 1] ?? 0) + build.items[i].paidCost),
+    );
+    const vit = r.colours.find((c) => c.slot === 'vitality')?.crossing?.name;
+    check(
+      `v2 ${hero.name}: vitality spike is on Reactive Barrier (spend held at the moment of each buy)`,
+      vit === 'Reactive Barrier',
+      `crossings: ${r.colours.map((c) => `${c.slot} ${c.crossing?.name ?? 'none'}`).join('; ')}`,
+    );
+  }
   const z = r.zergggy;
   console.log(
     `v2 ${hero.name} vs Zergggy: ${z.games} games since the patch; ${z.shared.length} items in both (${z.shared.join(', ') || 'none'}); ${z.onlyHis.length} only his; ${z.onlyBuild.length} only this build`,

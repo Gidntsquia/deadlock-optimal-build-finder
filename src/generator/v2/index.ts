@@ -4,8 +4,9 @@ import type { Ability, Build, Hero, HeroAnalytics, Item, ItemStat, SlotType } fr
 import { generateBuild, choosePopulation } from '../build';
 import { ARCHETYPES } from '../stats';
 import { categorize, ROLE_FIT, STANDARD_ONLY } from './categories';
+import { reorder } from './order';
 import { farmShareAt, fmtMin, roleCurve } from './roles';
-import type { Category, ColourTotal, EnemyReport, ExplainRow, ItemCategory, SlimStat, Swap, V2Data, V2Modes, V2Report, ZergggyReport } from './types';
+import type { Category, EnemyReport, ExplainRow, ItemCategory, SlimStat, Swap, V2Data, V2Modes, V2Report, ZergggyReport } from './types';
 
 export const V2_PARAMS = {
   brawlWeight: 2,        // score per percentage point of brawl term (direct score term beside the standard term)
@@ -102,14 +103,14 @@ export function buildV2(input: V2Input): { build: Build; report: V2Report } {
   }
 
   // score terms for the v1 selection loop
-  const hooks = {
-    admit(item: Item) { const r = rows.get(item.id); return !!r && !r.denied && r.stdDelta > 0 && r.brawlLift > 0; },
+  const makeHooks = (brawlOn: boolean) => ({
+    admit(item: Item) { if (!brawlOn) return false; const r = rows.get(item.id); return !!r && !r.denied && r.stdDelta > 0 && r.brawlLift > 0; },
     item(item: Item) {
       const r = rows.get(item.id);
       if (!r) return { delta: 0, notes: [] };
       const notes = [r.roleNote];
-      if (r.brawlLift !== 0) notes.push(`Street Brawl: ${pts(r.brawlRaw)} after removing the game-mode effect, x${r.supportScale.toFixed(2)} standard support, x${r.roleScale} role = ${pts(r.brawlLift)}`);
-      return { delta: P.brawlWeight * r.brawlLift * 100 + P.roleWeight * r.roleTerm, notes };
+      if (brawlOn && r.brawlLift !== 0) notes.push(`Street Brawl: ${pts(r.brawlRaw)} after removing the game-mode effect, x${r.supportScale.toFixed(2)} standard support, x${r.roleScale} role = ${pts(r.brawlLift)}`);
+      return { delta: (brawlOn ? P.brawlWeight * r.brawlLift * 100 : 0) + P.roleWeight * r.roleTerm, notes };
     },
     dynamic(item: Item, chosen: Item[]) {
       const T = P.spikeThresholds[P.spikeThresholds.length - 1];
@@ -120,7 +121,8 @@ export function buildV2(input: V2Input): { build: Build; report: V2Report } {
       if (item.item_slot_type === lead && after < T) return { delta: P.spikeMomentum * (after / T), notes: [] };
       return { delta: 0, notes: [] };
     },
-  };
+  });
+  const hooks = makeHooks(true);
 
   // the v1 machinery with v2 data: post-patch standard rows, no style split, post-patch sell stats and ability orders
   const stats: ItemStat[] = std.map((s) => ({ item_id: s.item_id, bucket: 0, wins: s.wins, losses: s.matches - s.wins, matches: s.matches, players: 0, avg_buy_time_s: s.avg_buy_time_s, avg_sell_time_s: 0, avg_buy_time_relative: 0, avg_sell_time_relative: 0 } as ItemStat));
@@ -132,19 +134,12 @@ export function buildV2(input: V2Input): { build: Build; report: V2Report } {
   };
   const popn = choosePopulation(analytics);
   const build = generateBuild({ hero, abilities: input.abilities, items, analytics, v2: hooks }, ARCHETYPES[0], popn);
+  const baseline = generateBuild({ hero, abilities: input.abilities, items, analytics, v2: makeHooks(false) }, ARCHETYPES[0], popn);
   build.population = { ...build.population, kind: 'top', minBadge: data.standard.min_average_badge };
 
-  // colour totals and the item that crosses each spike, in buy order (sold items are not held at the end)
+  // order: brawl-lifted items take the displaced item's spot; sells, phases and the colour spike (held at the moment of each buy) follow
   const T = P.spikeThresholds;
-  const colours: ColourTotal[] = (['weapon', 'vitality', 'spirit'] as SlotType[]).map((slot) => {
-    let total = 0, crossing: ColourTotal['crossing'] = null;
-    for (const b of build.items) {
-      if (b.item.item_slot_type !== slot || b.sellFor) continue;
-      const before = total; total += b.paidCost;
-      for (const t of T) if (before < t && total >= t && !(slot && b.spike)) { b.spike = { slot, threshold: t }; if (t === T[T.length - 1]) crossing = { itemId: b.item.id, name: b.item.name, threshold: t }; }
-    }
-    return { slot, total, crossing };
-  });
+  const { placement, colours } = reorder(build, baseline, data.sell_stats.items, T);
 
   const enemies = counters(input, build, rows, stdRel, brawlRel);
   const zerg = zergggy(input, build, rows);
@@ -154,7 +149,7 @@ export function buildV2(input: V2Input): { build: Build; report: V2Report } {
     curve, rows: [...rows.values()].sort((a, b) => b.stdMatches - a.stdMatches), colours,
     spikeThresholds: T,
     spikeSource: 'The game\'s threshold table is not in the API (generic-data and items.json checked on 2026-10-08); 4.8k is the figure the user gave, and lower steps are not scored.',
-    enemies, zergggy: zerg,
+    enemies, zergggy: zerg, placement,
     notes: [
       'Street Brawl rows are keyed by the base item: enhanced and rare cards cannot be separated in the API. The draft config offers every card enhanced with the same chance, so no item is excluded for it; the standard-direction gate, the standard-buy-rate gate and the game-mode effect carry the filtering (an enhanced-only strong item such as Rescue Beam fails the standard gates).',
       'Brawl is all ranks (the API returns an error for a badge filter in that mode); standard is Phantom+.',

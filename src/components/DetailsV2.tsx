@@ -1,7 +1,8 @@
-import type { Build } from '../types';
+import type { Build, BuildItem } from '../types';
 import { fmtMin } from '../generator/v2/roles';
 import { fmtSouls } from '../text';
 import { V2_PARAMS } from '../generator/v2';
+import type { V2Report } from '../generator/v2/types';
 import { litmusCheck } from '../generator/v2/litmus';
 
 const pct = (n: number, d = 0) => `${(n * 100).toFixed(d)}%`;
@@ -23,6 +24,20 @@ const date = (unix: number) => {
   return `${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}-${d.getUTCFullYear()}`;
 };
 
+function itemLine(b: BuildItem, r: V2Report): string {
+  const x = r.rows.find((y) => y.itemId === b.item.id);
+  const p = r.placement.rows.find((y) => y.itemId === b.item.id);
+  const bits: string[] = [];
+  if (p?.lifted) bits.push(`In: wins more in Street Brawl${x ? `, bought by ${pct(x.popRel)}` : ''}`);
+  else if (x && x.denied && x.brawlMatches > 0)
+    bits.push(`Brawl bonus dropped: ${x.denied.startsWith('rarely') || x.denied.startsWith('no brawl') ? 'too rarely bought' : 'it does not fit'}`);
+  else if (x) bits.push(`Common pick: bought by ${pct(x.popRel)}`);
+  if (p?.source.startsWith('took')) bits.push(p.source.charAt(0).toUpperCase() + p.source.slice(1));
+  if (b.spike) bits.push(`${COLOUR[b.spike.slot]} spike`);
+  if (b.sellFor) bits.push(`Sell when you buy ${b.sellFor.name}`);
+  return bits.length ? bits.join('. ') : 'Part of the build';
+}
+
 /** The v2 generator's section of Details: patch, counts, role curve, colour spend, item reasons, denied lifts, counters, Zergggy. */
 export function DetailsV2({ build, heroName }: { build: Build; heroName: string }) {
   const r = build.v2;
@@ -32,151 +47,177 @@ export function DetailsV2({ build, heroName }: { build: Build; heroName: string 
   const litmus = litmusCheck(build, r);
   return (
     <section className="v2-details">
-      <h3>This build's rules</h3>
-      <p>
-        Patch {r.patch.name}, games since {date(r.patch.since)} only. {r.counts.standard.toLocaleString()} {heroName} standard games (Phantom and above) and{' '}
-        {r.counts.brawl.toLocaleString()} Street Brawl games.
-      </p>
-
-      <h3>Street Brawl weight and checks</h3>
-      <p>
-        Street Brawl win rate is a direct score term, weight {V2_PARAMS.brawlWeight} (the lowest weight in the sweep 0.5, 1, 1.5, 2, 3, 4 that keeps every check
-        below right). Must-have and must-not items:
-      </p>
-      <ul className="litmus">
-        {litmus.map((l) => (
-          <li key={l.name}>
-            {l.name}: {l.inBuild ? 'in' : 'out'} (wanted {l.want}) {l.ok ? 'ok' : 'MISSED'} - {l.rule}
-          </li>
-        ))}
-      </ul>
-
-      <h3>Farm then fight</h3>
-      <p>
-        {r.curve.source === 'panel'
-          ? `From ${r.curve.games} games by the top ${heroName} players.`
-          : `From ${r.curve.games} games, all players (the top players have too few).`}{' '}
-        The fight window starts at minute {Math.round(r.curve.farmEndS / 60)}, the first 5-minute stretch after minute 5 where fight activity (damage, kills,
-        assists) is above its game-long average. The Street Brawl term counts in full there and half before it. Early items are chosen for farming, later ones
-        for fighting.
-      </p>
-      <table className="panel-table">
-        <thead>
-          <tr>
-            <th>Minutes</th>
-            <th>Farm</th>
-            <th>Fight</th>
-            <th>Farm share</th>
-          </tr>
-        </thead>
-        <tbody>
-          {r.curve.buckets.map((b) => (
-            <tr key={b.startS}>
-              <td>
-                {fmtMin(b.startS)}-{fmtMin(b.startS + 300)}
-              </td>
-              <td>{b.farm.toFixed(2)}</td>
-              <td>{b.fight.toFixed(2)}</td>
-              <td>{pct(b.farmShare)}</td>
-            </tr>
+      <h3>How this build was made</h3>
+      <ul className="v2-summary">
+        <li>Street Brawl weight {V2_PARAMS.brawlWeight}</li>
+        <li>Fights start at {Math.round(r.curve.farmEndS / 60)} min</li>
+        <li>
+          Checks:{' '}
+          {litmus.map((l) => (
+            <span key={l.name} className={l.ok ? 'chip-ok' : 'chip-bad'}>
+              {l.ok ? '✓' : '✗'} {l.name}
+            </span>
           ))}
-        </tbody>
-      </table>
+        </li>
+      </ul>
 
-      <h3>Colour spend</h3>
-      <ul>
-        {r.colours.map((c) => (
-          <li key={c.slot}>
-            {COLOUR[c.slot as keyof typeof COLOUR] ?? c.slot}: {fmtSouls(c.total)}
-            {c.crossing ? `, passes ${fmtSouls(c.crossing.threshold)} at ${c.crossing.name}` : ', stays under the spike'}
+      <h3>Each item in one line</h3>
+      <ol className="v2-lines">
+        {build.items.map((b) => (
+          <li key={b.item.id}>
+            <b>{b.item.name}</b>: {itemLine(b, r)}
           </li>
         ))}
-      </ul>
-      <p>{r.spikeSource}</p>
+      </ol>
 
-      <h3>Why each item</h3>
-      <div className="details-scroll">
+      <details className="v2-numbers">
+        <summary>Show numbers</summary>
+        <h3>This build's data</h3>
+        <p>
+          Patch {r.patch.name}, games since {date(r.patch.since)} only. {r.counts.standard.toLocaleString()} {heroName} standard games (Phantom and above) and{' '}
+          {r.counts.brawl.toLocaleString()} Street Brawl games.
+        </p>
+
+        <h3>Street Brawl weight and checks</h3>
+        <p>
+          Street Brawl win rate is a direct score term, weight {V2_PARAMS.brawlWeight} (the lowest weight in the sweep 0.5, 1, 1.5, 2, 3, 4 that keeps every
+          check below right). Must-have and must-not items:
+        </p>
+        <ul className="litmus">
+          {litmus.map((l) => (
+            <li key={l.name}>
+              {l.name}: {l.inBuild ? 'in' : 'out'} (wanted {l.want}) {l.ok ? 'ok' : 'MISSED'} - {l.rule}
+            </li>
+          ))}
+        </ul>
+
+        <h3>Farm then fight</h3>
+        <p>
+          {r.curve.source === 'panel'
+            ? `From ${r.curve.games} games by the top ${heroName} players.`
+            : `From ${r.curve.games} games, all players (the top players have too few).`}{' '}
+          The fight window starts at minute {Math.round(r.curve.farmEndS / 60)}, the first 5-minute stretch after minute 5 where fight activity (damage, kills,
+          assists) is above its game-long average. The Street Brawl term counts in full there and half before it. Early items are chosen for farming, later ones
+          for fighting.
+        </p>
         <table className="panel-table">
           <thead>
             <tr>
-              <th>Item</th>
-              <th>Kind</th>
-              <th>Role</th>
-              <th>Standard</th>
-              <th>Brawl term</th>
-              <th>Spike</th>
+              <th>Minutes</th>
+              <th>Farm</th>
+              <th>Fight</th>
+              <th>Farm share</th>
             </tr>
           </thead>
           <tbody>
-            {build.items.map((b) => {
-              const x = r.rows.find((y) => y.itemId === b.item.id);
-              return (
-                <tr key={b.item.id}>
-                  <td>{b.item.name}</td>
-                  <td>{x ? CAT[x.category] : ''}</td>
-                  <td>{x?.roleNote ?? ''}</td>
-                  <td>{x ? `${pts(x.stdDelta)} win rate, ${pct(x.popRel)} of top item's games` : ''}</td>
-                  <td>
-                    {x
-                      ? x.denied
-                        ? `none: ${x.denied}`
-                        : `${pts(x.brawlRaw)} (brawl ${x.heroModeLift === null ? '-' : pts(x.heroModeLift)} minus game-mode ${x.globalModeLift === null ? '-' : pts(x.globalModeLift)}) x ${x.supportScale.toFixed(2)} standard support x ${x.roleScale} ${x.roleScale === 1 ? 'fight' : 'farm'} window = ${pts(x.brawlLift)}${x.spiritRule ? `; ${x.spiritRule}` : ''}`
-                      : ''}
-                  </td>
-                  <td>{b.spike ? `takes ${b.spike.slot} past ${fmtSouls(b.spike.threshold)}` : ''}</td>
-                </tr>
-              );
-            })}
+            {r.curve.buckets.map((b) => (
+              <tr key={b.startS}>
+                <td>
+                  {fmtMin(b.startS)}-{fmtMin(b.startS + 300)}
+                </td>
+                <td>{b.farm.toFixed(2)}</td>
+                <td>{b.fight.toFixed(2)}</td>
+                <td>{pct(b.farmShare)}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
-      </div>
 
-      {denied.length > 0 && (
-        <>
-          <h3>Street Brawl terms that were zeroed</h3>
-          <ul>
-            {denied.map((x) => (
-              <li key={x.itemId}>
-                {x.name}: {x.denied}
-                {inBuild.has(x.itemId) ? ' (still in the build)' : ''}
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+        <h3>Colour spend</h3>
+        <ul>
+          {r.colours.map((c) => (
+            <li key={c.slot}>
+              {COLOUR[c.slot as keyof typeof COLOUR] ?? c.slot}: {fmtSouls(c.total)}
+              {c.crossing ? `, passes ${fmtSouls(c.crossing.threshold)} at ${c.crossing.name}` : ', stays under the spike'}
+            </li>
+          ))}
+        </ul>
+        <p>{r.spikeSource}</p>
 
-      <h3>Against the most-played enemies</h3>
-      {r.enemies.map((e) => (
-        <div key={e.heroId}>
-          <p>
-            <b>{e.name}</b> ({e.games.toLocaleString()} games)
-          </p>
-          {e.swaps.length === 0 ? (
-            <p>No swap has enough games and a clear gain.</p>
-          ) : (
+        <h3>Why each item</h3>
+        <div className="details-scroll">
+          <table className="panel-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Kind</th>
+                <th>Role</th>
+                <th>Standard</th>
+                <th>Brawl term</th>
+                <th>Spike</th>
+              </tr>
+            </thead>
+            <tbody>
+              {build.items.map((b) => {
+                const x = r.rows.find((y) => y.itemId === b.item.id);
+                return (
+                  <tr key={b.item.id}>
+                    <td>{b.item.name}</td>
+                    <td>{x ? CAT[x.category] : ''}</td>
+                    <td>{x?.roleNote ?? ''}</td>
+                    <td>{x ? `${pts(x.stdDelta)} win rate, ${pct(x.popRel)} of top item's games` : ''}</td>
+                    <td>
+                      {x
+                        ? x.denied
+                          ? `none: ${x.denied}`
+                          : `${pts(x.brawlRaw)} (brawl ${x.heroModeLift === null ? '-' : pts(x.heroModeLift)} minus game-mode ${x.globalModeLift === null ? '-' : pts(x.globalModeLift)}) x ${x.supportScale.toFixed(2)} standard support x ${x.roleScale} ${x.roleScale === 1 ? 'fight' : 'farm'} window = ${pts(x.brawlLift)}${x.spiritRule ? `; ${x.spiritRule}` : ''}`
+                        : ''}
+                    </td>
+                    <td>{b.spike ? `takes ${b.spike.slot} past ${fmtSouls(b.spike.threshold)}` : ''}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {denied.length > 0 && (
+          <>
+            <h3>Street Brawl terms that were zeroed</h3>
             <ul>
-              {e.swaps.map((s) => (
-                <li key={s.itemId}>
-                  {s.name}
-                  {s.replaces ? ` for ${s.replaces}` : ''} - {s.reason} [{s.source}, {s.games} games]
+              {denied.map((x) => (
+                <li key={x.itemId}>
+                  {x.name}: {x.denied}
+                  {inBuild.has(x.itemId) ? ' (still in the build)' : ''}
                 </li>
               ))}
             </ul>
-          )}
-        </div>
-      ))}
+          </>
+        )}
 
-      <h3>Zergggy</h3>
-      <p>
-        {r.zergggy.games} {r.zergggy.games === 1 ? 'game' : 'games'} since the patch (of {r.zergggy.sinceTotal} {heroName} games). In both:{' '}
-        {r.zergggy.shared.join(', ') || 'nothing'}.
-      </p>
-      {r.zergggy.onlyHis.length > 0 && <p>Only his: {r.zergggy.onlyHis.map((x) => `${x.name} (${x.reason})`).join('; ')}</p>}
-      {r.zergggy.onlyBuild.length > 0 && <p>Only this build: {r.zergggy.onlyBuild.map((x) => `${x.name} (${x.reason})`).join('; ')}</p>}
+        <h3>Against the most-played enemies</h3>
+        {r.enemies.map((e) => (
+          <div key={e.heroId}>
+            <p>
+              <b>{e.name}</b> ({e.games.toLocaleString()} games)
+            </p>
+            {e.swaps.length === 0 ? (
+              <p>No swap has enough games and a clear gain.</p>
+            ) : (
+              <ul>
+                {e.swaps.map((s) => (
+                  <li key={s.itemId}>
+                    {s.name}
+                    {s.replaces ? ` for ${s.replaces}` : ''} - {s.reason} [{s.source}, {s.games} games]
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
 
-      {r.notes.map((n) => (
-        <p key={n}>{n}</p>
-      ))}
+        <h3>Zergggy</h3>
+        <p>
+          {r.zergggy.games} {r.zergggy.games === 1 ? 'game' : 'games'} since the patch (of {r.zergggy.sinceTotal} {heroName} games). In both:{' '}
+          {r.zergggy.shared.join(', ') || 'nothing'}.
+        </p>
+        {r.zergggy.onlyHis.length > 0 && <p>Only his: {r.zergggy.onlyHis.map((x) => `${x.name} (${x.reason})`).join('; ')}</p>}
+        {r.zergggy.onlyBuild.length > 0 && <p>Only this build: {r.zergggy.onlyBuild.map((x) => `${x.name} (${x.reason})`).join('; ')}</p>}
+
+        {r.notes.map((n) => (
+          <p key={n}>{n}</p>
+        ))}
+      </details>
     </section>
   );
 }

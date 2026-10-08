@@ -66,6 +66,11 @@ if (v2Out && args.includes('--explain')) {
       `${x.name.padEnd(25)} ${x.category.padEnd(13)} ${String(x.stdMatches).padStart(5)} ${(x.popRel * 100).toFixed(0).padStart(5)}% ${f(x.stdDelta)} ${f(x.brawlRel)} ${f(x.globalModeLift)} ${f(x.brawlLift)}  ${x.denied ?? `x${x.supportScale.toFixed(2)} support (min(1, popRel/0.20)) x${x.roleScale} role${x.spiritRule ? '; ' + x.spiritRule : ''}`}`,
     );
 }
+if (v2Out && args.includes('--explain')) {
+  const pl = v2Out.report.placement;
+  console.log(`\n# order: brawl-lifted [${pl.lifted.join(', ')}]; displaced [${pl.displaced.join(', ')}]; most items held at once ${pl.maxHeld}`);
+  for (const x of pl.rows) console.log(`  ${String(x.slot).padStart(2)} ${x.name.padEnd(25)} ${x.source}`);
+}
 const fmt = (s: number) => {
   const t = Math.round(s);
   return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;

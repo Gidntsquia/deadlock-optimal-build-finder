@@ -256,6 +256,42 @@ try {
       text.slice(0, 120),
     );
     await snap({ path: shot('details-desktop.png') });
+    // v2 section (Infernus): short summary and one line per item up front; the numbers sit behind a closed toggle
+    const v2 = await page.evaluate(() => {
+      const d = document.querySelector('.details .v2-numbers');
+      const out = {
+        has: !!d,
+        open: d?.open,
+        summary: document.querySelector('.details .v2-summary')?.innerText ?? '',
+        lines: document.querySelectorAll('.details .v2-lines li').length,
+        tableVisible: false,
+        jargon: false,
+      };
+      if (d) {
+        const ownText = [...document.querySelectorAll('.details .v2-summary, .details .v2-lines')].map((e) => e.innerText).join(' ');
+        out.jargon = /\b(delta|shrink|popRel|term|scale)\b/i.test(ownText);
+        out.tableVisible = !!d.querySelector('.panel-table')?.checkVisibility?.();
+      }
+      return out;
+    });
+    const items = await page.$$eval('.tiles .tile', (e) => e.length);
+    check(
+      'details v2: summary (weight, fight start, checks), a line per item, toggle closed, no jargon',
+      v2.has &&
+        !v2.open &&
+        !v2.tableVisible &&
+        /Street Brawl weight/.test(v2.summary) &&
+        /Fights start at \d+ min/.test(v2.summary) &&
+        v2.lines >= items &&
+        !v2.jargon,
+      JSON.stringify(v2).slice(0, 200),
+    );
+    await page.click('.details .v2-numbers > summary');
+    check(
+      'details v2: Show numbers opens the table',
+      await page.evaluate(() => !!document.querySelector('.details .v2-numbers .panel-table')?.checkVisibility?.()),
+    );
+    await page.click('.details .v2-numbers > summary');
   }
   await closeDetails();
   await page.waitForFunction(() => document.activeElement?.classList.contains('details-btn'), null, { timeout: 2000 }).catch(() => {});
