@@ -8,12 +8,15 @@ import { farmShareAt, fmtMin, roleCurve } from './roles';
 import type { Category, ColourTotal, EnemyReport, ExplainRow, ItemCategory, SlimStat, Swap, V2Data, V2Modes, V2Report, ZergggyReport } from './types';
 
 export const V2_PARAMS = {
-  brawlWeight: 1.5,      // score per 10 points of hero-specific brawl lift
+  brawlWeight: 2,        // score per percentage point of brawl term (direct score term beside the standard term)
   roleWeight: 1.0,       // score at full role fit (the role term runs -0.5..+0.5 of this)
   spikeWeight: 0.35,     // bonus for the item that takes a colour across a spike
   spikeMomentum: 0.1,    // bonus for moving the leading colour toward its spike
   spikeThresholds: [4800],
-  minStandardShare: 0.05, // brawl lift needs this share (relative to the most-bought item) of standard games
+  minStandardShare: 0.01, // brawl term needs this share (relative to the most-bought item) of standard games
+  minStdDelta: -0.02,     // items with a standard delta below this get no brawl term
+  supportFull: 0.03,       // brawl term scaled by min(1, popRel / supportFull)
+  farmBrawlScale: 0.5,    // brawl term weight inside the farm window (full in the fight window)
   brawlShrinkFrac: 0.2,   // win-rate prior weight = 20% of the biggest item's games, as in v1
   modeMinMatches: 200,    // a hero counts toward the game-mode effect for an item with this many games in both modes
   swapMinGames: 60, swapMinLift: 0.01, swapsPerEnemy: 3,
@@ -65,32 +68,34 @@ export function buildV2(input: V2Input): { build: Build; report: V2Report } {
 
   // one explain row per candidate (the items in the standard data)
   const rows = new Map<number, ExplainRow>();
-  const denyOf = (id: number): { lift: number; denied: string | null; hero: number | null; g: number | null } => {
+  // brawl term (fraction of win rate): brawl rel minus the game-mode effect, subtraction only; gates zero it, never flip it
+  const termOf = (id: number): { term: number; denied: string | null; hero: number | null; g: number | null; supportScale: number; spiritRule: string | null } => {
     const s = stdRel.get(id)!, b = brawlRel.get(id), cat = cats.get(id)!, st = stdBy.get(id)!;
-    if (!b) return { lift: 0, denied: 'no brawl games for this item', hero: null, g: null };
-    const hero = b.rel - s.rel, g = globalLift.get(id) ?? null;
-    const base = { hero, g };
-    if (st.matches / maxStd < P.minStandardShare) return { lift: 0, denied: `rarely bought in standard (${pct(st.matches / maxStd, 0)} of the top item's games, needs ${pct(P.minStandardShare, 0)})`, ...base };
-    if (s.rel < 0) return { lift: 0, denied: `standard win rate is below average (${pts(s.rel)}): brawl sharpens, never flips`, ...base };
-    if (b.rel < 0) return { lift: 0, denied: `brawl win rate disagrees with standard (${pts(b.rel)} in brawl)`, ...base };
+    const supportScale = Math.min(1, st.matches / maxStd / P.supportFull);
+    const base = { supportScale, spiritRule: null as string | null };
+    if (!b) return { term: 0, denied: 'no brawl games for this item', hero: null, g: null, ...base };
+    const g = globalLift.get(id) ?? 0, b2 = { ...base, hero: b.rel, g: globalLift.get(id) ?? null };
+    if (st.matches / maxStd < P.minStandardShare) return { term: 0, denied: `rarely bought in standard (${pct(st.matches / maxStd, 0)} of the top item's games, needs ${pct(P.minStandardShare, 0)})`, ...b2 };
+    if (s.rel < P.minStdDelta) return { term: 0, denied: `standard win rate is ${pts(s.rel)} (below the ${pts(P.minStdDelta)} limit)`, ...b2 };
     const fightOnly = cat.all.filter((c) => !STANDARD_ONLY.includes(c));
-    if (STANDARD_ONLY.includes(cat.primary) || !fightOnly.length) return { lift: 0, denied: `standard-only mechanic (${CAT_WORD[cat.primary]})`, ...base };
-    if (st.avg_buy_time_s < curve.farmEndS) return { lift: 0, denied: `bought at ${fmtMin(st.avg_buy_time_s)}, inside the farm window (ends ${fmtMin(curve.farmEndS)})`, ...base };
-    if (g === null) return { lift: 0, denied: 'no other hero has this item in both modes (cannot remove the game-mode effect)', ...base };
-    const specific = hero - g;
-    if (specific <= 0) return { lift: 0, denied: `brawl favours it on every hero as much (${pts(hero)} here, ${pts(g)} across heroes)`, ...base };
-    return { lift: specific, denied: null, ...base };
+    if (STANDARD_ONLY.includes(cat.primary) || !fightOnly.length) return { term: 0, denied: `standard-only mechanic (${CAT_WORD[cat.primary]})`, ...b2 };
+    const spiritOnly = cat.source === 'stats' && cat.all.every((c) => c === 'spiritDamage');
+    if (spiritOnly && s.rel <= 0) return { term: 0, denied: `spirit-scaling item (only spirit stat lines) with standard delta ${pts(s.rel)} (needs above 0)`, ...b2, spiritRule: 'fired' };
+    return { term: b.rel - Math.max(0, g), denied: null, ...b2, spiritRule: spiritOnly ? `spirit-scaling item, kept because standard delta ${pts(s.rel)} is above 0` : null };
   };
   for (const s of std) {
-    const it = catalog.get(s.item_id)!, cat = cats.get(s.item_id)!, d = denyOf(s.item_id), f = farmShareAt(curve, s.avg_buy_time_s);
+    const it = catalog.get(s.item_id)!, cat = cats.get(s.item_id)!, d = termOf(s.item_id), f = farmShareAt(curve, s.avg_buy_time_s);
     const [ff, gf] = ROLE_FIT[cat.primary];
     const roleTerm = ff * f + gf * (1 - f) - 0.5;
-    const side = f >= 0.5 ? 'farm' : 'fight';
+    const inFarm = s.avg_buy_time_s < curve.farmEndS;
+    const roleScale = inFarm ? P.farmBrawlScale : 1;
+    const side = inFarm ? 'farm' : 'fight';
+    const scaled = d.denied ? 0 : d.term * d.supportScale * roleScale;
     rows.set(s.item_id, {
       itemId: s.item_id, name: it.name, slot: it.item_slot_type, category: cat.primary, categorySource: cat.source,
       stdMatches: s.matches, popRel: s.matches / maxStd, stdDelta: stdRel.get(s.item_id)!.rel,
       brawlMatches: brawlRel.get(s.item_id)?.matches ?? 0, brawlRel: brawlRel.get(s.item_id)?.rel ?? null,
-      heroModeLift: d.hero, globalModeLift: d.g, brawlLift: d.lift, denied: d.denied,
+      heroModeLift: d.hero, globalModeLift: d.g, brawlLift: scaled, brawlRaw: d.denied ? 0 : d.term, supportScale: d.supportScale, roleScale, spiritRule: d.spiritRule, denied: d.denied,
       buyTimeS: s.avg_buy_time_s, farmShareAtBuy: f, roleTerm,
       roleNote: `bought at ${fmtMin(s.avg_buy_time_s)}, ${side} window: ${CAT_WORD[cat.primary]} ${Math.abs(roleTerm) < 0.05 ? 'is neutral' : roleTerm > 0 ? 'counts' : 'counts less'}${cat.source === 'data' ? ' (class from data)' : ''}`,
     });
@@ -98,12 +103,13 @@ export function buildV2(input: V2Input): { build: Build; report: V2Report } {
 
   // score terms for the v1 selection loop
   const hooks = {
+    admit(item: Item) { const r = rows.get(item.id); return !!r && !r.denied && r.stdDelta > 0 && r.brawlLift > 0; },
     item(item: Item) {
       const r = rows.get(item.id);
       if (!r) return { delta: 0, notes: [] };
       const notes = [r.roleNote];
-      if (r.brawlLift > 0) notes.push(`wins more in Street Brawl fights than other heroes' copies (${pts(r.brawlLift)} after removing the game-mode effect)`);
-      return { delta: P.brawlWeight * r.brawlLift * 10 + P.roleWeight * r.roleTerm, notes };
+      if (r.brawlLift !== 0) notes.push(`Street Brawl: ${pts(r.brawlRaw)} after removing the game-mode effect, x${r.supportScale.toFixed(2)} standard support, x${r.roleScale} role = ${pts(r.brawlLift)}`);
+      return { delta: P.brawlWeight * r.brawlLift * 100 + P.roleWeight * r.roleTerm, notes };
     },
     dynamic(item: Item, chosen: Item[]) {
       const T = P.spikeThresholds[P.spikeThresholds.length - 1];
@@ -171,8 +177,8 @@ function counters(input: V2Input, build: Build, rows: Map<number, ExplainRow>, s
       for (const r of vs) {
         const row = rows.get(r.item_id), a = allRel.get(r.item_id), v = vrel.get(r.item_id);
         if (!row || !a || !v || inBuild.has(r.item_id) || swaps.some((s) => s.itemId === r.item_id) || r.matches < P.swapMinGames) continue;
-        if (source === 'standard' && row.popRel < P.minStandardShare) continue;
-        if (source === 'brawl' && row.denied) continue; // same filters as the build's brawl lift
+        if (source === 'standard' && row.popRel < 0.05) continue;
+        if (source === 'brawl' && row.denied) continue; // same gates as the build's brawl term
         const lift = v.rel - a.rel;
         if (lift < P.swapMinLift) continue;
         cand.push({ itemId: r.item_id, name: row.name, replaces: null, source, games: r.matches, lift, reason: `wins ${pct(v.wr)} against ${name(e.hero_id)} (${r.matches} games) against ${pct(a.wr)} overall, ${pts(lift)} relative to the other items` });

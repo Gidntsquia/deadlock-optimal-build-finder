@@ -20,6 +20,8 @@ export interface V2Hooks {
   item(item: Item, stat: ItemStat): V2Term;
   /** terms that depend on what is already chosen: colour spikes */
   dynamic?(item: Item, chosen: Item[]): V2Term;
+  /** true lets an item below the usage floor into the candidate set (v2: standard win rate above average and a positive brawl term) */
+  admit?(item: Item): boolean;
 }
 
 const shrink = (wins: number, matches: number, K: number, mean: number) => (wins + K * mean) / (matches + K);
@@ -219,6 +221,7 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
 
   const stats = allStats.filter((s) => {
     if (s.matches / maxMatches >= MIN_USAGE) return true;
+    if (input.v2?.admit?.(catalog.get(s.item_id)!)) return true;
     // Let a counter item back into the candidate set even below the usage floor, as long as it has
     // usable matchup data and a positive lift (Healbane, Metal Skin etc. are often low-usage overall).
     return matchupActive && matchupLiftFor(s.item_id).lift > 0;

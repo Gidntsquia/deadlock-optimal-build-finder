@@ -33,8 +33,9 @@ export function roleCurve(t: V2Data['timelines']): RoleCurve {
     const farm = (mean(0) + mean(1)) / 2, fight = (mean(2) + mean(3)) / 2;
     return { startS: i * BUCKET_S, farm, fight, farmShare: farm + fight > 0 ? farm / (farm + fight) : 0.5, intervals: b.n };
   });
-  // farm window = the buckets from the start while farm leads; the first bucket where fight leads (after minute 5) ends it
-  const lead = buckets.findIndex((b, i) => i > 0 && b.intervals > 0 && b.farmShare < 0.5);
+  // fight window = the first bucket after minute 5 where fight activity (hero damage, kills+assists, each over its own
+  // game-long mean) is above 1.0, its game-long average; the farm window is everything before it
+  const lead = buckets.findIndex((b, i) => i > 0 && b.intervals > 0 && b.fight > 1);
   return { source: t.source, games: t.games.length, buckets, farmEndS: lead < 0 ? buckets.length * BUCKET_S : buckets[lead].startS };
 }
 

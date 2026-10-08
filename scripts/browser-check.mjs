@@ -571,6 +571,16 @@ try {
     const title = () => page.$eval('.frame-head h1', (e) => e.textContent.split(' - ')[0]);
     const step = async (n) => {
       const before = await title();
+      // wait for the previous slide to finish and the button to be enabled before clicking
+      await page.waitForFunction(
+        (n) => {
+          const el = [...document.querySelectorAll(`button[aria-label="${n}"]`)].find((b) => b.getBoundingClientRect().width > 0);
+          const out = document.querySelector('.hero-out');
+          return !!el && !el.disabled && (!out || getComputedStyle(out).display === 'none') && !!document.querySelector('.board-wrap:not(.stale)');
+        },
+        n,
+        T,
+      );
       await page.locator(`button[aria-label="${n}"]:visible`).click();
       await page.waitForFunction(
         (b) => document.querySelector('.frame-head h1')?.textContent.split(' - ')[0] !== b && document.querySelector('.board-wrap:not(.stale)'),

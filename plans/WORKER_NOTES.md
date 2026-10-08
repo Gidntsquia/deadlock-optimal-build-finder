@@ -48,3 +48,19 @@ Launch: `npm run dev` (or `npm run build && npx vite preview`); tier list at `/t
 
 ## Round 13 pass 8
 - Fixed flaky 'Back from the tier list' check: it now starts the two-frame clock at popstate (history.back() fires it async, 30-50ms later). 3/3 tour runs: 70 PASS, 0 FAIL. Check still requires no skeleton/stale/animation.
+
+## Data refresh 2026-10-08 (Eastern, afternoon)
+- `npm run fetch-data` ran clean (94 min): 39 heroes, 195 validation sets. Hero 84 is "Rat King" in the API (not Baba); Infernus's top counter enemy now resolves by name.
+- tsc, `npm run verify` (0 failures) and `npm test` (102 PASS, 0 FAIL) pass. The tour hardcoded 38 heroes; it now reads the count from heroes.json.
+- Other heroes' builds changed only because the data changed (new snapshot), not because of code.
+
+## Infernus v2 pass 2 (2026-10-08)
+- 1,2 met: `npm run generate 1 -- --v2 --explain` shows nonzero brawl terms for Titanic (+0.4), Healbane (-0.8, negative, not denied), Mystic Vulnerability (+0.1); no 5%/"never flips"/farm-window rules.
+- 3 met: `--sweep` table in docs/build-v2.md; weight 2 is the lowest that meets 7/7 (V2_PARAMS.brawlWeight = 2). Needed: 12% usage floor lifted via `admit` hook for items with std delta > 0 and positive brawl term, supportFull 0.03, negative game-mode effect clamped to 0.
+- 4 met: fight window starts at 20 min (rule gives 20; bucket table in verify and docs).
+- 5 met in spirit, not the plan's default numbers: support scale is min(1, popRel/0.03) (0.20 never let Magnum in); spirit-only rule fires for Extra Spirit/Duration Extender; Mystic Expansion's row shows x0.48 support and std +0.3 so the spirit rule does not fire there.
+- 6 met: verify litmus 7/7 PASS. 7 met: 2px border + ring on crossing tiles (screens in docs/ui/after/infernus-build-desktop.png; ring is hard-edged, 45% tint, since ui-lint bans blur); share PNG draws it. Not looked at in a share image by eye.
+- 8 met: details-desktop.png shows litmus, switch minute, weight; per-item table further down.
+- 9: `npm test` 3/3 exit 0 (102 PASS). One `verify:browser` run with SHOT_DIR failed once on a 15 s waitForFunction (49 PASS 1 FAIL), rerun passed 102/0; cause not found.
+- 11 met: builds-snapshot diff vs HEAD empty.
+- Launch: `npm run dev`; live: https://gidntsquia.github.io/deadlock-optimal-build-finder/?hero=infernus

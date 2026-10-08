@@ -750,22 +750,21 @@ button.tile:hover {
   color: var(--corrupt-bright);
 }
 
-/* a diamond on the tile whose buy takes a colour's spend past a spike (v2 builds) */
-.tile .spike-tag {
-  position: absolute;
-  left: 4px;
-  bottom: 4px;
-  width: 16px;
-  height: 16px;
-  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-  background: var(--tooltip-bg);
-  pointer-events: none;
+/* the tile whose buy takes a colour's spend past a spike (v2 builds): 2px border plus a soft outer ring in the colour's tint */
+.tile.spike {
+  --spike: var(--weapon);
 }
-.tile .spike-tag b {
-  position: absolute;
-  inset: 4px;
-  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-  background: var(--tooltip-ink);
+.tile.spike.vitality {
+  --spike: var(--vitality);
+}
+.tile.spike.spirit {
+  --spike: var(--spirit);
+}
+.tile.spike {
+  box-shadow:
+    0 0 0 2px var(--spike),
+    0 0 0 6px color-mix(in srgb, var(--spike) 45%, transparent),
+    var(--shadow-hard);
 }
 
 /* dialogs: parchment sheets. Bottom sheet on phone, centred on desktop. The phone

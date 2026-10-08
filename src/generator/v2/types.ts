@@ -27,7 +27,7 @@ export interface RoleCurve { source: 'panel' | 'aggregate'; games: number; bucke
 export interface ExplainRow {
   itemId: number; name: string; slot: SlotType; category: Category; categorySource: 'stats' | 'data';
   stdMatches: number; popRel: number; stdDelta: number; brawlMatches: number; brawlRel: number | null;
-  heroModeLift: number | null; globalModeLift: number | null; brawlLift: number; denied: string | null;
+  heroModeLift: number | null; globalModeLift: number | null; brawlLift: number; brawlRaw: number; supportScale: number; roleScale: number; spiritRule: string | null; denied: string | null;
   buyTimeS: number; farmShareAtBuy: number; roleTerm: number; roleNote: string;
 }
 export interface Swap { itemId: number; name: string; replaces: string | null; source: 'standard' | 'brawl'; games: number; lift: number; reason: string }

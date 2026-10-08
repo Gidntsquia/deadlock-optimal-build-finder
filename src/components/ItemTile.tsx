@@ -22,7 +22,9 @@ export const ItemTile = forwardRef<
   return (
     <Tag
       ref={ref as never}
-      className={['tile', item.item_slot_type, corrupt !== undefined ? 'corrupted' : null, sell ? 'sold' : null].filter(Boolean).join(' ')}
+      className={['tile', item.item_slot_type, spike ? 'spike' : null, corrupt !== undefined ? 'corrupted' : null, sell ? 'sold' : null]
+        .filter(Boolean)
+        .join(' ')}
       onClick={onClick}
       data-cost={cost ?? item.cost}
       data-total={total}
@@ -31,11 +33,6 @@ export const ItemTile = forwardRef<
       <span className="art">
         <img src={img(item.shop_image_webp || item.image_webp)} alt="" loading="lazy" width={96} height={96} />
         {corrupt !== undefined && <img className="corrupt-frame" src={img(CORRUPT_FRAME)} alt="" width={96} height={96} />}
-        {spike && (
-          <span className="spike-tag" aria-hidden="true">
-            <b />
-          </span>
-        )}
       </span>
       <span className="tier">
         <span>{ROMAN[item.item_tier] ?? item.item_tier}</span>

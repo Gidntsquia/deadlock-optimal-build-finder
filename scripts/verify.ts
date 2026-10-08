@@ -1,7 +1,7 @@
 // Verifies the acceptance criteria that can be checked without a browser.
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
-import { generateBuilds, buildV2, usesV2 } from '../src/generator';
+import { generateBuilds, buildV2, usesV2, V2_PARAMS, litmusCheck } from '../src/generator';
 import { computeCoreSet, consensusAgreement, panelAgreementAcrossBuilds, validateAgainstPanel } from '../src/validation/heldout';
 
 const read = (p: string) => JSON.parse(readFileSync(`public/data/${p}`, 'utf8'));
@@ -247,7 +247,7 @@ for (const hero of heroes.filter((h: any) => usesV2(h.id))) {
     ),
     `${r.counts.standard} standard / ${r.counts.brawl} brawl games on the top item`,
   );
-  console.log(`v2 ${hero.name} role curve (${r.curve.source}, ${r.curve.games} games; farm ends ${Math.round(r.curve.farmEndS / 60)} min):`);
+  console.log(`v2 ${hero.name} role curve (${r.curve.source}, ${r.curve.games} games; fight window starts ${Math.round(r.curve.farmEndS / 60)} min):`);
   for (const b of r.curve.buckets)
     console.log(
       `   ${String(b.startS / 60).padStart(2)}-${String(b.startS / 60 + 5).padStart(2)} min  farm ${b.farm.toFixed(2)}  fight ${b.fight.toFixed(2)}  farm share ${(b.farmShare * 100).toFixed(0)}%`,
@@ -266,8 +266,8 @@ for (const hero of heroes.filter((h: any) => usesV2(h.id))) {
     r.rows.every((x) => !['souls', 'clearSpeed', 'laneSustain'].includes(x.category) || x.brawlLift === 0),
   );
   check(
-    `v2 ${hero.name}: no item with brawl lift is under 5% of the top item's standard games or loses in standard`,
-    r.rows.every((x) => x.brawlLift === 0 || (x.popRel >= 0.05 && x.stdDelta >= 0)),
+    `v2 ${hero.name}: no item with a brawl term is under 1% of the top item's standard games or more than 2.0 pts below average in standard`,
+    r.rows.every((x) => x.brawlLift === 0 || (x.popRel >= V2_PARAMS.minStandardShare && x.stdDelta >= V2_PARAMS.minStdDelta)),
   );
   check(
     `v2 ${hero.name}: counter swaps for 10 enemies, each with sample sizes`,
@@ -283,17 +283,11 @@ for (const hero of heroes.filter((h: any) => usesV2(h.id))) {
     `v2 ${hero.name} vs Zergggy: ${z.games} games since the patch; ${z.shared.length} items in both (${z.shared.join(', ') || 'none'}); ${z.onlyHis.length} only his; ${z.onlyBuild.length} only this build`,
   );
   check(`v2 ${hero.name}: Zergggy comparison present with its game count`, z.games >= 0 && z.games === d.zergggy.games.length);
-  const want = ['Mercurial Magnum'],
-    not = ['Greater Expansion', 'Mystic Expansion'];
-  const names = new Set(build.items.map((b) => b.item.name));
-  for (const n of want)
-    console.log(
-      `v2 ${hero.name}: ${n} ${names.has(n) ? 'IS' : 'is NOT'} in the build${names.has(n) ? '' : ` - rule: ${r.rows.find((x) => x.name === n)?.denied ?? 'not chosen by score'}`}`,
-    );
-  for (const n of not)
-    console.log(
-      `v2 ${hero.name}: ${n} ${names.has(n) ? 'IS (unexpected)' : 'is not'} in the build${names.has(n) ? '' : ` - ${r.rows.find((x) => x.name === n)?.denied ?? 'not chosen by score'}`}`,
-    );
+  const sw = r.curve.farmEndS / 60;
+  check(`v2 ${hero.name}: fight window starts between 15 and 20 min`, sw >= 15 && sw <= 20, `${sw} min; buckets printed above`);
+  console.log(`v2 ${hero.name} litmus (brawlWeight ${V2_PARAMS.brawlWeight}):`);
+  for (const l of litmusCheck(build, r))
+    check(`v2 ${hero.name} litmus: ${l.name} ${l.want === 'in' ? 'in' : 'out'}`, l.ok, `${l.inBuild ? 'in' : 'out'}; ${l.rule}`);
 }
 
 console.log(`\nsnapshot fetched ${manifest.fetched_at}; ${fails} failure(s)`);
