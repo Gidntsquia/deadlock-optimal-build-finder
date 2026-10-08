@@ -19,3 +19,4 @@ User overrides of the spec text (user wins):
 - The spec's "vitality spike on Reactive Barrier" check is replaced by a recount check, since Reactive Barrier is now Grit's upgrade and the vitality crossing moved to Spirit Lifesteal.
 - Sells: an item top players really sell (≥10% of 20+ post-patch buyers) goes first. A component that waits is listed right before its upgrade.
 Now: lifted [Spirit Resilience, Juggernaut, Mercurial Magnum]; displaced [Grit]; most held 12; verify 0 failures; snapshot diff of the other heroes vs HEAD is empty.
+- Round 2 deploy: pushed 55e128e, Pages run 37858407836 success, live bundle has "Buy first, upgrades into". Opened in Firefox 19:16 EDT. Not eyeballed by me.
