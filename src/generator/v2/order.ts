@@ -6,8 +6,6 @@ import { PARAMS } from '../stats';
 import { LITMUS } from './litmus';
 import type { ColourTotal, PlacementRow, SellStat } from './types';
 
-// a spot more than one tier away is no stand-in (a 6,400-soul T4 cannot sit where a T1 was bought)
-const MAX_TIER_GAP = 1;
 const PHASES: Phase[] = ['early', 'mid', 'late'];
 const MAX_PER_PHASE = 11;
 export interface Placement { rows: PlacementRow[]; lifted: string[]; displaced: string[]; finals: string[]; standardFinals: string[]; cut: string[]; maxHeld: number }
@@ -36,20 +34,12 @@ export function reorder(build: Build, baseline: Build, sell: SellStat[], thresho
   const tookFrom = new Map<number, string>();
   const free = [...pushed];
   const dist = (b: BuildItem, d: BuildItem) => [Math.abs(b.item.item_tier - d.item.item_tier), Math.abs(b.item.cost - d.item.cost)];
-  const nearest = (b: BuildItem, pool: BuildItem[]) => [...pool].filter((d) => dist(b, d)[0] <= MAX_TIER_GAP).sort((x, y) => { const a = dist(b, x), c = dist(b, y); return a[0] - c[0] || a[1] - c[1] || x.item.id - y.item.id; })[0];
+  const nearest = (b: BuildItem, pool: BuildItem[]) => [...pool].sort((x, y) => { const a = dist(b, x), c = dist(b, y); return a[0] - c[0] || a[1] - c[1] || x.item.id - y.item.id; })[0];
   const take = (b: BuildItem, d: BuildItem) => { key.set(b.item.id, d.avgBuyTimeS); source.set(b.item.id, `took ${d.item.name}'s spot (${Math.round(d.avgBuyTimeS / 60)} min)`); tookFrom.set(b.item.id, d.item.name); free.splice(free.indexOf(d), 1); };
-  const todo: BuildItem[] = [];
   for (const b of [...lifted].sort((x, y) => y.item.cost - x.item.cost || x.item.id - y.item.id)) {
     const d = nearest(b, free.filter((f) => f.item.item_slot_type === b.item.item_slot_type)) ?? nearest(b, free);
-    if (d) take(b, d); else todo.push(b);
+    if (d) take(b, d);
   }
-  // no pushed-out item is close enough in tier: sit just after the standard end item nearest in price that stays in the build
-  for (const b of todo) {
-    const stay = stdFinals.filter((d) => finalIds.has(d.item.id));
-    const d = [...stay].sort((x, y) => Math.abs(x.item.cost - b.item.cost) - Math.abs(y.item.cost - b.item.cost) || x.item.id - y.item.id)[0];
-    if (d) { key.set(b.item.id, d.avgBuyTimeS + 0.001); source.set(b.item.id, `took ${d.item.name}'s spot (${Math.round(d.avgBuyTimeS / 60)} min, same price)`); tookFrom.set(b.item.id, d.item.name); }
-  }
-
   // components: own standard time, moved earlier only when it would fall after its upgrade
   for (let changed = true; changed; ) {
     changed = false;
@@ -66,10 +56,12 @@ export function reorder(build: Build, baseline: Build, sell: SellStat[], thresho
   const spill = build.items.filter((b) => !finalIds.has(b.item.id) && !upOf(b));
   const finalOrChain = new Set<number>();
   for (const f of finals) for (let x: BuildItem | undefined = f; x; x = x.upgradesFrom && build.items.find((o) => o.item.id === x!.upgradesFrom!.id)) finalOrChain.add(x.item.id);
+  const mustIn = new Set(LITMUS.filter((l) => l.want === 'in').map((l) => l.name));
   const dropped = new Set<number>(), cut: string[] = [];
   const dropSpill = (b: BuildItem, why: string) => { dropped.add(b.item.id); cut.push(b.item.name); source.set(b.item.id, why); };
   for (const b of spill) {
     const nextTier = Math.min(...finals.filter((f) => f.item.item_slot_type === b.item.item_slot_type && f.item.item_tier > b.item.item_tier).map((f) => key.get(f.item.id)!));
+    if (mustIn.has(b.item.name)) continue; // a must-have the user named is never dropped for being late
     if (key.get(b.item.id)! > lastFinal || key.get(b.item.id)! >= nextTier) dropSpill(b, 'dropped: bought too late to be sold usefully');
   }
   // an upgrade that is dropped leaves its component as an ordinary item
