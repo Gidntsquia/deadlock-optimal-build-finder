@@ -61,6 +61,7 @@ export function reorder(build: Build, baseline: Build, sell: SellStat[], thresho
   const dropSpill = (b: BuildItem, why: string) => { dropped.add(b.item.id); cut.push(b.item.name); source.set(b.item.id, why); };
   for (const b of spill) {
     const nextTier = Math.min(...finals.filter((f) => f.item.item_slot_type === b.item.item_slot_type && f.item.item_tier > b.item.item_tier).map((f) => key.get(f.item.id)!));
+    if (stdIds.has(b.item.id) && !mustIn.has(b.item.name)) { dropSpill(b, 'dropped: pushed out of the final 12'); continue; } // a pushed-out item is not in the build at all
     if (mustIn.has(b.item.name)) continue; // a must-have the user named is never dropped for being late
     if (key.get(b.item.id)! > lastFinal || key.get(b.item.id)! >= nextTier) dropSpill(b, 'dropped: bought too late to be sold usefully');
   }
@@ -96,7 +97,7 @@ export function reorder(build: Build, baseline: Build, sell: SellStat[], thresho
       if (b.upgradesFrom) { const k = held.findIndex((h) => h.item.id === b.upgradesFrom!.id); if (k >= 0) held.splice(k, 1); }
       if (!b.upgradesFrom && held.length >= PARAMS.maxItems) {
         const laterComp = new Set(items.slice(i + 1).map((o) => o.upgradesFrom?.id));
-        const can = (h: BuildItem) => !finalOrChain.has(h.item.id) && !laterComp.has(h.item.id);
+        const can = (h: BuildItem) => !finalOrChain.has(h.item.id) && h.item.cost < 6000 &&!laterComp.has(h.item.id);
         const pick = (pred: (h: BuildItem) => boolean) => held.filter((h) => can(h) && pred(h)).sort((x, y) => x.score - y.score || x.item.id - y.item.id)[0];
         const out = pick((h) => sellOk.has(h.item.id)) ?? pick(() => true);
         if (out) {
