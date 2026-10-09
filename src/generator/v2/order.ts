@@ -13,16 +13,21 @@ const MAX_PER_PHASE = 11;
 export interface Placement { rows: PlacementRow[]; lifted: string[]; displaced: string[]; finals: string[]; standardFinals: string[]; cut: string[]; maxHeld: number }
 
 /** the items held at the end: not a component of a build item, not marked sell-later by the selection; best score wins if more than 12 */
-function endState(b: Build): BuildItem[] {
+function endState(b: Build, keep: Set<number> = new Set()): BuildItem[] {
   const comps = new Set(b.items.flatMap((o) => (o.upgradesFrom ? [o.upgradesFrom.id] : [])));
   const kept = b.items.filter((o) => !comps.has(o.item.id) && !o.sellFor);
   const rest = b.items.filter((o) => !comps.has(o.item.id) && o.sellFor);
   const pool = [...kept, ...rest.sort((x, y) => y.score - x.score)];
-  return (kept.length >= PARAMS.maxItems ? [...kept].sort((x, y) => y.score - x.score) : pool).slice(0, PARAMS.maxItems);
+  // a must-have the standard 12 holds (`keep`) keeps its place; the rest go by score
+  const ranked = kept.length >= PARAMS.maxItems ? [...kept].sort((x, y) => y.score - x.score) : pool;
+  const musts = [...kept, ...rest].filter((o) => keep.has(o.item.id));
+  return [...musts, ...ranked.filter((o) => !keep.has(o.item.id))].slice(0, PARAMS.maxItems);
 }
 
 export function reorder(build: Build, baseline: Build, sell: SellStat[], thresholds: number[]): { placement: Placement; colours: ColourTotal[] } {
-  const finals = endState(build), stdFinals = endState(baseline);
+  const stdFinals = endState(baseline);
+  const must = new Set(LITMUS.filter((l) => l.want === 'in').map((l) => l.name));
+  const finals = endState(build, new Set([...stdFinals, ...endState(build)].filter((b) => must.has(b.item.name)).map((b) => b.item.id)));
   const finalIds = new Set(finals.map((b) => b.item.id)), stdIds = new Set(stdFinals.map((b) => b.item.id));
   const lifted = finals.filter((b) => !stdIds.has(b.item.id));
   const pushed = stdFinals.filter((b) => !finalIds.has(b.item.id));
