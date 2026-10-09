@@ -8,12 +8,17 @@ import { PARAMS } from '../src/generator/stats';
 import { computeCoreSet, panelAgreementAcrossBuilds } from '../src/validation/heldout';
 
 const read = (p: string) => JSON.parse(readFileSync(`public/data/${p}`, 'utf8'));
-const items = read('items.json'), heroes = read('heroes.json'), abilities = read('abilities.json'), manifest = read('manifest.json');
+const items = read('items.json'),
+  heroes = read('heroes.json'),
+  abilities = read('abilities.json'),
+  manifest = read('manifest.json');
 const vsets: any[] = manifest.validation_sets ?? [];
-const perHero = heroes.map((hero: any) => {
-  const sets = vsets.filter((v) => v.hero_id === hero.id);
-  return { hero, analytics: read(`analytics/${hero.id}.json`), panel: sets.map((set) => ({ set, core: computeCoreSet(read(set.file), items) })) };
-}).filter((h: any) => h.panel.length);
+const perHero = heroes
+  .map((hero: any) => {
+    const sets = vsets.filter((v) => v.hero_id === hero.id);
+    return { hero, analytics: read(`analytics/${hero.id}.json`), panel: sets.map((set) => ({ set, core: computeCoreSet(read(set.file), items) })) };
+  })
+  .filter((h: any) => h.panel.length);
 
 function evaluate(): { mean: number; median: number; min: number; byHero: { hero: string; a: number }[] } {
   const byHero = perHero.map((h: any) => {
@@ -69,13 +74,24 @@ for (let pass = 1; pass <= 6; pass++) {
       d.set(v);
       if (!valid()) continue;
       const e = evaluate();
-      if (e.mean > best.mean + 1e-6) { best = e; bestV = v; }
+      if (e.mean > best.mean + 1e-6) {
+        best = e;
+        bestV = v;
+      }
     }
     d.set(bestV);
-    if (bestV !== start) { improved = true; console.log(`pass ${pass}: ${d.name} ${start} -> ${bestV}  ${fmt(best)}`); }
+    if (bestV !== start) {
+      improved = true;
+      console.log(`pass ${pass}: ${d.name} ${start} -> ${bestV}  ${fmt(best)}`);
+    }
   }
   if (!improved) break;
 }
 console.log(`\nfinal: ${fmt(best)}`);
 console.log(JSON.stringify(PARAMS, null, 2));
-console.log(best.byHero.sort((x, y) => x.a - y.a).map((h) => `${h.hero} ${(h.a * 100).toFixed(0)}%`).join(', '));
+console.log(
+  best.byHero
+    .sort((x, y) => x.a - y.a)
+    .map((h) => `${h.hero} ${(h.a * 100).toFixed(0)}%`)
+    .join(', '),
+);

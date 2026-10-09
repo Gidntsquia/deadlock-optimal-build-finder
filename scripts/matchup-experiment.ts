@@ -15,7 +15,11 @@ const heroes: Hero[] = read('heroes.json');
 const abilities: Ability[] = read('abilities.json');
 const heroName = new Map(heroes.map((h) => [h.id, h.name]));
 
-interface Scenario { label: string; heroId: number; enemies: number[] }
+interface Scenario {
+  label: string;
+  heroId: number;
+  enemies: number[];
+}
 
 // Real hero ids from public/data/heroes.json. Expected-answer scenarios use widely known counter
 // items: Healbane / anti-heal vs heavy sustain, bullet-resist vs gun-heavy teams, spirit-resist vs
@@ -50,13 +54,18 @@ function usageWeightedWinRate(build: ReturnType<typeof buildFor>, stats: Matchup
   // usage-weighted mean matchup-conditioned win rate of this build's item set: for each item in the
   // build, its win rate against the known enemies (pooled), weighted by the build's usage rate for
   // that item; items with no matchup rows are skipped (not counted for or against).
-  let num = 0, den = 0;
+  let num = 0,
+    den = 0;
   for (const bi of build.items) {
-    let w = 0, m = 0;
+    let w = 0,
+      m = 0;
     for (const e of enemies) {
       const rows = stats.vs[String(e)];
       const r = rows?.find((x) => x.item_id === bi.item.id);
-      if (r) { w += r.wins; m += r.matches; }
+      if (r) {
+        w += r.wins;
+        m += r.matches;
+      }
     }
     if (!m) continue;
     num += (w / m) * bi.usageRate;
@@ -67,7 +76,9 @@ function usageWeightedWinRate(build: ReturnType<typeof buildFor>, stats: Matchup
 
 function main() {
   const baselineWeight = PARAMS.weights.matchup;
-  console.log(`matchup-experiment: ${SCENARIOS.length} scenario(s), weights ${WEIGHTS_TO_TRY.join(', ')}, populations ${POPULATIONS.map((p) => p.key).join(' / ')}\n`);
+  console.log(
+    `matchup-experiment: ${SCENARIOS.length} scenario(s), weights ${WEIGHTS_TO_TRY.join(', ')}, populations ${POPULATIONS.map((p) => p.key).join(' / ')}\n`,
+  );
 
   for (const sc of SCENARIOS) {
     console.log(`\n${'='.repeat(80)}\n${sc.label}  (hero ${sc.heroId}, enemies ${enemyLabel(sc.enemies)})\n${'='.repeat(80)}`);
@@ -100,16 +111,30 @@ function main() {
           console.log('    no swaps vs baseline');
         } else {
           for (const bi of added) {
-            const sampleSizes = sc.enemies.map((e) => `${heroName.get(e)}=${stats.vs[String(e)]?.find((x) => x.item_id === bi.item.id)?.matches ?? 0}`).join(', ');
-            const reasons = bi.reasons
-              .filter((r) => r.includes('enemy hero'))
-              .map((r) => r.replace(/against enemy hero ([\d, ]+)/, (_m, ids: string) => `against ${ids.split(',').map((id) => heroName.get(Number(id.trim())) ?? id.trim()).join(', ')}`))
-              .join('; ') || 'no per-enemy reason (lift <=0.1)';
+            const sampleSizes = sc.enemies
+              .map((e) => `${heroName.get(e)}=${stats.vs[String(e)]?.find((x) => x.item_id === bi.item.id)?.matches ?? 0}`)
+              .join(', ');
+            const reasons =
+              bi.reasons
+                .filter((r) => r.includes('enemy hero'))
+                .map((r) =>
+                  r.replace(
+                    /against enemy hero ([\d, ]+)/,
+                    (_m, ids: string) =>
+                      `against ${ids
+                        .split(',')
+                        .map((id) => heroName.get(Number(id.trim())) ?? id.trim())
+                        .join(', ')}`,
+                  ),
+                )
+                .join('; ') || 'no per-enemy reason (lift <=0.1)';
             console.log(`    + ${bi.item.name.padEnd(24)} ${reasons}; vs-sample sizes: ${sampleSizes}`);
           }
           for (const bi of removed) console.log(`    - ${bi.item.name}`);
         }
-        console.log(`    usage-weighted matchup win rate: ${wr === null ? 'n/a' : (wr * 100).toFixed(1) + '%'}${baseWr !== null && wr !== null ? `  (delta ${((wr - baseWr) * 100).toFixed(1)}pp)` : ''}`);
+        console.log(
+          `    usage-weighted matchup win rate: ${wr === null ? 'n/a' : (wr * 100).toFixed(1) + '%'}${baseWr !== null && wr !== null ? `  (delta ${((wr - baseWr) * 100).toFixed(1)}pp)` : ''}`,
+        );
       }
     }
   }

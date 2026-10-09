@@ -9,46 +9,21 @@
       "description": "Sell Monster Rounds when you buy Warp Stone.",
       "width": 480,
       "height": 175,
-      "item_ids": [
-        968099481,
-        2829638276,
-        1009965641,
-        7409189
-      ]
+      "item_ids": [968099481, 2829638276, 1009965641, 7409189]
     },
     {
       "name": "Mid Game",
       "description": "Sell Extra Charge when you buy Ethereal Shift.",
       "width": 1320,
       "height": 175,
-      "item_ids": [
-        395944548,
-        3776945997,
-        3399065363,
-        2566692615,
-        876563814,
-        2447176615,
-        1925087134,
-        2081037738,
-        754480263,
-        2603935618,
-        1797283378
-      ]
+      "item_ids": [395944548, 3776945997, 3399065363, 2566692615, 876563814, 2447176615, 1925087134, 2081037738, 754480263, 2603935618, 1797283378]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Torment Pulse, Escalating Exposure, Infuser, Greater Expansion, Transcendent Cooldown, Ethereal Shift.",
       "width": 840,
       "height": 175,
-      "item_ids": [
-        3005970438,
-        380806748,
-        3270001687,
-        1193964439,
-        3261353684,
-        2533252781,
-        915014646
-      ]
+      "item_ids": [3005970438, 380806748, 3270001687, 1193964439, 3261353684, 2533252781, 915014646]
     }
   ],
   "ability_order": [
@@ -117,9 +92,5 @@
       "kind": "tier3"
     }
   ],
-  "tags": [
-    2043074967,
-    3727084744,
-    3005970438
-  ]
+  "tags": [2043074967, 3727084744, 3005970438]
 }

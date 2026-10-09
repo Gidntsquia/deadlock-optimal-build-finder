@@ -9,45 +9,21 @@
       "description": "Sell Restorative Shot when you buy Mystic Vulnerability. Sell Melee Lifesteal when you buy Compress Cooldown. Sell Stalker when you buy Mystic Reverb.",
       "width": 840,
       "height": 175,
-      "item_ids": [
-        3862866912,
-        1437614329,
-        465043967,
-        98582110,
-        2829638276,
-        968099481,
-        395867183
-      ]
+      "item_ids": [3862866912, 1437614329, 465043967, 98582110, 2829638276, 968099481, 395867183]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 960,
       "height": 175,
-      "item_ids": [
-        2603935618,
-        2059712766,
-        7409189,
-        3190916303,
-        1998374645,
-        2566692615,
-        395944548,
-        2481177645
-      ]
+      "item_ids": [2603935618, 2059712766, 7409189, 3190916303, 1998374645, 2566692615, 395944548, 2481177645]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Spirit Snatch, Boundless Spirit.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        2081037738,
-        380806748,
-        2121044373,
-        3577481646,
-        2519598785,
-        3261353684
-      ]
+      "item_ids": [2081037738, 380806748, 2121044373, 3577481646, 2519598785, 3261353684]
     }
   ],
   "ability_order": [
@@ -112,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    2366960452,
-    2566573207,
-    465043967
-  ]
+  "tags": [2366960452, 2566573207, 465043967]
 }

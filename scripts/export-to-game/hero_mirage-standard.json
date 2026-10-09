@@ -9,46 +9,21 @@
       "description": "Sell Mystic Regeneration when you buy Ricochet. Sell Monster Rounds when you buy Spirit Lifesteal. Sell Suppressor when you buy Inhibitor.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        1439347412,
-        1009965641,
-        2010028405,
-        1925087134,
-        2603935618,
-        968099481
-      ]
+      "item_ids": [1439347412, 1009965641, 2010028405, 1925087134, 2603935618, 968099481]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1200,
       "height": 175,
-      "item_ids": [
-        4053935515,
-        4139877411,
-        380806748,
-        3977876567,
-        1548066885,
-        3731635960,
-        2081037738,
-        7409189,
-        2356412290,
-        3696726732
-      ]
+      "item_ids": [4053935515, 4139877411, 380806748, 3977876567, 1548066885, 3731635960, 2081037738, 7409189, 2356412290, 3696726732]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Spiritual Overflow, Ricochet, Inhibitor.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        2480592370,
-        3261353684,
-        3005970438,
-        876563814,
-        2226497419,
-        2037039379
-      ]
+      "item_ids": [2480592370, 3261353684, 3005970438, 876563814, 2226497419, 2037039379]
     }
   ],
   "ability_order": [
@@ -113,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    2221949202,
-    3733594387,
-    3696726732
-  ]
+  "tags": [2221949202, 3733594387, 3696726732]
 }

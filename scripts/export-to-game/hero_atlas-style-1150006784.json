@@ -9,46 +9,21 @@
       "description": "Sell Monster Rounds when you buy Compress Cooldown. Sell Close Quarters when you buy Spirit Resilience.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        2829638276,
-        1009965641,
-        1342610602,
-        4139877411,
-        1150006784,
-        465043967
-      ]
+      "item_ids": [2829638276, 1009965641, 1342610602, 4139877411, 1150006784, 465043967]
     },
     {
       "name": "Mid Game",
       "description": "Sell Restorative Locket when you buy Phantom Strike. Sell Healbane when you buy Witchmail.",
       "width": 1200,
       "height": 175,
-      "item_ids": [
-        968099481,
-        26002154,
-        754480263,
-        2566692615,
-        2951612397,
-        2059712766,
-        2603935618,
-        3190916303,
-        3731635960,
-        380806748
-      ]
+      "item_ids": [968099481, 26002154, 754480263, 2566692615, 2951612397, 2059712766, 2603935618, 3190916303, 3731635960, 380806748]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Spirit Snatch, Spirit Resilience.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        2717651715,
-        2163598980,
-        3261353684,
-        1371725689,
-        3028234315,
-        1193964439
-      ]
+      "item_ids": [2717651715, 2163598980, 3261353684, 1371725689, 3028234315, 1193964439]
     }
   ],
   "ability_order": [
@@ -113,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    715762406,
-    2824119765,
-    1150006784
-  ]
+  "tags": [715762406, 2824119765, 1150006784]
 }

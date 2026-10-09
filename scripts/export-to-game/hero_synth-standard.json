@@ -9,47 +9,21 @@
       "description": "Sell Extra Regen when you buy Duration Extender.",
       "width": 600,
       "height": 175,
-      "item_ids": [
-        2829638276,
-        1998374645,
-        1009965641,
-        1976391348,
-        709540378
-      ]
+      "item_ids": [2829638276, 1998374645, 1009965641, 1976391348, 709540378]
     },
     {
       "name": "Mid Game",
       "description": "Sell Enchanter's Emblem when you buy Spirit Burn.",
       "width": 1440,
       "height": 175,
-      "item_ids": [
-        668299740,
-        968099481,
-        4104549924,
-        3970837787,
-        2081037738,
-        3731635960,
-        380806748,
-        600033864,
-        754480263,
-        7409189,
-        2121044373,
-        3261353684
-      ]
+      "item_ids": [668299740, 968099481, 4104549924, 3970837787, 2081037738, 3731635960, 380806748, 600033864, 754480263, 7409189, 2121044373, 3261353684]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Majestic Leap, Greater Expansion, Spirit Burn, Tankbuster, Transcendent Cooldown.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        2951612397,
-        343572757,
-        2717651715,
-        1193964439,
-        2519598785,
-        915014646
-      ]
+      "item_ids": [2951612397, 343572757, 2717651715, 1193964439, 2519598785, 915014646]
     }
   ],
   "ability_order": [
@@ -118,9 +92,5 @@
       "kind": "tier3"
     }
   ],
-  "tags": [
-    1976701714,
-    3747867012,
-    343572757
-  ]
+  "tags": [1976701714, 3747867012, 343572757]
 }

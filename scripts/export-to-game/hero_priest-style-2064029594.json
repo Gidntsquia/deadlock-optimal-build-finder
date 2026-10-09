@@ -9,44 +9,21 @@
       "description": "Sell Restorative Shot when you buy Extra Charge. Sell Monster Rounds when you buy Ballistic Enchantment. Sell Battle Vest when you buy Spirit Resilience.",
       "width": 840,
       "height": 175,
-      "item_ids": [
-        3862866912,
-        1009965641,
-        1342610602,
-        3077079169,
-        3633614685,
-        2064029594,
-        1235347618
-      ]
+      "item_ids": [3862866912, 1009965641, 1342610602, 3077079169, 3633614685, 2064029594, 1235347618]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1080,
       "height": 175,
-      "item_ids": [
-        1770441818,
-        3399065363,
-        2447176615,
-        499683006,
-        2678489038,
-        3791587546,
-        2095565695,
-        1763073141,
-        3776945997
-      ]
+      "item_ids": [1770441818, 3399065363, 2447176615, 499683006, 2678489038, 3791587546, 2095565695, 1763073141, 3776945997]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Weighted Shots, Hollow Point.",
       "width": 480,
       "height": 175,
-      "item_ids": [
-        3294954488,
-        2163598980,
-        787198704,
-        1055679805
-      ]
+      "item_ids": [3294954488, 2163598980, 787198704, 1055679805]
     }
   ],
   "ability_order": [
@@ -111,9 +88,5 @@
       "kind": "tier3"
     }
   ],
-  "tags": [
-    1764146857,
-    911307831,
-    2064029594
-  ]
+  "tags": [1764146857, 911307831, 2064029594]
 }

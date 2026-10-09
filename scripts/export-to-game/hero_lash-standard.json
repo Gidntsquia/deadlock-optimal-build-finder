@@ -9,45 +9,21 @@
       "description": "",
       "width": 600,
       "height": 175,
-      "item_ids": [
-        2010028405,
-        1998374645,
-        84321454,
-        968099481,
-        3776945997
-      ]
+      "item_ids": [2010028405, 1998374645, 84321454, 968099481, 3776945997]
     },
     {
       "name": "Mid Game",
       "description": "Sell Bullet Resist Shredder when you buy Superior Cooldown. Sell Mystic Shot when you buy Debuff Reducer. Sell Healbane when you buy Spirit Burn.",
       "width": 1080,
       "height": 175,
-      "item_ids": [
-        7409189,
-        2971868509,
-        4053935515,
-        1763073141,
-        4139877411,
-        395867183,
-        754480263,
-        2603935618,
-        334300056
-      ]
+      "item_ids": [7409189, 2971868509, 4053935515, 1763073141, 4139877411, 395867183, 754480263, 2603935618, 334300056]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Stamina Mastery, Boundless Spirit, Superior Cooldown.",
       "width": 840,
       "height": 175,
-      "item_ids": [
-        2121044373,
-        1282141666,
-        3261353684,
-        2519598785,
-        1047818222,
-        1193964439,
-        343572757
-      ]
+      "item_ids": [2121044373, 1282141666, 3261353684, 2519598785, 1047818222, 1193964439, 343572757]
     }
   ],
   "ability_order": [
@@ -112,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    519124136,
-    3561817145,
-    1998374645
-  ]
+  "tags": [519124136, 3561817145, 1998374645]
 }

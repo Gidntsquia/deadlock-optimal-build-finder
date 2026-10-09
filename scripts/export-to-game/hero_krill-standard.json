@@ -9,44 +9,21 @@
       "description": "Sell Quicksilver Reload when you buy Spirit Resilience. Sell Mystic Expansion when you buy Scourge.",
       "width": 600,
       "height": 175,
-      "item_ids": [
-        1998374645,
-        84321454,
-        754480263,
-        3399065363,
-        3074274290
-      ]
+      "item_ids": [1998374645, 84321454, 754480263, 3399065363, 3074274290]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1080,
       "height": 175,
-      "item_ids": [
-        1976391348,
-        968099481,
-        395944548,
-        2603935618,
-        865958998,
-        7409189,
-        3270001687,
-        380806748,
-        2951612397
-      ]
+      "item_ids": [1976391348, 968099481, 395944548, 2603935618, 865958998, 7409189, 3270001687, 380806748, 2951612397]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Warp Stone, Torment Pulse, Tankbuster.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        2121044373,
-        2163598980,
-        2717651715,
-        3261353684,
-        2417568017,
-        915014646
-      ]
+      "item_ids": [2121044373, 2163598980, 2717651715, 3261353684, 2417568017, 915014646]
     }
   ],
   "ability_order": [
@@ -111,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    1454278799,
-    1914797280,
-    1998374645
-  ]
+  "tags": [1454278799, 1914797280, 1998374645]
 }

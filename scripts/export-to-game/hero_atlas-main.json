@@ -9,44 +9,21 @@
       "description": "Sell Restorative Shot when you buy Duration Extender. Sell Extra Regen when you buy Phantom Strike. Sell Monster Rounds when you buy Spirit Resilience. Sell Melee Lifesteal when you buy Weighted Shots. Sell Stalker when you buy Berserker.",
       "width": 840,
       "height": 175,
-      "item_ids": [
-        3862866912,
-        2829638276,
-        1342610602,
-        1009965641,
-        1437614329,
-        98582110,
-        26002154
-      ]
+      "item_ids": [3862866912, 2829638276, 1342610602, 1009965641, 1437614329, 98582110, 26002154]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 480,
       "height": 175,
-      "item_ids": [
-        2971868509,
-        3633614685,
-        3270001687,
-        2481177645
-      ]
+      "item_ids": [2971868509, 3633614685, 3270001687, 2481177645]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Crushing Fists, Spirit Resilience, Berserker.",
       "width": 1080,
       "height": 175,
-      "item_ids": [
-        3731635960,
-        2951612397,
-        2717651715,
-        1371725689,
-        2095565695,
-        2163598980,
-        3791587546,
-        1414319208,
-        800008313
-      ]
+      "item_ids": [3731635960, 2951612397, 2717651715, 1371725689, 2095565695, 2163598980, 3791587546, 1414319208, 800008313]
     }
   ],
   "ability_order": [
@@ -111,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    715762406,
-    2824119765,
-    2717651715
-  ]
+  "tags": [715762406, 2824119765, 2717651715]
 }

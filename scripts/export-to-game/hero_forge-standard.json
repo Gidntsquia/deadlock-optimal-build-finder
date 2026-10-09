@@ -9,43 +9,21 @@
       "description": "Sell Monster Rounds when you buy Compress Cooldown. Sell Extra Regen when you buy Mystic Vulnerability.",
       "width": 480,
       "height": 175,
-      "item_ids": [
-        1009965641,
-        2407033488,
-        3776945997,
-        2829638276
-      ]
+      "item_ids": [1009965641, 2407033488, 3776945997, 2829638276]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1440,
       "height": 175,
-      "item_ids": [
-        4139877411,
-        3399065363,
-        1925087134,
-        3970837787,
-        2108215830,
-        754480263,
-        2603935618,
-        1102081447,
-        2447176615,
-        380806748,
-        2081037738,
-        787198704
-      ]
+      "item_ids": [4139877411, 3399065363, 1925087134, 3970837787, 2108215830, 754480263, 2603935618, 1102081447, 2447176615, 380806748, 2081037738, 787198704]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Greater Expansion, Rapid Recharge, Heroic Aura, Escalating Exposure.",
       "width": 360,
       "height": 175,
-      "item_ids": [
-        3005970438,
-        3261353684,
-        1193964439
-      ]
+      "item_ids": [3005970438, 3261353684, 1193964439]
     }
   ],
   "ability_order": [
@@ -110,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    1725685134,
-    2142734020,
-    3005970438
-  ]
+  "tags": [1725685134, 2142734020, 3005970438]
 }

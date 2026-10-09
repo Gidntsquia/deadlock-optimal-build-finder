@@ -9,41 +9,21 @@
       "description": "Sell Restorative Shot when you buy Berserker. Sell Stalker when you buy Express Shot.",
       "width": 600,
       "height": 175,
-      "item_ids": [
-        3862866912,
-        1437614329,
-        98582110,
-        1439347412,
-        465043967
-      ]
+      "item_ids": [3862866912, 1437614329, 98582110, 1439347412, 465043967]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1200,
       "height": 175,
-      "item_ids": [
-        2829638276,
-        1342610602,
-        2947183272,
-        2971868509,
-        1252627263,
-        2566692615,
-        1763073141,
-        3633614685,
-        26002154,
-        2481177645
-      ]
+      "item_ids": [2829638276, 1342610602, 2947183272, 2971868509, 1252627263, 2566692615, 1763073141, 3633614685, 26002154, 2481177645]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Radiant Regeneration, Lifestrike.",
       "width": 240,
       "height": 175,
-      "item_ids": [
-        1414319208,
-        690458959
-      ]
+      "item_ids": [1414319208, 690458959]
     }
   ],
   "ability_order": [
@@ -108,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    2366960452,
-    2566573207,
-    1342610602
-  ]
+  "tags": [2366960452, 2566573207, 1342610602]
 }

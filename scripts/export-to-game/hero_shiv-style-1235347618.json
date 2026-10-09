@@ -9,40 +9,21 @@
       "description": "Sell Restorative Shot when you buy Spirit Resilience. Sell Close Quarters when you buy Berserker.",
       "width": 480,
       "height": 175,
-      "item_ids": [
-        3862866912,
-        2829638276,
-        1342610602,
-        1439347412
-      ]
+      "item_ids": [3862866912, 2829638276, 1342610602, 1439347412]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1200,
       "height": 175,
-      "item_ids": [
-        2971868509,
-        1235347618,
-        2947183272,
-        4104549924,
-        2603935618,
-        1976391348,
-        2481177645,
-        3077079169,
-        3731635960,
-        690458959
-      ]
+      "item_ids": [2971868509, 1235347618, 2947183272, 4104549924, 2603935618, 1976391348, 2481177645, 3077079169, 3731635960, 690458959]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Spirit Resilience, Radiant Regeneration, Express Shot.",
       "width": 240,
       "height": 175,
-      "item_ids": [
-        2163598980,
-        1414319208
-      ]
+      "item_ids": [2163598980, 1414319208]
     }
   ],
   "ability_order": [
@@ -107,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    2460791803,
-    1458044103,
-    1235347618
-  ]
+  "tags": [2460791803, 1458044103, 1235347618]
 }

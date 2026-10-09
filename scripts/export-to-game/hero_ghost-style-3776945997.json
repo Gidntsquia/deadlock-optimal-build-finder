@@ -9,46 +9,21 @@
       "description": "Sell Monster Rounds when you buy Spirit Resilience. Sell Mystic Expansion when you buy Spirit Burn.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        2829638276,
-        1009965641,
-        1439347412,
-        1998374645,
-        4139877411,
-        754480263
-      ]
+      "item_ids": [2829638276, 1009965641, 1439347412, 1998374645, 4139877411, 754480263]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1440,
       "height": 175,
-      "item_ids": [
-        2947183272,
-        3977876567,
-        968099481,
-        2566692615,
-        3776945997,
-        876563814,
-        7409189,
-        380806748,
-        2081037738,
-        1414319208,
-        2163598980,
-        787198704
-      ]
+      "item_ids": [2947183272, 3977876567, 968099481, 2566692615, 3776945997, 876563814, 7409189, 380806748, 2081037738, 1414319208, 2163598980, 787198704]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Spirit Burn, Superior Cooldown, Rapid Recharge, Radiant Regeneration.",
       "width": 480,
       "height": 175,
-      "item_ids": [
-        3261353684,
-        2121044373,
-        3005970438,
-        343572757
-      ]
+      "item_ids": [3261353684, 2121044373, 3005970438, 343572757]
     }
   ],
   "ability_order": [
@@ -113,9 +88,5 @@
       "kind": "tier3"
     }
   ],
-  "tags": [
-    715325746,
-    218284420,
-    3776945997
-  ]
+  "tags": [715325746, 218284420, 3776945997]
 }

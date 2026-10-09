@@ -9,46 +9,21 @@
       "description": "",
       "width": 600,
       "height": 175,
-      "item_ids": [
-        2829638276,
-        3077079169,
-        1439347412,
-        1998374645,
-        2947183272
-      ]
+      "item_ids": [2829638276, 3077079169, 1439347412, 1998374645, 2947183272]
     },
     {
       "name": "Mid Game",
       "description": "Sell Suppressor when you buy Superior Cooldown. Sell Spirit Shielding when you buy Witchmail. Sell Healbane when you buy Mystic Vulnerability.",
       "width": 1320,
       "height": 175,
-      "item_ids": [
-        754480263,
-        1672893796,
-        1925087134,
-        2566692615,
-        112198670,
-        2059712766,
-        2603935618,
-        4139877411,
-        395944548,
-        2064029594,
-        1193964439
-      ]
+      "item_ids": [754480263, 1672893796, 1925087134, 2566692615, 112198670, 2059712766, 2603935618, 4139877411, 395944548, 2064029594, 1193964439]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Torment Pulse, Greater Expansion, Radiant Regeneration, Tankbuster.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        2121044373,
-        876563814,
-        3261353684,
-        3028234315,
-        2081037738,
-        3005970438
-      ]
+      "item_ids": [2121044373, 876563814, 3261353684, 3028234315, 2081037738, 3005970438]
     }
   ],
   "ability_order": [
@@ -113,9 +88,5 @@
       "kind": "tier3"
     }
   ],
-  "tags": [
-    3443575800,
-    1950738949,
-    2829638276
-  ]
+  "tags": [3443575800, 1950738949, 2829638276]
 }

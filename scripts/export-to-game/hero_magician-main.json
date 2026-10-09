@@ -9,46 +9,21 @@
       "description": "Sell Monster Rounds when you buy Compress Cooldown. Sell Opening Rounds when you buy Diviner's Kevlar.",
       "width": 840,
       "height": 175,
-      "item_ids": [
-        3077079169,
-        1009965641,
-        2064029594,
-        3776945997,
-        968099481,
-        3399065363,
-        3074274290
-      ]
+      "item_ids": [3077079169, 1009965641, 2064029594, 3776945997, 968099481, 3399065363, 3074274290]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1080,
       "height": 175,
-      "item_ids": [
-        7409189,
-        1998374645,
-        787198704,
-        3970837787,
-        754480263,
-        865958998,
-        1813726886,
-        1932939246,
-        2951612397
-      ]
+      "item_ids": [7409189, 1998374645, 787198704, 3970837787, 754480263, 865958998, 1813726886, 1932939246, 2951612397]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Alchemical Fire, Diviner's Kevlar, Boundless Spirit, Greater Expansion.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        1193964439,
-        2519598785,
-        2717651715,
-        380806748,
-        3261353684,
-        2820116164
-      ]
+      "item_ids": [1193964439, 2519598785, 2717651715, 380806748, 3261353684, 2820116164]
     }
   ],
   "ability_order": [
@@ -113,9 +88,5 @@
       "kind": "tier3"
     }
   ],
-  "tags": [
-    12456023,
-    3156905386,
-    1193964439
-  ]
+  "tags": [12456023, 3156905386, 1193964439]
 }

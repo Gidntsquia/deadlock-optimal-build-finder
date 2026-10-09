@@ -9,46 +9,21 @@
       "description": "Sell Melee Lifesteal when you buy Hunter's Aura. Sell Stalker when you buy Duration Extender.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        1437614329,
-        98582110,
-        465043967,
-        1998374645,
-        3399065363,
-        3074274290
-      ]
+      "item_ids": [1437614329, 98582110, 465043967, 1998374645, 3399065363, 3074274290]
     },
     {
       "name": "Mid Game",
       "description": "Sell Extra Spirit when you buy Warp Stone. Sell Healbane when you buy Counterspell. Sell Slowing Hex when you buy Spirit Burn.",
       "width": 1200,
       "height": 175,
-      "item_ids": [
-        1976391348,
-        968099481,
-        3190916303,
-        2603935618,
-        1813726886,
-        26002154,
-        865958998,
-        3403085434,
-        2481177645,
-        2121044373
-      ]
+      "item_ids": [1976391348, 968099481, 3190916303, 2603935618, 1813726886, 26002154, 865958998, 3403085434, 2481177645, 2121044373]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Spirit Snatch, Arctic Blast.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        2951612397,
-        3270001687,
-        1414025773,
-        2717651715,
-        343572757,
-        3812615317
-      ]
+      "item_ids": [2951612397, 3270001687, 1414025773, 2717651715, 343572757, 3812615317]
     }
   ],
   "ability_order": [
@@ -113,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    3120550633,
-    1264175662,
-    98582110
-  ]
+  "tags": [3120550633, 1264175662, 98582110]
 }

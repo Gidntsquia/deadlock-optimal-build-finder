@@ -9,47 +9,21 @@
       "description": "Sell Extra Regen when you buy Spirit Resilience. Sell Opening Rounds when you buy Extra Spirit. Sell Monster Rounds when you buy Siphon Bullets.",
       "width": 960,
       "height": 175,
-      "item_ids": [
-        3077079169,
-        2829638276,
-        2064029594,
-        1009965641,
-        1548066885,
-        668299740,
-        4104549924,
-        2356412290
-      ]
+      "item_ids": [3077079169, 2829638276, 2064029594, 1009965641, 1548066885, 668299740, 4104549924, 2356412290]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 960,
       "height": 175,
-      "item_ids": [
-        1235347618,
-        84321454,
-        3399065363,
-        2447176615,
-        865958998,
-        2971868509,
-        3403085434,
-        3919289022
-      ]
+      "item_ids": [1235347618, 84321454, 3399065363, 2447176615, 865958998, 2971868509, 3403085434, 3919289022]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Mercurial Magnum, Boundless Spirit.",
       "width": 840,
       "height": 175,
-      "item_ids": [
-        876563814,
-        2163598980,
-        2226497419,
-        968099481,
-        7409189,
-        1282141666,
-        2519598785
-      ]
+      "item_ids": [876563814, 2163598980, 2226497419, 968099481, 7409189, 1282141666, 2519598785]
     }
   ],
   "ability_order": [
@@ -114,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    2656490109,
-    2751689917,
-    2226497419
-  ]
+  "tags": [2656490109, 2751689917, 2226497419]
 }

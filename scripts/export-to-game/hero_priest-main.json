@@ -9,43 +9,21 @@
       "description": "Sell Restorative Shot when you buy Extra Charge. Sell Close Quarters when you buy Ballistic Enchantment. Sell Monster Rounds when you buy Spirit Resilience. Sell Battle Vest when you buy Ricochet.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        3862866912,
-        1342610602,
-        1009965641,
-        2407033488,
-        1770441818,
-        1235347618
-      ]
+      "item_ids": [3862866912, 1342610602, 1009965641, 2407033488, 1770441818, 1235347618]
     },
     {
       "name": "Mid Game",
       "description": "Sell Swift Striker when you buy Siphon Bullets.",
       "width": 1080,
       "height": 175,
-      "item_ids": [
-        4104549924,
-        2447176615,
-        3403085434,
-        499683006,
-        2678489038,
-        1414319208,
-        3776945997,
-        3294954488,
-        2163598980
-      ]
+      "item_ids": [4104549924, 2447176615, 3403085434, 499683006, 2678489038, 1414319208, 3776945997, 3294954488, 2163598980]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Ricochet, Berserker, Hollow Point.",
       "width": 480,
       "height": 175,
-      "item_ids": [
-        787198704,
-        1055679805,
-        2480592370,
-        1282141666
-      ]
+      "item_ids": [787198704, 1055679805, 2480592370, 1282141666]
     }
   ],
   "ability_order": [
@@ -110,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    1764146857,
-    911307831,
-    1235347618
-  ]
+  "tags": [1764146857, 911307831, 1235347618]
 }

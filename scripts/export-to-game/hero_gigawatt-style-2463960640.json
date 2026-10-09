@@ -9,47 +9,21 @@
       "description": "Sell Extra Regen when you buy Spirit Lifesteal. Sell Monster Rounds when you buy Spirit Resilience. Sell Suppressor when you buy Debuff Reducer. Sell Enchanter's Emblem when you buy Spirit Burn.",
       "width": 840,
       "height": 175,
-      "item_ids": [
-        2829638276,
-        1009965641,
-        968099481,
-        4139877411,
-        1925087134,
-        1150006784,
-        3970837787
-      ]
+      "item_ids": [2829638276, 1009965641, 968099481, 4139877411, 1925087134, 1150006784, 3970837787]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1320,
       "height": 175,
-      "item_ids": [
-        1548066885,
-        1292979587,
-        3403085434,
-        112198670,
-        3399065363,
-        2603935618,
-        2447176615,
-        2463960640,
-        2081037738,
-        876563814,
-        3005970438
-      ]
+      "item_ids": [1548066885, 1292979587, 3403085434, 112198670, 3399065363, 2603935618, 2447176615, 2463960640, 2081037738, 876563814, 3005970438]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Escalating Exposure, Spirit Burn, Surge of Power.",
       "width": 600,
       "height": 175,
-      "item_ids": [
-        2163598980,
-        1047818222,
-        2226497419,
-        3357231760,
-        343572757
-      ]
+      "item_ids": [2163598980, 1047818222, 2226497419, 3357231760, 343572757]
     }
   ],
   "ability_order": [
@@ -114,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    539192269,
-    1074714947,
-    3005970438
-  ]
+  "tags": [539192269, 1074714947, 3005970438]
 }

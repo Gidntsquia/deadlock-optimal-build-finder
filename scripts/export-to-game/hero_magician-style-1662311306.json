@@ -9,44 +9,21 @@
       "description": "Sell Monster Rounds when you buy Diviner's Kevlar. Sell Sprint Boots when you buy Superior Cooldown.",
       "width": 840,
       "height": 175,
-      "item_ids": [
-        3077079169,
-        1009965641,
-        2064029594,
-        3776945997,
-        1672893796,
-        1150006784,
-        3399065363
-      ]
+      "item_ids": [3077079169, 1009965641, 2064029594, 3776945997, 1672893796, 1150006784, 3399065363]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 840,
       "height": 175,
-      "item_ids": [
-        7409189,
-        857669956,
-        754480263,
-        1813726886,
-        865958998,
-        3270001687,
-        2951612397
-      ]
+      "item_ids": [7409189, 857669956, 754480263, 1813726886, 865958998, 3270001687, 2951612397]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Diviner's Kevlar, Transcendent Cooldown, Greater Expansion.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        1193964439,
-        2717651715,
-        1662311306,
-        2820116164,
-        3261353684,
-        915014646
-      ]
+      "item_ids": [1193964439, 2717651715, 1662311306, 2820116164, 3261353684, 915014646]
     }
   ],
   "ability_order": [
@@ -111,9 +88,5 @@
       "kind": "tier3"
     }
   ],
-  "tags": [
-    12456023,
-    3156905386,
-    1193964439
-  ]
+  "tags": [12456023, 3156905386, 1193964439]
 }

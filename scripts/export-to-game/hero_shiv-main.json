@@ -9,44 +9,21 @@
       "description": "Sell Extra Charge when you buy Compress Cooldown. Sell Spirit Strike when you buy Counterspell.",
       "width": 600,
       "height": 175,
-      "item_ids": [
-        2829638276,
-        3776945997,
-        1439347412,
-        465043967,
-        2947183272
-      ]
+      "item_ids": [2829638276, 3776945997, 1439347412, 465043967, 2947183272]
     },
     {
       "name": "Mid Game",
       "description": "Sell Suppressor when you buy Debuff Reducer. Sell Enchanter's Emblem when you buy Spirit Resilience.",
       "width": 1080,
       "height": 175,
-      "item_ids": [
-        1925087134,
-        2603935618,
-        2059712766,
-        2566692615,
-        3970837787,
-        3144988365,
-        2081037738,
-        3731635960,
-        395944548
-      ]
+      "item_ids": [1925087134, 2603935618, 2059712766, 2566692615, 3970837787, 3144988365, 2081037738, 3731635960, 395944548]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Spirit Resilience, Torment Pulse, Radiant Regeneration.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        380806748,
-        1414025773,
-        1047818222,
-        2163598980,
-        3261353684,
-        3005970438
-      ]
+      "item_ids": [380806748, 1414025773, 1047818222, 2163598980, 3261353684, 3005970438]
     }
   ],
   "ability_order": [
@@ -111,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    2460791803,
-    1458044103,
-    2947183272
-  ]
+  "tags": [2460791803, 1458044103, 2947183272]
 }

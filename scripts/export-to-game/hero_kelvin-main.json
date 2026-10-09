@@ -9,47 +9,21 @@
       "description": "Sell High-Velocity Rounds when you buy Duration Extender.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        3077079169,
-        2829638276,
-        3776945997,
-        3399065363,
-        3074274290,
-        968099481
-      ]
+      "item_ids": [3077079169, 2829638276, 3776945997, 3399065363, 3074274290, 968099481]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1320,
       "height": 175,
-      "item_ids": [
-        1998374645,
-        3970837787,
-        2566692615,
-        2447176615,
-        2603935618,
-        754480263,
-        7409189,
-        787198704,
-        2081037738,
-        380806748,
-        2121044373
-      ]
+      "item_ids": [1998374645, 3970837787, 2566692615, 2447176615, 2603935618, 754480263, 7409189, 787198704, 2081037738, 380806748, 2121044373]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Tankbuster, Superior Cooldown, Escalating Exposure, Boundless Spirit, Rapid Recharge, Superior Duration, Greater Expansion.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        2951612397,
-        3261353684,
-        3005970438,
-        2717651715,
-        2519598785,
-        1193964439
-      ]
+      "item_ids": [2951612397, 3261353684, 3005970438, 2717651715, 2519598785, 1193964439]
     }
   ],
   "ability_order": [
@@ -114,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    18921423,
-    2351041382,
-    787198704
-  ]
+  "tags": [18921423, 2351041382, 787198704]
 }

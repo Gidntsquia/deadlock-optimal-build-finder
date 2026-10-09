@@ -61,7 +61,14 @@ export function intervalsOf(stats) {
   }
   return out;
 }
-const slimStats = (stats) => (stats ?? []).map((s) => [s.time_stamp_s, (s.gold_lane_creep ?? 0) + (s.gold_neutral_creep ?? 0), (s.creep_kills ?? 0) + (s.neutral_kills ?? 0), s.player_damage ?? 0, (s.kills ?? 0) + (s.assists ?? 0)]);
+const slimStats = (stats) =>
+  (stats ?? []).map((s) => [
+    s.time_stamp_s,
+    (s.gold_lane_creep ?? 0) + (s.gold_neutral_creep ?? 0),
+    (s.creep_kills ?? 0) + (s.neutral_kills ?? 0),
+    s.player_damage ?? 0,
+    (s.kills ?? 0) + (s.assists ?? 0),
+  ]);
 
 /** Role curve inputs: per game, cumulative snapshots [t, creepGold, creeps, heroDamage, kills+assists]. */
 async function panelTimelines(heroId, panelFiles) {
@@ -82,16 +89,23 @@ async function panelTimelines(heroId, panelFiles) {
   return games;
 }
 async function aggregateTimelines(heroId, limit = 60) {
-  const ms = await getJson(`${API}/v1/matches/metadata?hero_ids=${heroId}&min_average_badge=${TOP_BADGE}&min_unix_timestamp=${PATCH_SINCE}&game_mode=normal&include_player_stats=true&limit=${limit}`);
+  const ms = await getJson(
+    `${API}/v1/matches/metadata?hero_ids=${heroId}&min_average_badge=${TOP_BADGE}&min_unix_timestamp=${PATCH_SINCE}&game_mode=normal&include_player_stats=true&limit=${limit}`,
+  );
   const games = [];
-  for (const m of ms) for (const p of m.players ?? []) if (p.hero_id === heroId && p.stats?.length) games.push({ match_id: m.match_id, account_id: p.account_id, duration_s: m.duration_s, snaps: slimStats(p.stats) });
+  for (const m of ms)
+    for (const p of m.players ?? [])
+      if (p.hero_id === heroId && p.stats?.length)
+        games.push({ match_id: m.match_id, account_id: p.account_id, duration_s: m.duration_s, snaps: slimStats(p.stats) });
   return games;
 }
 
 /** Which items the hero's Phantom+ players sell later (post-patch games only). Same method as fetch-data's sell stats. */
 async function sellStats(heroId, items, panelIds) {
   const byId = new Map(items.map((i) => [i.id, i]));
-  const matches = await getJson(`${API}/v1/matches/metadata?hero_ids=${heroId}&min_average_badge=${TOP_BADGE}&min_unix_timestamp=${PATCH_SINCE}&game_mode=normal&include_player_items=true&limit=300`);
+  const matches = await getJson(
+    `${API}/v1/matches/metadata?hero_ids=${heroId}&min_average_badge=${TOP_BADGE}&min_unix_timestamp=${PATCH_SINCE}&game_mode=normal&include_player_items=true&limit=300`,
+  );
   const acc = new Map();
   let players = 0;
   for (const m of matches)
@@ -108,12 +122,17 @@ async function sellStats(heroId, items, panelIds) {
         if (it.sold_time_s > 0) {
           const cls = byId.get(it.item_id).class_name;
           if (bought.some((o) => (byId.get(o.item_id).component_items ?? []).includes(cls) && Math.abs(o.game_time_s - it.sold_time_s) <= 2)) a.upgraded++;
-          else { a.sold++; a.sold_time_sum += it.sold_time_s; }
+          else {
+            a.sold++;
+            a.sold_time_sum += it.sold_time_s;
+          }
         }
         acc.set(it.item_id, a);
       }
     }
-  const rows = [...acc.values()].map(({ sold_time_sum, ...a }) => ({ ...a, avg_sold_time_s: a.sold ? Math.round(sold_time_sum / a.sold) : 0 })).sort((a, b) => b.buyers - a.buyers);
+  const rows = [...acc.values()]
+    .map(({ sold_time_sum, ...a }) => ({ ...a, avg_sold_time_s: a.sold ? Math.round(sold_time_sum / a.sold) : 0 }))
+    .sort((a, b) => b.buyers - a.buyers);
   return { min_unix_timestamp: PATCH_SINCE, players, matches: matches.length, items: rows };
 }
 
@@ -126,7 +145,14 @@ async function zergggy(heroId) {
     const mi = meta.match_info;
     const p = (mi.players ?? []).find((x) => x.account_id === ZERGGGY);
     if (!p) continue;
-    games.push({ match_id: h.match_id, start_time: mi.start_time, game_mode: mi.game_mode, match_mode: mi.match_mode, won: p.team === mi.winning_team, items: (p.items ?? []).map((i) => ({ item_id: i.item_id, game_time_s: i.game_time_s, sold_time_s: i.sold_time_s })) });
+    games.push({
+      match_id: h.match_id,
+      start_time: mi.start_time,
+      game_mode: mi.game_mode,
+      match_mode: mi.match_mode,
+      won: p.team === mi.winning_team,
+      items: (p.items ?? []).map((i) => ({ item_id: i.item_id, game_time_s: i.game_time_s, sold_time_s: i.sold_time_s })),
+    });
   }
   return { account_id: ZERGGGY, since: PATCH_SINCE, hero_games_total_since_patch: mine.length, games };
 }
@@ -146,18 +172,29 @@ export async function fetchV2Hero(heroId, manifest) {
   const q = `hero_id=${heroId}&min_unix_timestamp=${PATCH_SINCE}`;
   const standard = (await getJson(`${API}/v1/analytics/item-stats?${q}&min_average_badge=${TOP_BADGE}`)).map(slim);
   const brawl = (await getJson(`${API}/v1/analytics/item-stats?${q}&game_mode=street_brawl`)).map(slim);
-  const counters = (await getJson(`${API}/v1/analytics/hero-counter-stats?min_unix_timestamp=${PATCH_SINCE}&min_average_badge=${TOP_BADGE}`)).filter((r) => r.hero_id === heroId);
-  const enemies = counters.sort((a, b) => b.matches_played - a.matches_played).slice(0, V2_ENEMIES).map((r) => ({ hero_id: r.enemy_hero_id, games: r.matches_played, wins: r.wins }));
-  const standardVs = {}, brawlVs = {};
+  const counters = (await getJson(`${API}/v1/analytics/hero-counter-stats?min_unix_timestamp=${PATCH_SINCE}&min_average_badge=${TOP_BADGE}`)).filter(
+    (r) => r.hero_id === heroId,
+  );
+  const enemies = counters
+    .sort((a, b) => b.matches_played - a.matches_played)
+    .slice(0, V2_ENEMIES)
+    .map((r) => ({ hero_id: r.enemy_hero_id, games: r.matches_played, wins: r.wins }));
+  const standardVs = {},
+    brawlVs = {};
   for (const e of enemies) {
     standardVs[e.hero_id] = (await getJson(`${API}/v1/analytics/item-stats?${q}&min_average_badge=${TOP_BADGE}&enemy_hero_ids=${e.hero_id}`)).map(slim);
     brawlVs[e.hero_id] = (await getJson(`${API}/v1/analytics/item-stats?${q}&game_mode=street_brawl&enemy_hero_ids=${e.hero_id}`)).map(slim);
   }
-  const abilityOrder = (await getJson(`${API}/v1/analytics/ability-order-stats?${q}&min_average_badge=${TOP_BADGE}&min_matches=5`)).sort((a, b) => b.matches - a.matches).slice(0, 400);
+  const abilityOrder = (await getJson(`${API}/v1/analytics/ability-order-stats?${q}&min_average_badge=${TOP_BADGE}&min_matches=5`))
+    .sort((a, b) => b.matches - a.matches)
+    .slice(0, 400);
   const panelFiles = (manifest.validation_sets ?? []).filter((v) => v.hero_id === heroId).map((v) => v.file);
   let timelines = await panelTimelines(heroId, panelFiles);
   let timelineSource = 'panel';
-  if (timelines.length < 20) { timelines = await aggregateTimelines(heroId); timelineSource = 'aggregate'; }
+  if (timelines.length < 20) {
+    timelines = await aggregateTimelines(heroId);
+    timelineSource = 'aggregate';
+  }
   const items = JSON.parse(await readFile(path.resolve('public/data/items.json'), 'utf8'));
   const sell = await sellStats(heroId, items, new Set((manifest.validation_sets ?? []).filter((v) => v.hero_id === heroId).map((v) => v.account_id)));
   const z = await zergggy(heroId);
@@ -174,7 +211,9 @@ export async function fetchV2Hero(heroId, manifest) {
     sell_stats: sell,
     zergggy: z,
   });
-  console.log(`   v2 hero ${heroId}: ${standard.length} std items, ${brawl.length} brawl items, ${enemies.length} enemies, ${timelines.length} ${timelineSource} timelines, zergggy ${z.games.length} games`);
+  console.log(
+    `   v2 hero ${heroId}: ${standard.length} std items, ${brawl.length} brawl items, ${enemies.length} enemies, ${timelines.length} ${timelineSource} timelines, zergggy ${z.games.length} games`,
+  );
 }
 
 export async function fetchV2(heroes, heroIds, manifest) {

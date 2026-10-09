@@ -9,47 +9,21 @@
       "description": "Sell Monster Rounds when you buy Improved Spirit. Sell Opening Rounds when you buy Spirit Lifesteal. Sell Extra Health when you buy Debuff Reducer.",
       "width": 840,
       "height": 175,
-      "item_ids": [
-        1009965641,
-        2829638276,
-        84321454,
-        3077079169,
-        2064029594,
-        3633614685,
-        668299740
-      ]
+      "item_ids": [1009965641, 2829638276, 84321454, 3077079169, 2064029594, 3633614685, 668299740]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1320,
       "height": 175,
-      "item_ids": [
-        968099481,
-        811521119,
-        1763073141,
-        3399065363,
-        4104549924,
-        1292979587,
-        2566692615,
-        2447176615,
-        3731635960,
-        2480592370,
-        7409189
-      ]
+      "item_ids": [968099481, 811521119, 1763073141, 3399065363, 4104549924, 1292979587, 2566692615, 2447176615, 3731635960, 2480592370, 7409189]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Ricochet, Tesla Bullets, Mercurial Magnum, Surge of Power, Spiritual Overflow.",
       "width": 600,
       "height": 175,
-      "item_ids": [
-        3919289022,
-        876563814,
-        2226497419,
-        1047818222,
-        2519598785
-      ]
+      "item_ids": [3919289022, 876563814, 2226497419, 1047818222, 2519598785]
     }
   ],
   "ability_order": [
@@ -118,9 +92,5 @@
       "kind": "tier3"
     }
   ],
-  "tags": [
-    1999680326,
-    1842576017,
-    3919289022
-  ]
+  "tags": [1999680326, 1842576017, 3919289022]
 }

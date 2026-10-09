@@ -9,45 +9,21 @@
       "description": "Sell Restorative Shot when you buy Spirit Resilience. Sell Stalker when you buy Berserker. Sell Close Quarters when you buy Superior Duration.",
       "width": 600,
       "height": 175,
-      "item_ids": [
-        3862866912,
-        1437614329,
-        98582110,
-        1342610602,
-        1672893796
-      ]
+      "item_ids": [3862866912, 1437614329, 98582110, 1342610602, 1672893796]
     },
     {
       "name": "Mid Game",
       "description": "Sell Extra Health when you buy Diviner's Kevlar.",
       "width": 1200,
       "height": 175,
-      "item_ids": [
-        3633614685,
-        393974127,
-        112198670,
-        1813726886,
-        2481177645,
-        1252627263,
-        2971868509,
-        1998374645,
-        3791587546,
-        2121044373
-      ]
+      "item_ids": [3633614685, 393974127, 112198670, 1813726886, 2481177645, 1252627263, 2971868509, 1998374645, 3791587546, 2121044373]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Weighted Shots, Berserker, Hunter's Aura, Tankbuster, Lifestrike.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        1047818222,
-        2163598980,
-        1414319208,
-        2717651715,
-        3357231760,
-        2820116164
-      ]
+      "item_ids": [1047818222, 2163598980, 1414319208, 2717651715, 3357231760, 2820116164]
     }
   ],
   "ability_order": [
@@ -112,9 +88,5 @@
       "kind": "tier3"
     }
   ],
-  "tags": [
-    1385849824,
-    2717130900,
-    98582110
-  ]
+  "tags": [1385849824, 2717130900, 98582110]
 }

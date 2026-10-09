@@ -9,47 +9,21 @@
       "description": "Sell Extra Regen when you buy Duration Extender. Sell Suppressor when you buy Spirit Lifesteal. Sell Enchanter's Emblem when you buy Debuff Reducer.",
       "width": 960,
       "height": 175,
-      "item_ids": [
-        1009965641,
-        2829638276,
-        4139877411,
-        1672893796,
-        1150006784,
-        1925087134,
-        709540378,
-        3970837787
-      ]
+      "item_ids": [1009965641, 2829638276, 4139877411, 1672893796, 1150006784, 1925087134, 709540378, 3970837787]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1320,
       "height": 175,
-      "item_ids": [
-        968099481,
-        112198670,
-        1144549437,
-        2603935618,
-        3403085434,
-        2081037738,
-        2951612397,
-        876563814,
-        7409189,
-        1644605047,
-        3005970438
-      ]
+      "item_ids": [968099481, 112198670, 1144549437, 2603935618, 3403085434, 2081037738, 2951612397, 876563814, 7409189, 1644605047, 3005970438]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Superior Duration, Escalating Exposure.",
       "width": 480,
       "height": 175,
-      "item_ids": [
-        2717651715,
-        1047818222,
-        3357231760,
-        2226497419
-      ]
+      "item_ids": [2717651715, 1047818222, 3357231760, 2226497419]
     }
   ],
   "ability_order": [
@@ -114,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    539192269,
-    1074714947,
-    3005970438
-  ]
+  "tags": [539192269, 1074714947, 3005970438]
 }

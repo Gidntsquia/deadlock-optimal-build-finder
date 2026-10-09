@@ -9,46 +9,21 @@
       "description": "Sell Restorative Shot when you buy Stamina Mastery. Sell Monster Rounds when you buy Compress Cooldown. Sell Sprint Boots when you buy Echo Shard.",
       "width": 840,
       "height": 175,
-      "item_ids": [
-        3862866912,
-        2010028405,
-        1009965641,
-        3077079169,
-        4139877411,
-        1150006784,
-        3399065363
-      ]
+      "item_ids": [3862866912, 2010028405, 1009965641, 3077079169, 4139877411, 1150006784, 3399065363]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1080,
       "height": 175,
-      "item_ids": [
-        968099481,
-        4053935515,
-        395867183,
-        2951612397,
-        754480263,
-        865958998,
-        1813726886,
-        334300056,
-        380806748
-      ]
+      "item_ids": [968099481, 4053935515, 395867183, 2951612397, 754480263, 865958998, 1813726886, 334300056, 380806748]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Greater Expansion, Superior Duration, Stamina Mastery, Transcendent Cooldown.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        630839635,
-        2717651715,
-        3261353684,
-        1193964439,
-        1152158042,
-        915014646
-      ]
+      "item_ids": [630839635, 2717651715, 3261353684, 1193964439, 1152158042, 915014646]
     }
   ],
   "ability_order": [
@@ -113,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    58655583,
-    1128670012,
-    754480263
-  ]
+  "tags": [58655583, 1128670012, 754480263]
 }

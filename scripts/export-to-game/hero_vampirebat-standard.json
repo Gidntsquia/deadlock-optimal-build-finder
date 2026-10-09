@@ -9,44 +9,21 @@
       "description": "Sell Extra Health when you buy Spirit Burn.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        968099481,
-        1998374645,
-        84321454,
-        1219329868,
-        3633614685,
-        754480263
-      ]
+      "item_ids": [968099481, 1998374645, 84321454, 1219329868, 3633614685, 754480263]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 960,
       "height": 175,
-      "item_ids": [
-        4139877411,
-        7409189,
-        1672893796,
-        3731635960,
-        4104549924,
-        1644605047,
-        334300056,
-        2121044373
-      ]
+      "item_ids": [4139877411, 7409189, 1672893796, 3731635960, 4104549924, 1644605047, 334300056, 2121044373]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Spirit Rend, Stamina Mastery, Spirit Burn, Boundless Spirit, Dispel Magic, Superior Cooldown, Tankbuster.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        1144549437,
-        2519598785,
-        380806748,
-        343572757,
-        4075861416,
-        3261353684
-      ]
+      "item_ids": [1144549437, 2519598785, 380806748, 343572757, 4075861416, 3261353684]
     }
   ],
   "ability_order": [
@@ -111,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    1233782561,
-    193508101,
-    2519598785
-  ]
+  "tags": [1233782561, 193508101, 2519598785]
 }

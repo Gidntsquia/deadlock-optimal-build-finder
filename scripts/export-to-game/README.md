@@ -55,9 +55,7 @@ hand:
   "hero_class_name": "hero_wraith",
   "name": "My Build",
   "description": "",
-  "categories": [
-    { "name": "Early Game", "description": "", "width": 360, "height": 175, "item_ids": [111, 222] }
-  ],
+  "categories": [{ "name": "Early Game", "description": "", "width": 360, "height": 175, "item_ids": [111, 222] }],
   "ability_order": [
     { "ability_id": 333, "kind": "unlock" },
     { "ability_id": 333, "kind": "tier1" }

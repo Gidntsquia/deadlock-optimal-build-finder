@@ -5,7 +5,9 @@ import { generateBuilds } from '../../src/generator';
 import { toGameBuildJson } from '../../src/export/game-json';
 
 const read = (p: string) => JSON.parse(readFileSync(`public/data/${p}`, 'utf8'));
-const items = read('items.json'), heroes = read('heroes.json'), abilities = read('abilities.json');
+const items = read('items.json'),
+  heroes = read('heroes.json'),
+  abilities = read('abilities.json');
 
 const heroIds = process.argv.slice(2).map(Number);
 
@@ -21,6 +23,8 @@ for (const heroId of heroIds) {
     const styleKey = build.population.style?.key ?? 'standard';
     const outPath = `scripts/export-to-game/${hero.class_name}-${styleKey}.json`;
     writeFileSync(outPath, JSON.stringify(json, null, 2));
-    console.log(`${hero.name} (${heroId}) -> ${outPath}  [${build.name}, ${json.categories.reduce((n, c) => n + c.item_ids.length, 0)} items, tags=${json.tags}]`);
+    console.log(
+      `${hero.name} (${heroId}) -> ${outPath}  [${build.name}, ${json.categories.reduce((n, c) => n + c.item_ids.length, 0)} items, tags=${json.tags}]`,
+    );
   }
 }

@@ -9,47 +9,21 @@
       "description": "Sell Stalker when you buy Extra Health.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        1437614329,
-        1342610602,
-        1009965641,
-        1672893796,
-        98582110,
-        709540378
-      ]
+      "item_ids": [1437614329, 1342610602, 1009965641, 1672893796, 98582110, 709540378]
     },
     {
       "name": "Mid Game",
       "description": "Sell Battle Vest when you buy Spirit Resilience. Sell Spirit Shielding when you buy Greater Expansion.",
       "width": 1440,
       "height": 175,
-      "item_ids": [
-        1235347618,
-        112198670,
-        3970837787,
-        465043967,
-        2971868509,
-        1813726886,
-        1252627263,
-        3190916303,
-        2095565695,
-        3776945997,
-        26002154,
-        3633614685
-      ]
+      "item_ids": [1235347618, 112198670, 3970837787, 465043967, 2971868509, 1813726886, 1252627263, 3190916303, 2095565695, 3776945997, 26002154, 3633614685]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Spirit Snatch, Crushing Fists, Cultist Sacrifice, Greater Expansion, Lifestrike.",
       "width": 600,
       "height": 175,
-      "item_ids": [
-        787198704,
-        2163598980,
-        1193964439,
-        2407781327,
-        800008313
-      ]
+      "item_ids": [787198704, 2163598980, 1193964439, 2407781327, 800008313]
     }
   ],
   "ability_order": [
@@ -114,9 +88,5 @@
       "kind": "tier3"
     }
   ],
-  "tags": [
-    3296031213,
-    1841661392,
-    3190916303
-  ]
+  "tags": [3296031213, 1841661392, 3190916303]
 }

@@ -9,47 +9,21 @@
       "description": "Sell Close Quarters when you buy Bullet Lifesteal. Sell Extra Regen when you buy Spirit Lifesteal. Sell Monster Rounds when you buy Debuff Reducer.",
       "width": 720,
       "height": 175,
-      "item_ids": [
-        1342610602,
-        2829638276,
-        968099481,
-        1009965641,
-        1672893796,
-        668299740
-      ]
+      "item_ids": [1342610602, 2829638276, 968099481, 1009965641, 1672893796, 668299740]
     },
     {
       "name": "Mid Game",
       "description": "Sell Spirit Shielding when you buy Spirit Resilience.",
       "width": 1440,
       "height": 175,
-      "item_ids": [
-        811521119,
-        4104549924,
-        7409189,
-        112198670,
-        3647584222,
-        2739107182,
-        84321454,
-        2971868509,
-        4139877411,
-        334300056,
-        499683006,
-        3919289022
-      ]
+      "item_ids": [811521119, 4104549924, 7409189, 112198670, 3647584222, 2739107182, 84321454, 2971868509, 4139877411, 334300056, 499683006, 3919289022]
     },
     {
       "name": "Late Game",
       "description": "Corrupt at the Broker, in order: Burst Fire, Stamina Mastery.",
       "width": 600,
       "height": 175,
-      "item_ids": [
-        876563814,
-        1047818222,
-        2163598980,
-        2226497419,
-        3357231760
-      ]
+      "item_ids": [876563814, 1047818222, 2163598980, 2226497419, 3357231760]
     }
   ],
   "ability_order": [
@@ -114,9 +88,5 @@
       "kind": "tier2"
     }
   ],
-  "tags": [
-    1469918191,
-    3428732129,
-    3919289022
-  ]
+  "tags": [1469918191, 3428732129, 3919289022]
 }
