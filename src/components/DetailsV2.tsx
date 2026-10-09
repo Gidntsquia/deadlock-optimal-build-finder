@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { Build, BuildItem } from '../types';
 import { fmtMin } from '../generator/v2/roles';
 import { fmtSouls } from '../text';
@@ -32,11 +33,11 @@ function itemLine(b: BuildItem, build: Build, r: V2Report): string {
   if (b.sellFor) return `Sold when you buy ${b.sellFor.name}.`;
   if (b.upgradesFrom) return `Upgrade of ${b.upgradesFrom.name}; pays the difference.`;
   if (up) return `Upgrades into ${up.item.name}.`;
-  return 'Core pick.';
+  return 'Strong pick for this hero.';
 }
 
 /** The v2 generator's section of Details: patch, counts, role curve, colour spend, item reasons, denied lifts, counters, Zergggy. */
-export function DetailsV2({ build, heroName }: { build: Build; heroName: string }) {
+export function DetailsV2({ build, heroName, children }: { build: Build; heroName: string; children?: ReactNode }) {
   const r = build.v2;
   if (!r) return null;
   const inBuild = new Set(build.items.map((b) => b.item.id));
@@ -44,16 +45,18 @@ export function DetailsV2({ build, heroName }: { build: Build; heroName: string 
   const litmus = litmusCheck(build, r);
   return (
     <section className="v2-details">
+      <p className="v2-intro">Buy in this order. The time is when top players usually buy it.</p>
       <ol className="v2-lines">
         {build.items.map((b) => (
           <li key={b.item.id}>
-            <b>{b.item.name}</b>: {itemLine(b, build, r)}
+            <b>{b.item.name}</b> ({fmtMin(r.placement.rows.find((y) => y.itemId === b.item.id)?.time ?? 0)}): {itemLine(b, build, r)}
           </li>
         ))}
       </ol>
 
       <details className="v2-numbers">
         <summary>Show numbers</summary>
+        {children}
         <h3>This build's data</h3>
         <p>
           Patch {r.patch.name}, games since {date(r.patch.since)} only. {r.counts.standard.toLocaleString()} {heroName} standard games (Phantom and above) and{' '}

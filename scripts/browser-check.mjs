@@ -242,6 +242,9 @@ try {
   await page.keyboard.press('Enter');
   await page.waitForSelector('.details');
   {
+    // Infernus (v2): the figures sit behind "Show numbers"; open it for the figure checks, close it again for the v2 checks
+    const v2Closed = await page.evaluate(() => !!document.querySelector('.details .v2-numbers:not([open])'));
+    if (v2Closed) await page.click('.details .v2-numbers > summary');
     const text = await page.$eval('.details', (e) => e.innerText);
     const badges = await page.$$eval('.details .item-table tr[data-core]', (e) => e.length);
     const tiles = await page.$$eval('.tiles .tile', (e) => e.length);
@@ -256,6 +259,7 @@ try {
       text.slice(0, 120),
     );
     await snap({ path: shot('details-desktop.png') });
+    if (v2Closed) await page.click('.details .v2-numbers > summary');
     // v2 section (Infernus): one plain sentence per build row up front, then a closed "Show numbers" toggle
     const v2 = await page.evaluate(() => {
       const d = document.querySelector('.details .v2-numbers');
@@ -271,17 +275,17 @@ try {
       };
     });
     const items = await page.$$eval('.tiles .tile', (e) => e.length);
-    const FORM = /^.+: (Core pick\.|Wins more in Street Brawl; took .+'s spot\.|Upgrades into .+\.|Sold when you buy .+\.|Upgrade of .+; pays the difference\.)$/;
+    const FORM =
+      /^.+ \(\d+ min\): (Strong pick for this hero\.|Wins more in Street Brawl; took .+'s spot\.|Upgrades into .+\.|Sold when you buy .+\.|Upgrade of .+; pays the difference\.)$/;
     check(
       'details v2: one allowed sentence per build row (12 words or fewer), nothing else above a closed Show numbers toggle',
       v2.has &&
         !v2.open &&
         !v2.tableVisible &&
         v2.summaryText === 'Show numbers' &&
-        v2.above.length === 1 &&
-        v2.above[0] === 'OL' &&
+        v2.above.join() === 'P,OL' &&
         v2.lines.length >= items &&
-        v2.lines.every((l) => FORM.test(l) && l.replace(/^.+?: /, '').split(/\s+/).length <= 12),
+        v2.lines.every((l) => FORM.test(l) && l.replace(/^.+? min\): /, '').split(/\s+/).length <= 12),
       JSON.stringify(v2).slice(0, 300),
     );
     await page.click('.details .v2-numbers > summary');
