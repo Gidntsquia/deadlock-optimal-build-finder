@@ -262,32 +262,69 @@ try {
     if (v2Closed) await page.click('.details .v2-numbers > summary');
     // v2 section (Infernus): one plain sentence per build row up front, then a closed "Show numbers" toggle
     const v2 = await page.evaluate(() => {
-      const d = document.querySelector('.details .v2-numbers');
-      const lines = [...document.querySelectorAll('.details .v2-lines li')].map((e) => e.innerText.trim());
-      const above = [...document.querySelectorAll('.details .v2-details > *')].filter((e) => e !== d).map((e) => e.tagName);
+      const root = document.querySelector('.details .v2-details');
+      const num = root?.querySelector('.v2-numbers');
+      const ord = root?.querySelector('.v2-order');
+      const block = root?.querySelector('.v2-block');
+      const above = [...(root?.children ?? [])].filter((e) => e !== num).map((e) => e.className);
+      const text = [...(root?.children ?? [])]
+        .filter((e) => e !== num)
+        .map((e) => e.innerText)
+        .join('\n');
+      const d = document.querySelector('.details');
       return {
-        has: !!d,
-        open: d?.open,
-        lines,
         above,
-        tableVisible: !!d?.querySelector('.panel-table')?.checkVisibility?.(),
-        summaryText: d?.querySelector('summary')?.innerText,
+        text,
+        numOpen: num?.open,
+        ordOpen: ord?.open,
+        final: block?.querySelectorAll('.v2-final li').length,
+        ringed: block?.querySelectorAll('.v2-final .v2-ring').length,
+        bullets: [...(block?.querySelectorAll('.v2-bullets') ?? [])].map((u) => u.children.length),
+        heads: [...(block?.querySelectorAll('h3') ?? [])].map((h) => h.innerText),
+        phases: block?.querySelector('.v2-phases')?.innerText,
+        firstChild: block?.firstElementChild?.tagName,
+        fits: d.scrollHeight <= d.clientHeight + 1,
       };
     });
-    const items = await page.$$eval('.tiles .tile', (e) => e.length);
-    const FORM =
-      /^.+ \(\d+ min\): (Strong pick for this hero\.|Wins more in Street Brawl; took .+'s spot\.|Upgrades into .+\.|Sold when you buy .+\.|Upgrade of .+; pays the difference\.)$/;
+    const BANNED = /%|match|win rate|score|phantom|rate\b/i;
     check(
-      'details v2: one allowed sentence per build row (12 words or fewer), nothing else above a closed Show numbers toggle',
-      v2.has &&
-        !v2.open &&
-        !v2.tableVisible &&
-        v2.summaryText === 'Show numbers' &&
-        v2.above.join() === 'P,OL' &&
-        v2.lines.length >= items &&
-        v2.lines.every((l) => FORM.test(l) && l.replace(/^.+? min\): /, '').split(/\s+/).length <= 12),
-      JSON.stringify(v2).slice(0, 300),
+      'details v2: summary block (12 icons, ringed Brawl items, one bullet per swap/sell, phase line), both toggles closed, no stats words above them',
+      v2.above.join() === 'v2-block,v2-order' &&
+        !v2.numOpen &&
+        !v2.ordOpen &&
+        v2.final === 12 &&
+        v2.ringed >= 1 &&
+        v2.ringed === v2.bullets[0] &&
+        v2.heads[0] === 'You end with' &&
+        v2.heads[1] === 'Street Brawl picks' &&
+        /^Early to \d+ min · Mid to \d+ min · Late after$/.test(v2.phases) &&
+        !BANNED.test(v2.text.replace(/Street Brawl/g, '')),
+      JSON.stringify(v2).slice(0, 400),
     );
+    if (page.viewportSize().width >= 900) check('details v2: dialog fits without scrolling with both toggles closed', v2.fits, String(v2.fits));
+    await page.click('.details .v2-order > summary');
+    const full = await page.evaluate(() => {
+      const heads = [...document.querySelectorAll('.details .v2-order h3')].map((h) => h.innerText);
+      const lists = [...document.querySelectorAll('.details .v2-order ol')].map((o) => [...o.children].map((li) => li.querySelector('span')?.innerText));
+      return { heads, lists, badges: [...document.querySelectorAll('.details .v2-order .v2-tag')].map((t) => t.innerText) };
+    });
+    const sameAsBoard = await page.evaluate(() => {
+      const src = (e) => e.querySelector('img')?.getAttribute('src');
+      const board = [...document.querySelectorAll('main .board .row')].map((r) => [...r.querySelectorAll('.tile')].map(src)).filter((r) => r.length);
+      const lists = [...document.querySelectorAll('.details .v2-order ol')].map((o) => [...o.children].map(src));
+      return {
+        ok: board.length === lists.length && board.every((r, i) => JSON.stringify(r) === JSON.stringify(lists[i])),
+        b: board.map((r) => r.length),
+        l: lists.map((r) => r.length),
+        s: [board[0]?.[0], lists[0]?.[0]],
+      };
+    });
+    check(
+      'details v2: Full order has Early / Mid / Late headings, with the Brawl and Sell badges',
+      full.heads.join() === 'Early,Mid,Late' && full.lists.every((l) => l.length > 0) && full.badges.includes('Brawl') && sameAsBoard.ok,
+      JSON.stringify([sameAsBoard, full.badges]),
+    );
+    await page.click('.details .v2-order > summary');
     await page.click('.details .v2-numbers > summary');
     check(
       'details v2: Show numbers opens the table',

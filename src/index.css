@@ -2168,3 +2168,90 @@ button.tile:hover {
   padding: 8px 0;
   font-weight: 700;
 }
+
+.v2-block h3 {
+  margin: 8px 0 4px;
+}
+.v2-final {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.v2-final li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.2;
+  gap: 4px;
+}
+.v2-icon {
+  border-radius: 4px;
+  object-fit: cover;
+  background: var(--avatar-bg);
+}
+.v2-ring {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+.v2-tag {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.v2-tag-sell {
+  background: var(--warn);
+}
+.v2-bullets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.v2-bullets li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 0;
+}
+.v2-phases {
+  margin: 8px 0 4px;
+  font-weight: 700;
+}
+.v2-order > summary {
+  cursor: pointer;
+  padding: 8px 0;
+  font-weight: 700;
+}
+.v2-order .v2-lines {
+  list-style: none;
+  padding: 0;
+}
+.v2-order .v2-lines li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0;
+}
+.v2-order .v2-lines .v2-icon {
+  width: 24px;
+  height: 24px;
+}
+.v2-strong {
+  font-weight: 700;
+}
+.v2-muted {
+  color: var(--ink-soft);
+}
+@media (max-width: 899px) {
+  .v2-final {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}

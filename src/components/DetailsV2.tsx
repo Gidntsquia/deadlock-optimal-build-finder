@@ -3,7 +3,7 @@ import type { Build, BuildItem } from '../types';
 import { fmtMin } from '../generator/v2/roles';
 import { fmtSouls } from '../text';
 import { V2_PARAMS } from '../generator/v2';
-import type { V2Report } from '../generator/v2/types';
+import { img } from '../data/load';
 import { litmusCheck } from '../generator/v2/litmus';
 
 const pct = (n: number, d = 0) => `${(n * 100).toFixed(d)}%`;
@@ -25,16 +25,14 @@ const date = (unix: number) => {
   return `${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}-${d.getUTCFullYear()}`;
 };
 
-/** One plain sentence per build row; only these forms (plans/PLAN.md pass 4, rule 7). */
-function itemLine(b: BuildItem, build: Build, r: V2Report): string {
-  const p = r.placement.rows.find((y) => y.itemId === b.item.id);
-  const up = build.items.find((o) => o.upgradesFrom?.id === b.item.id);
-  if (p?.lifted && p.took) return `Wins more in Street Brawl; took ${p.took}'s spot.`;
-  if (b.sellFor) return `Sold when you buy ${b.sellFor.name}.`;
-  if (b.upgradesFrom) return `Upgrade of ${b.upgradesFrom.name}; pays the difference.`;
-  if (up) return `Upgrades into ${up.item.name}.`;
-  return 'Strong pick for this hero.';
+const PHASE_NAMES = { early: 'Early', mid: 'Mid', late: 'Late' } as const;
+
+function Pic({ src, ring, size = 40 }: { src?: string; ring?: boolean; size?: number }) {
+  return <img className={ring ? 'v2-icon v2-ring' : 'v2-icon'} src={src ? img(src) : undefined} alt="" width={size} height={size} />;
 }
+const Icon = ({ b, ring, size }: { b: BuildItem; ring?: boolean; size?: number }) => (
+  <Pic src={b.item.shop_image_webp || b.item.image_webp} ring={ring} size={size} />
+);
 
 /** The v2 generator's section of Details: patch, counts, role curve, colour spend, item reasons, denied lifts, counters, Zergggy. */
 export function DetailsV2({ build, heroName, children }: { build: Build; heroName: string; children?: ReactNode }) {
@@ -43,16 +41,82 @@ export function DetailsV2({ build, heroName, children }: { build: Build; heroNam
   const inBuild = new Set(build.items.map((b) => b.item.id));
   const denied = r.rows.filter((x) => x.denied && x.brawlMatches > 0 && (inBuild.has(x.itemId) || x.popRel >= 0.02));
   const litmus = litmusCheck(build, r);
+  const liftedIds = new Set(r.placement.rows.filter((x) => x.lifted).map((x) => x.itemId));
+  const finalSet = new Set(r.placement.finals);
+  const finals = build.items.filter((b) => finalSet.has(b.item.name));
+  const swapName = (b: BuildItem) => r.placement.rows.find((x) => x.itemId === b.item.id)?.took ?? 'the standard pick';
+  const swaps = build.items.filter((b) => liftedIds.has(b.item.id));
+  const sells = build.items.filter((b) => b.sellFor);
+  const lastOf = (ph: string) => {
+    const rows = build.items.filter((b) => b.phase === ph);
+    const t = rows.length ? (r.placement.rows.find((y) => y.itemId === rows[rows.length - 1].item.id)?.time ?? 0) : 0;
+    return Math.round(t / 60);
+  };
+  const phaseLine = `Early to ${lastOf('early')} min · Mid to ${lastOf('mid')} min · Late after`;
   return (
     <section className="v2-details">
-      <p className="v2-intro">Buy in this order. The time is when top players usually buy it.</p>
-      <ol className="v2-lines">
-        {build.items.map((b) => (
-          <li key={b.item.id}>
-            <b>{b.item.name}</b> ({fmtMin(r.placement.rows.find((y) => y.itemId === b.item.id)?.time ?? 0)}): {itemLine(b, build, r)}
-          </li>
+      <div className="v2-block">
+        <h3>You end with</h3>
+        <ul className="v2-final">
+          {finals.map((b) => (
+            <li key={b.item.id} className={liftedIds.has(b.item.id) ? 'v2-final-brawl' : undefined}>
+              <Icon b={b} ring={liftedIds.has(b.item.id)} />
+              <span>{b.item.name}</span>
+              {liftedIds.has(b.item.id) && <em className="v2-tag">Brawl</em>}
+            </li>
+          ))}
+        </ul>
+        <h3>Street Brawl picks</h3>
+        <ul className="v2-bullets">
+          {swaps.map((b) => (
+            <li key={b.item.id}>
+              <Icon b={b} size={28} /> <Pic src={r.placement.rows.find((x) => x.itemId === b.item.id)?.tookImage} size={28} /> {b.item.name} over {swapName(b)}:
+              wins more in Street Brawl.
+            </li>
+          ))}
+        </ul>
+        {sells.length > 0 && (
+          <>
+            <h3>Sell on the way</h3>
+            <ul className="v2-bullets">
+              {sells.map((b) => (
+                <li key={b.item.id}>
+                  <Icon b={b} size={28} /> <Pic src={b.sellFor!.shop_image_webp || b.sellFor!.image_webp} size={28} /> Sell {b.item.name} when you buy{' '}
+                  {b.sellFor!.name}.
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        <p className="v2-phases">{phaseLine}</p>
+      </div>
+
+      <details className="v2-order">
+        <summary>Full order</summary>
+        {(['early', 'mid', 'late'] as const).map((ph) => (
+          <div key={ph}>
+            <h3>{PHASE_NAMES[ph]}</h3>
+            <ol className="v2-lines">
+              {build.items
+                .filter((b) => b.phase === ph)
+                .map((b) => {
+                  const up = build.items.find((o) => o.upgradesFrom?.id === b.item.id);
+                  const brawl = liftedIds.has(b.item.id),
+                    sell = !!b.sellFor;
+                  const note = b.upgradesFrom ? `Upgrade of ${b.upgradesFrom.name}` : up ? `Upgrades into ${up.item.name}` : '';
+                  return (
+                    <li key={b.item.id} className={brawl || sell ? 'v2-strong' : note ? 'v2-muted' : undefined}>
+                      <Icon b={b} /> <span>{b.item.name}</span> <span>{fmtMin(r.placement.rows.find((y) => y.itemId === b.item.id)?.time ?? 0)}</span>
+                      {brawl && <em className="v2-tag">Brawl</em>}
+                      {sell && <em className="v2-tag v2-tag-sell">Sell</em>}
+                      {!brawl && !sell && note && <small>{note}</small>}
+                    </li>
+                  );
+                })}
+            </ol>
+          </div>
         ))}
-      </ol>
+      </details>
 
       <details className="v2-numbers">
         <summary>Show numbers</summary>

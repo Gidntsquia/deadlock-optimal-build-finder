@@ -31,11 +31,23 @@ export function reorder(build: Build, baseline: Build, sell: SellStat[], thresho
   const pushed = stdFinals.filter((b) => !finalIds.has(b.item.id));
   const key = new Map<number, number>(build.items.map((b) => [b.item.id, b.avgBuyTimeS]));
   const source = new Map<number, string>();
-  const tookFrom = new Map<number, string>();
+  const tookFrom = new Map<number, string>(), tookImg = new Map<number, string>();
   const free = [...pushed];
   const dist = (b: BuildItem, d: BuildItem) => [Math.abs(b.item.item_tier - d.item.item_tier), Math.abs(b.item.cost - d.item.cost)];
   const nearest = (b: BuildItem, pool: BuildItem[]) => [...pool].sort((x, y) => { const a = dist(b, x), c = dist(b, y); return a[0] - c[0] || a[1] - c[1] || x.item.id - y.item.id; })[0];
-  const take = (b: BuildItem, d: BuildItem) => { key.set(b.item.id, d.avgBuyTimeS); source.set(b.item.id, `took ${d.item.name}'s spot (${Math.round(d.avgBuyTimeS / 60)} min)`); tookFrom.set(b.item.id, d.item.name); free.splice(free.indexOf(d), 1); };
+  // placement rule (docs/build-v2.md rule 10.2): the pushed-out item says which item leaves, the lifted item's own tier and price say when it is bought:
+  // not before the first standard item of its tier, and not before the standard build's running souls cover its price
+  const stdByTime = [...stdFinals].sort((x, y) => x.avgBuyTimeS - y.avgBuyTimeS);
+  const take = (b: BuildItem, d: BuildItem) => {
+    const sameTier = stdByTime.filter((o) => o.item.item_tier === b.item.item_tier);
+    const tierT = sameTier.length ? sameTier[0].avgBuyTimeS : 0;
+    let sum = 0, soulsT = 0;
+    for (const o of stdByTime) { sum += o.item.cost; soulsT = o.avgBuyTimeS; if (sum >= b.item.cost) break; }
+    const t = Math.max(d.avgBuyTimeS, tierT + 0.01, soulsT + 0.01);
+    const after = [...stdByTime].reverse().find((o) => o.avgBuyTimeS < t && o.item.id !== d.item.id);
+    const why = t === d.avgBuyTimeS ? "the time of the item it replaces" : t === tierT + 0.01 ? `first tier ${b.item.item_tier} item of the standard build is ${sameTier[0].item.name}` : `the standard build has spent ${b.item.cost} souls by then`;
+    key.set(b.item.id, t); source.set(b.item.id, `placed after ${after?.item.name ?? 'the start'}, ${why} (${Math.round(t / 60)} min); replaces ${d.item.name}`); tookFrom.set(b.item.id, d.item.name); tookImg.set(b.item.id, d.item.shop_image_webp || d.item.image_webp || ''); free.splice(free.indexOf(d), 1);
+  };
   for (const b of [...lifted].sort((x, y) => y.item.cost - x.item.cost || x.item.id - y.item.id)) {
     const d = nearest(b, free.filter((f) => f.item.item_slot_type === b.item.item_slot_type)) ?? nearest(b, free);
     if (d) take(b, d);
@@ -149,7 +161,7 @@ export function reorder(build: Build, baseline: Build, sell: SellStat[], thresho
   const liftedIds = new Set(lifted.map((b) => b.item.id));
   const rows: PlacementRow[] = items.map((b) => ({
     itemId: b.item.id, name: b.item.name, slot: b.order, source: source.get(b.item.id) ?? 'standard time', lifted: liftedIds.has(b.item.id),
-    took: tookFrom.get(b.item.id), soldFor: b.sellFor?.name, time: key.get(b.item.id)!,
+    took: tookFrom.get(b.item.id), tookImage: tookImg.get(b.item.id), soldFor: b.sellFor?.name, time: key.get(b.item.id)!,
   }));
   return { placement: { rows, lifted: lifted.map((b) => b.item.name), displaced: pushed.map((b) => b.item.name), finals: finals.map((b) => b.item.name), standardFinals: stdFinals.map((b) => b.item.name), cut, maxHeld }, colours };
 }

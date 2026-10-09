@@ -316,8 +316,16 @@ for (const hero of heroes.filter((h: any) => usesV2(h.id))) {
       build.items.every((b) => !b.sellFor || !pl.finals.includes(b.item.name)),
     );
     check(
-      `v2 ${hero.name}: each lifted item sits at the pushed-out item's spot, never its own time`,
-      pl.rows.filter((x) => x.lifted).every((x) => x.took && /took .* spot/.test(x.source)),
+      `v2 ${hero.name}: each lifted item is placed by its tier and price, never before the first standard item of its tier`,
+      pl.rows
+        .filter((x) => x.lifted)
+        .every((x) => {
+          const it = build.items.find((b) => b.item.id === x.itemId)!;
+          const first = Math.min(
+            ...pl.rows.filter((y) => !y.lifted && build.items.find((b) => b.item.id === y.itemId)!.item.item_tier === it.item.item_tier).map((y) => y.time),
+          );
+          return /^placed after/.test(x.source) && x.time >= first;
+        }),
       pl.rows
         .filter((x) => x.lifted)
         .map((x) => `${x.name} -> ${x.took}`)
