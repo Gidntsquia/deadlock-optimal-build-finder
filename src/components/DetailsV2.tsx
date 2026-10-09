@@ -24,20 +24,15 @@ const date = (unix: number) => {
   return `${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}-${d.getUTCFullYear()}`;
 };
 
-function itemLine(b: BuildItem, r: V2Report): string {
-  const x = r.rows.find((y) => y.itemId === b.item.id);
+/** One plain sentence per build row; only these forms (plans/PLAN.md pass 4, rule 7). */
+function itemLine(b: BuildItem, build: Build, r: V2Report): string {
   const p = r.placement.rows.find((y) => y.itemId === b.item.id);
-  const bits: string[] = [];
-  if (p?.lifted) bits.push(`In: wins more in Street Brawl${x ? `, bought by ${pct(x.popRel)}` : ''}`);
-  else if (p?.source.startsWith('bought first')) bits.push(`Buy first, upgrades into ${p.source.replace(/^bought first, upgrades into ([^;]+).*$/, '$1')}`);
-  else if (x?.denied?.startsWith('wins in standard')) bits.push(`Strong in standard games, bought by ${pct(x.popRel)}`);
-  else if (x && x.denied && x.brawlMatches > 0)
-    bits.push(`Brawl bonus dropped: ${x.denied.startsWith('rarely') || x.denied.startsWith('no brawl') ? 'too rarely bought' : 'it does not fit'}`);
-  else if (x) bits.push(`Common pick: bought by ${pct(x.popRel)}`);
-  if (p?.source.startsWith('took')) bits.push(p.source.charAt(0).toUpperCase() + p.source.slice(1));
-  if (b.spike) bits.push(`${COLOUR[b.spike.slot]} spike`);
-  if (b.sellFor) bits.push(`Sell when you buy ${b.sellFor.name}`);
-  return bits.length ? bits.join('. ') : 'Part of the build';
+  const up = build.items.find((o) => o.upgradesFrom?.id === b.item.id);
+  if (p?.lifted && p.took) return `Wins more in Street Brawl; took ${p.took}'s spot.`;
+  if (b.sellFor) return `Sold when you buy ${b.sellFor.name}.`;
+  if (b.upgradesFrom) return `Upgrade of ${b.upgradesFrom.name}; pays the difference.`;
+  if (up) return `Upgrades into ${up.item.name}.`;
+  return 'Core pick.';
 }
 
 /** The v2 generator's section of Details: patch, counts, role curve, colour spend, item reasons, denied lifts, counters, Zergggy. */
@@ -49,25 +44,10 @@ export function DetailsV2({ build, heroName }: { build: Build; heroName: string 
   const litmus = litmusCheck(build, r);
   return (
     <section className="v2-details">
-      <h3>How this build was made</h3>
-      <ul className="v2-summary">
-        <li>Street Brawl weight {V2_PARAMS.brawlWeight}</li>
-        <li>Fights start at {Math.round(r.curve.farmEndS / 60)} min</li>
-        <li>
-          Checks:{' '}
-          {litmus.map((l) => (
-            <span key={l.name} className={l.ok ? 'chip-ok' : 'chip-bad'}>
-              {l.ok ? '✓' : '✗'} {l.name}
-            </span>
-          ))}
-        </li>
-      </ul>
-
-      <h3>Each item in one line</h3>
       <ol className="v2-lines">
         {build.items.map((b) => (
           <li key={b.item.id}>
-            <b>{b.item.name}</b>: {itemLine(b, r)}
+            <b>{b.item.name}</b>: {itemLine(b, build, r)}
           </li>
         ))}
       </ol>

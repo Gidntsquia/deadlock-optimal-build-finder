@@ -301,15 +301,59 @@ for (const hero of heroes.filter((h: any) => usesV2(h.id))) {
     }
     for (const o of build.items) if (o.sellFor && build.items.findIndex((x) => x.item.id === o.sellFor!.id) <= build.items.indexOf(o)) sellsOk = false;
     check(`v2 ${hero.name}: never more than 12 items held, every sell comes at the buy it funds`, peak <= 12 && sellsOk, `most held ${peak}`);
+    const endSet = [...held].sort().join(', '),
+      finalSet = [...pl.finals].sort().join(', ');
+    console.log(
+      `v2 ${hero.name} final 12: ${pl.finals.join(', ')}\nv2 ${hero.name} standard 12: ${pl.standardFinals.join(', ')}\nv2 ${hero.name} cut on the way: ${pl.cut.join(', ') || 'none'}`,
+    );
+    check(
+      `v2 ${hero.name}: the 12 items held at the end are exactly the final 12`,
+      held.length === 12 && pl.finals.length === 12 && endSet === finalSet,
+      `held ${held.length}`,
+    );
+    check(
+      `v2 ${hero.name}: no final-12 item is sold`,
+      build.items.every((b) => !b.sellFor || !pl.finals.includes(b.item.name)),
+    );
+    check(
+      `v2 ${hero.name}: each lifted item sits at the pushed-out item's spot, never its own time`,
+      pl.rows.filter((x) => x.lifted).every((x) => x.took && /took .* spot/.test(x.source)),
+      pl.rows
+        .filter((x) => x.lifted)
+        .map((x) => `${x.name} -> ${x.took}`)
+        .join('; '),
+    );
+    for (const o of build.items) if (o.sellFor) console.log(`   sell ${o.item.name} when you buy ${o.sellFor.name}`);
   }
   {
     const idx = (n: string) => build.items.findIndex((b) => b.item.name === n) + 1;
-    const three = ['Indomitable', 'Juggernaut', 'Mercurial Magnum'].map(idx).filter((i) => i > 0);
-    const last = build.items.length;
+    const liftedRows = pl.rows
+      .filter((x) => x.lifted)
+      .map((x) => build.items.find((b) => b.item.id === x.itemId)!)
+      .sort((x, y) => y.item.cost - x.item.cost)
+      .slice(0, 3);
     check(
-      `v2 ${hero.name}: Indomitable, Juggernaut and Mercurial Magnum do not sit together at the last three slots`,
-      !(three.length === 3 && three.every((i) => i > last - 3)),
-      `slots ${three.join(', ')} of ${last}`,
+      `v2 ${hero.name}: the three costliest lifted items do not fill the last three rows together`,
+      !(liftedRows.length === 3 && liftedRows.every((b) => idx(b.item.name) > build.items.length - 3)),
+      liftedRows.map((b) => `${b.item.name} ${idx(b.item.name)}/${build.items.length}`).join(', '),
+    );
+    const timeOf = new Map(pl.rows.map((x) => [x.name, x.time]));
+    check(
+      `v2 ${hero.name}: no T4 before 18:00 and no T1 after 25:00 on the order's times`,
+      build.items.every((b) => !(b.item.item_tier === 4 && timeOf.get(b.item.name)! < 1080) && !(b.item.item_tier === 1 && timeOf.get(b.item.name)! > 1500)),
+    );
+    const early = build.items
+      .filter((b) => b.upgradesFrom)
+      .map((b) => ({ c: b.upgradesFrom!.name, u: b.item.name }))
+      .filter(({ c, u }) => idx(u) - idx(c) <= 1 && timeOf.get(u)! - build.items.find((x) => x.item.name === c)!.avgBuyTimeS > 300);
+    check(
+      `v2 ${hero.name}: no component sits right before its upgrade when its own time is over 5 min earlier`,
+      early.length === 0,
+      early.map((x) => `${x.c} -> ${x.u}`).join(', '),
+    );
+    check(
+      `v2 ${hero.name}: last row is a final-12 buy (nothing bought after the last final)`,
+      pl.finals.includes(build.items[build.items.length - 1].item.name) || build.items[build.items.length - 1].upgradesFrom !== undefined,
     );
     const run = build.items.map((b) => b.runningTotal);
     check(

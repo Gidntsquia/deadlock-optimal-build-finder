@@ -256,35 +256,33 @@ try {
       text.slice(0, 120),
     );
     await snap({ path: shot('details-desktop.png') });
-    // v2 section (Infernus): short summary and one line per item up front; the numbers sit behind a closed toggle
+    // v2 section (Infernus): one plain sentence per build row up front, then a closed "Show numbers" toggle
     const v2 = await page.evaluate(() => {
       const d = document.querySelector('.details .v2-numbers');
-      const out = {
+      const lines = [...document.querySelectorAll('.details .v2-lines li')].map((e) => e.innerText.trim());
+      const above = [...document.querySelectorAll('.details .v2-details > *')].filter((e) => e !== d).map((e) => e.tagName);
+      return {
         has: !!d,
         open: d?.open,
-        summary: document.querySelector('.details .v2-summary')?.innerText ?? '',
-        lines: document.querySelectorAll('.details .v2-lines li').length,
-        tableVisible: false,
-        jargon: false,
+        lines,
+        above,
+        tableVisible: !!d?.querySelector('.panel-table')?.checkVisibility?.(),
+        summaryText: d?.querySelector('summary')?.innerText,
       };
-      if (d) {
-        const ownText = [...document.querySelectorAll('.details .v2-summary, .details .v2-lines')].map((e) => e.innerText).join(' ');
-        out.jargon = /\b(delta|shrink|popRel|term|scale)\b/i.test(ownText);
-        out.tableVisible = !!d.querySelector('.panel-table')?.checkVisibility?.();
-      }
-      return out;
     });
     const items = await page.$$eval('.tiles .tile', (e) => e.length);
+    const FORM = /^.+: (Core pick\.|Wins more in Street Brawl; took .+'s spot\.|Upgrades into .+\.|Sold when you buy .+\.|Upgrade of .+; pays the difference\.)$/;
     check(
-      'details v2: summary (weight, fight start, checks), a line per item, toggle closed, no jargon',
+      'details v2: one allowed sentence per build row (12 words or fewer), nothing else above a closed Show numbers toggle',
       v2.has &&
         !v2.open &&
         !v2.tableVisible &&
-        /Street Brawl weight/.test(v2.summary) &&
-        /Fights start at \d+ min/.test(v2.summary) &&
-        v2.lines >= items &&
-        !v2.jargon,
-      JSON.stringify(v2).slice(0, 200),
+        v2.summaryText === 'Show numbers' &&
+        v2.above.length === 1 &&
+        v2.above[0] === 'OL' &&
+        v2.lines.length >= items &&
+        v2.lines.every((l) => FORM.test(l) && l.replace(/^.+?: /, '').split(/\s+/).length <= 12),
+      JSON.stringify(v2).slice(0, 300),
     );
     await page.click('.details .v2-numbers > summary');
     check(

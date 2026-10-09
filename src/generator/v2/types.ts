@@ -33,7 +33,7 @@ export interface ExplainRow {
 export interface Swap { itemId: number; name: string; replaces: string | null; source: 'standard' | 'brawl'; games: number; lift: number; reason: string }
 export interface EnemyReport { heroId: number; name: string; games: number; swaps: Swap[] }
 export interface ColourTotal { slot: SlotType; total: number; crossing: { itemId: number; name: string; threshold: number } | null }
-export interface PlacementRow { itemId: number; name: string; slot: number; source: string; lifted: boolean }
+export interface PlacementRow { itemId: number; name: string; slot: number; source: string; lifted: boolean; took?: string; soldFor?: string; time: number }
 export type SellStat = { item_id: number; buyers: number; sold: number; upgraded: number; avg_sold_time_s: number };
 export interface ZergggyReport { games: number; sinceTotal: number; shared: string[]; onlyHis: { name: string; reason: string }[]; onlyBuild: { name: string; reason: string }[] }
 export interface V2Report {
@@ -46,6 +46,6 @@ export interface V2Report {
   spikeSource: string;
   enemies: EnemyReport[];
   zergggy: ZergggyReport;
-  placement: { rows: PlacementRow[]; lifted: string[]; displaced: string[]; maxHeld: number };
+  placement: { rows: PlacementRow[]; lifted: string[]; displaced: string[]; finals: string[]; standardFinals: string[]; cut: string[]; maxHeld: number };
   notes: string[];
 }
