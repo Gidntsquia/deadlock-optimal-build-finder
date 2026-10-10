@@ -1,6 +1,4 @@
 import type { Ability, Hero, HeroAnalytics, Item } from '../types';
-import { usesV2 } from '../generator/pipeline';
-import type { V2Data, V2Modes } from '../generator/v2/types';
 
 export const base = `${(import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? '/'}data/`;
 export async function j<T>(rel: string): Promise<T> {
@@ -39,8 +37,6 @@ export const loadAnalytics = (heroId: number) => {
   let p = analyticsCache.get(heroId);
   if (!p) {
     p = j<HeroAnalytics>(`analytics/${heroId}.json`);
-    if (usesV2(heroId))
-      p = Promise.all([p, j<V2Data>(`v2/${heroId}.json`), j<V2Modes>('v2/modes.json')]).then(([a, data, modes]) => ({ ...a, v2: { data, modes } }));
     analyticsCache.set(heroId, p);
     p.catch(() => analyticsCache.delete(heroId));
   }

@@ -3,6 +3,7 @@
 Static React app that generates Deadlock hero builds in the browser from a local data snapshot. No backend.
 
 ## Stack
+
 - React 19, TypeScript 6, Vite 8, npm (not Bun). Node 18+ (dev box runs 24).
 - Lint: oxlint (`npm run lint`). `npm run ui-lint` bans stock Tailwind palette classes, off-token
   colors, raw gradients, and oversized radii/shadows in `src/**/*.tsx` (excludes `src/components/ui/`),
@@ -43,20 +44,17 @@ Static React app that generates Deadlock hero builds in the browser from a local
 - Deployed to GitHub Pages under `/deadlock-optimal-build-finder/` (`BASE_PATH` env at build time). Always build
   asset URLs through `img()` / `import.meta.env.BASE_URL`.
 
-## Build v2
-- A second generator (`src/generator/v2/`, rules in `docs/build-v2.md`, categories in `docs/item-categories.md`) is on for Infernus only (`src/generator/pipeline.ts`, `V2_HEROES`); other heroes' builds must stay byte-identical (`scripts/builds-snapshot.ts` prints them; diff against an earlier commit in a worktree). Data: `npm run fetch-data -- --v2-only` -> `public/data/v2/`, all from games since `PATCH_SINCE` in `scripts/fetch-v2.mjs`. `npm run generate 1 --v2 --explain`.
-- The Details dialog's v2 section is `DetailsV2.tsx`; its tables must not use the `item-table` class (the browser tour counts `.details .item-table tbody tr` as the build's items).
-- Street Brawl rows are keyed by base item (no enhanced split) and take no rank filter.
-
 ## Layout
+
 - `src/generator/`, `src/validation/` — build scoring and panel validation. UI work must not change them.
 - `src/components/` — UI. `src/export/png.ts` — canvas share image.
-- `public/data/` — snapshot written by `npm run fetch-data` (~3 min, ~16 MB). Images and most data are not in git.
+- `public/data/` — snapshot written by `npm run fetch-data` (~3 min, ~16 MB), games since `PATCH_SINCE` in `scripts/fetch-data.mjs` (bump it on a new patch). Images and most data are not in git.
 - `scripts/` — data fetch, tuning, CLI, `browser-check.mjs`, `ui-lint.mjs`.
 - `screenshots/` and `plans/` are gitignored. Evidence that must be reviewed goes under `docs/`
   (`docs/ui/before/`, `docs/ui/after/`, `docs/ui/DESIGN.md`, `docs/build-board.png`).
 
 ## Conventions
+
 - No secrets, no `.env`; the app makes no network requests after the snapshot is fetched.
 - Logs: browser console only (structured JSON lines once `src/log.ts` exists).
 - Keep the Deadlock shop look (teal bar, parchment board, slot-tinted tiles); no stock component-library theme.
@@ -67,7 +65,7 @@ Static React app that generates Deadlock hero builds in the browser from a local
   `max-[899px]:translate-none`) over a raw CSS reset when you need one of these to survive
   minification.
 - Gotcha: never run `git checkout <file>` to "undo a test mutation" against a file that has
-  uncommitted edits — it reverts to the last *commit*, silently discarding the uncommitted work.
+  uncommitted edits — it reverts to the last _commit_, silently discarding the uncommitted work.
   Back up first (`cp file /tmp/x.bak`), mutate, check, then restore from the backup copy instead.
 - Gotcha: `prettier-plugin-tailwindcss` reformats `className` template-literal strings and will
   silently swallow a leading/trailing space you add around a dynamic segment (e.g.
@@ -80,11 +78,12 @@ Static React app that generates Deadlock hero builds in the browser from a local
 - Never delete a browser check to make it pass; fix it or replace it with an equivalent.
 
 ## Gotchas
+
 - Chromium's `:focus-visible` tracks a page-wide "last input modality" — a scripted
   `element.focus()` right after a real mouse click won't show a focus ring. In Playwright,
   send a real `page.keyboard.press('Tab')` before asserting focus-ring styles.
   Tailwind's `animate-in`/`animate-out` (used by the vendored `dialog.tsx`) are CSS
-  *animations*, not transitions — a `* { transition: none !important }` reduced-motion
+  _animations_, not transitions — a `* { transition: none !important }` reduced-motion
   override won't stop them; also zero `animation-duration`/`animation-iteration-count`.
 - Radix `Tabs`: a `TabsTrigger` with no matching `TabsContent` (same `value`) leaves its
   auto-generated `aria-controls` pointing at nothing — an axe `aria-valid-attr-value` critical

@@ -10,18 +10,6 @@ export interface GeneratorInput {
   hero: Hero; abilities: Ability[]; items: Item[]; analytics: HeroAnalytics;
   /** Opt-in enemy-counter term (plans/matchup-builds.md). Absent, or PARAMS.weights.matchup === 0, is a strict no-op. */
   matchup?: { enemies: number[]; stats: MatchupStats };
-  /** Build v2 (docs/build-v2.md): extra score terms. Absent for every hero not switched to v2, so their builds do not change. */
-  v2?: V2Hooks;
-}
-/** `delta` is added to the item's base score; `notes` become plain-words reasons if the item is chosen. */
-export interface V2Term { delta: number; notes: string[] }
-export interface V2Hooks {
-  /** fixed per-item terms: brawl lift, role fit */
-  item(item: Item, stat: ItemStat): V2Term;
-  /** terms that depend on what is already chosen: colour spikes */
-  dynamic?(item: Item, chosen: Item[]): V2Term;
-  /** true lets an item below the usage floor into the candidate set (v2: standard win rate above average and a positive brawl term) */
-  admit?(item: Item): boolean;
 }
 
 const shrink = (wins: number, matches: number, K: number, mean: number) => (wins + K * mean) / (matches + K);
@@ -44,7 +32,7 @@ export function statValue(item: Item, mult: Record<string, number>): number {
 
 /** charge-item ability sequences and the population (high-rank or all ranks) they come from */
 interface ChargeOrders { kind: 'top' | 'all'; rows: ItemAbilityOrderStats }
-interface Scored { v2: V2Term; item: Item; stat: ItemStat; pop: number; winLift: number; eff: number; kit: number; matchupLift: number; matchupEnemies: number[]; base: number }
+interface Scored { item: Item; stat: ItemStat; pop: number; winLift: number; eff: number; kit: number; matchupLift: number; matchupEnemies: number[]; base: number }
 
 /**
  * Picks the aggregate population to generate from. The high-rank population is preferred because
@@ -221,7 +209,6 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
 
   const stats = allStats.filter((s) => {
     if (s.matches / maxMatches >= MIN_USAGE) return true;
-    if (input.v2?.admit?.(catalog.get(s.item_id)!)) return true;
     // Let a counter item back into the candidate set even below the usage floor, as long as it has
     // usable matchup data and a positive lift (Healbane, Metal Skin etc. are often low-usage overall).
     return matchupActive && matchupLiftFor(s.item_id).lift > 0;
@@ -255,13 +242,12 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
     // the lift is credited in proportion to usage (100% usage: full lift; 5% usage: 5% of it).
     const winLift = (shrunk - meanWR) * 10 * pop;
     const { lift: matchupLift, enemies: matchupEnemies } = matchupLiftFor(item.id);
-    const v2 = input.v2 ? input.v2.item(item, stat) : { delta: 0, notes: [] };
     const base =
       WEIGHTS.popularity * Math.sqrt(pop) + WEIGHTS.winLift * winLift +
       WEIGHTS.efficiency * (eff / effMax) + WEIGHTS.kit * (k / kitMax) +
       WEIGHTS.matchup * matchupLift +
-      (item.is_active_item ? WEIGHTS.active : 0) + v2.delta;
-    return { v2, item, stat, pop, winLift, eff: eff / effMax, kit: k / kitMax, matchupLift, matchupEnemies, base: base * arch.slotBias[item.item_slot_type] };
+      (item.is_active_item ? WEIGHTS.active : 0);
+    return { item, stat, pop, winLift, eff: eff / effMax, kit: k / kitMax, matchupLift, matchupEnemies, base: base * arch.slotBias[item.item_slot_type] };
   });
 
   // 2) pair synergy lookup
@@ -323,8 +309,7 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
       let syn = 0, n = 0;
       for (const c of chosen) { const l = pair.get(`${it.id}:${c.s.item.id}`); if (l !== undefined) { syn += l; n++; } }
       syn = n ? syn / n : 0;
-      const dyn = input.v2?.dynamic ? input.v2.dynamic(it, chosen.map((c) => c.s.item)) : null;
-      const score = s.base + WEIGHTS.synergy * syn + (dyn?.delta ?? 0);
+      const score = s.base + WEIGHTS.synergy * syn;
       if (!best || score > best.score || (score === best.score && it.id < best.s.item.id)) {
         const reasons: string[] = [];
         if (s.pop > 0.5) reasons.push(`bought in ${(s.stat.matches / maxMatches * 100).toFixed(0)}% of ${hero.name} games (relative)`);
@@ -332,7 +317,6 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
         if (s.eff > 0.6) reasons.push('high stat value per soul for this archetype');
         if (s.kit > 0.6) reasons.push(`scales ${hero.name}'s kit`);
         if (syn > 0.2) reasons.push('wins more alongside items already in the build');
-        reasons.push(...s.v2.notes, ...(dyn?.notes ?? []));
         if (matchupActive && s.matchupLift > 0.1) reasons.push(`commonly picked against enemy hero ${s.matchupEnemies.join(', ')}`);
         best = { s, score, reasons, inChain, chain, sell };
       }
@@ -380,7 +364,7 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
   }
   let running = 0;
   const byClass = new Map(chosen.map((c) => [c.s.item.class_name, c.s.item]));
-  const buildItems: BuildItem[] = chosen.map((c, i) => {
+  let buildItems: BuildItem[] = chosen.map((c, i) => {
     const compClass = [...consumed].find(([, up]) => up === c.s.item.class_name)?.[0];
     const upgradesFrom = compClass ? byClass.get(compClass) : undefined;
     const paidCost = c.s.item.cost - (upgradesFrom?.cost ?? 0);
@@ -392,14 +376,23 @@ export function generateBuild(input: GeneratorInput, arch: Archetype, population
   });
   // Sell points: walk the buy order holding items; when a purchase would go past the game's slot count,
   // sell the earliest-bought sell-later item still held to make room for it. One never needed is kept.
+  // A purchase that finds every slot full and nothing left to sell is dropped, with any upgrade bought from it.
   const held: BuildItem[] = [];
+  const dropped = new Set<BuildItem>();
   for (const b of buildItems) {
+    if (b.upgradesFrom && buildItems.some((x) => dropped.has(x) && x.item.id === b.upgradesFrom!.id)) { dropped.add(b); continue; }
     if (b.upgradesFrom) { const k = held.findIndex((h) => h.item.id === b.upgradesFrom!.id); if (k >= 0) held.splice(k, 1); }
     if (!b.upgradesFrom && held.length >= MAX_ITEMS) {
       const k = held.findIndex((h) => sold.has(h.item.class_name));
-      if (k >= 0) { const [out] = held.splice(k, 1); out.sellFor = b.item; out.sellRate = sellRate.get(out.item.id); out.reasons = [`some top players sell it later to make room; sell it when you buy ${b.item.name}`, ...out.reasons]; }
+      if (k < 0) { dropped.add(b); continue; }
+      const [out] = held.splice(k, 1); out.sellFor = b.item; out.sellRate = sellRate.get(out.item.id); out.reasons = [`some top players sell it later to make room; sell it when you buy ${b.item.name}`, ...out.reasons];
     }
     held.push(b);
+  }
+  if (dropped.size) {
+    running = 0;
+    buildItems = buildItems.filter((b) => !dropped.has(b));
+    buildItems.forEach((b, i) => { b.order = i + 1; running += b.paidCost; b.runningTotal = running; });
   }
   // Corrupted copies: among items kept to the end, T3/T4 ones whose corrupted copy won more often than the
   // normal copy (shrunk toward the normal rate), ordered by that gain. Sold items are never swapped.

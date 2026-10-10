@@ -14,17 +14,14 @@ export const ItemTile = forwardRef<
     total?: number;
     cost?: number;
     sell?: string; // bought early and sold later to free the slot: the name of the item it makes room for
-    spike?: boolean; // this buy takes its colour's spend past a spike (a mark only: no words on the build screen)
     corrupt?: number | true; // swap for the corrupted copy at the Broker, in this order (1 first); true = the corrupted frame alone
   }
->(function ItemTile({ item, onClick, total, cost, sell, corrupt, spike }, ref) {
+>(function ItemTile({ item, onClick, total, cost, sell, corrupt }, ref) {
   const Tag = onClick ? 'button' : 'div';
   return (
     <Tag
       ref={ref as never}
-      className={['tile', item.item_slot_type, spike ? 'spike' : null, corrupt !== undefined ? 'corrupted' : null, sell ? 'sold' : null]
-        .filter(Boolean)
-        .join(' ')}
+      className={['tile', item.item_slot_type, corrupt !== undefined ? 'corrupted' : null, sell ? 'sold' : null].filter(Boolean).join(' ')}
       onClick={onClick}
       data-cost={cost ?? item.cost}
       data-total={total}

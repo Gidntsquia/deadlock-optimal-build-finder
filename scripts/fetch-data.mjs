@@ -32,7 +32,6 @@
 //   --since 2026-09-29T20:00Z   (with --analytics-only) only use games from this time on, e.g. a patch going live; the
 //                               hero's analytics file records it (min_unix_timestamp) and the Details dialog shows it
 //   --heroes 1,31               (with --validation-only or --analytics-only) only these hero ids; with --validation-only their entries are merged into manifest.validation_sets
-//   --v2-only                   refetch only the v2 data (public/data/v2/*: brawl, role curve inputs, Zergggy; --heroes works)
 //   --select-only               (with --validation-only) run the selection, print the table per hero, write nothing
 //   --matchups 6:20,12,50;60:3,17,20   opt-in enemy-counter experiment fetch (plans/matchup-builds.md).
 //                                Repeatable per hero (';'-separated groups, enemies ','-separated); writes
@@ -73,10 +72,13 @@ const HEROES_ARG = (() => {
     .map((x) => Number(x.trim()))
     .filter((x) => Number.isFinite(x));
 })();
-// Analytics window: last 30 days (live data; the window is recorded in manifest.json).
+// The latest patch: the builds, validation sets, tier lists and corrupted stats count only games from then on. Bump
+// on a new patch (titles: api.deadlock-api.com/v1/patches). 09-29-2026 went live ~19:30 UTC (first corrupted buys);
+// 20:00 keeps pre-patch games out.
+const PATCH_NAME = '09-29-2026';
+const PATCH_SINCE = Math.floor(Date.UTC(2026, 8, 29, 20) / 1000);
+// Window used only by the opt-in matchup experiment (--matchups).
 const WINDOW_DAYS = 30;
-const V2_HEROES = [1]; // heroes switched to the v2 build (src/generator/pipeline.ts); --heroes overrides
-
 // High-rank population: average lobby badge >= 90 (Phantom and above). Chosen as the highest bracket
 // where all three analytics endpoints are still well populated for every hero (Ascendant+ leaves
 // ability-order sequences with <100 matches). Builds are generated from this population when it is
@@ -87,7 +89,8 @@ const ANALYTICS_ONLY = process.argv.includes('--analytics-only');
 // A 429 on match metadata can ask for an hour-long retry-after; wait at most this long, then throw so the
 // caller skips that match and moves on to the next one (there are more candidates than the target).
 const MAX_WAIT_MS = 45 * 1000;
-let MIN_TS = Math.floor(Date.now() / 1000) - WINDOW_DAYS * 86400;
+// Analytics window: games since the latest patch (recorded in manifest.json and in each hero's analytics file).
+let MIN_TS = PATCH_SINCE;
 const SINCE_ARG = (() => {
   const i = process.argv.indexOf('--since');
   if (i < 0) return null;
@@ -571,11 +574,6 @@ async function fetchAllSellStats(heroes, manifest) {
 // about minute 30). For each item: games where the hero ran the corrupted copy vs games with the normal
 // copy, both limited to games that lasted >= 30 min so the normal side also reached the Broker. All ranks:
 // at Phantom+ there are too few corrupted games yet. Since the corrupted launch only.
-// The latest patch: the tier lists and the corrupted stats count only games from then on. Bump both on a new patch
-// (titles: api.deadlock-api.com/v1/patches). 09-29-2026 went live ~19:30 UTC (first corrupted buys); 20:00 keeps
-// pre-patch games out.
-const PATCH_NAME = '09-29-2026';
-const PATCH_SINCE = Math.floor(Date.UTC(2026, 8, 29, 20) / 1000);
 const CORRUPTED_SINCE = PATCH_SINCE; // corrupted items came out in this patch
 const CORRUPTED_MIN_DURATION_S = 1800;
 async function fetchCorruptedStats(heroes) {
@@ -704,7 +702,7 @@ async function fetchAnalytics(heroes, manifest) {
     );
     await save(`analytics/${h.id}.json`, {
       hero_id: h.id,
-      ...(SINCE_ARG ? { min_unix_timestamp: SINCE_ARG } : {}),
+      min_unix_timestamp: MIN_TS,
       ...all,
       top: { min_average_badge: TOP_BADGE, ...top, styles },
     });
@@ -859,10 +857,20 @@ async function fetchValidation(heroes, manifest) {
   }
   const histories = new Map();
   const selected = [];
+  // a hero just released has no scoreboard rows and no panel yet: record its first top-rank game so verify
+  // can tell "too new to validate" from a broken selection
+  const newHeroes = [];
   for (const h of targets) {
     const sel = await selectValidationPlayers(h, sinceOf.get(h.id), histories);
     printSelection(h, sel);
     selected.push(...sel);
+    if (!sel.length) {
+      const games = await getJson(
+        `${API}/v1/matches/metadata?hero_ids=${h.id}&min_average_badge=${TOP_BADGE}&min_unix_timestamp=${sinceOf.get(h.id)}&limit=100`,
+      );
+      const first = Math.min(...games.map((m) => Date.parse(m.start_time.replace(' ', 'T') + 'Z') / 1000));
+      if (Number.isFinite(first)) newHeroes.push({ hero_id: h.id, hero: h.name, first_game: first });
+    }
   }
   if (SELECT_ONLY) return;
   const entries = [];
@@ -876,6 +884,7 @@ async function fetchValidation(heroes, manifest) {
   const kept = HEROES_ARG ? (manifest.validation_sets || []).filter((v) => !targetIds.has(v.hero_id)) : [];
   manifest.validation_sets = [...kept, ...entries].sort((a, b) => a.hero_id - b.hero_id || a.selection?.rank - b.selection?.rank);
   manifest.counts.validation_sets = manifest.validation_sets.length;
+  manifest.new_heroes = [...(HEROES_ARG ? (manifest.new_heroes || []).filter((n) => !targetIds.has(n.hero_id)) : []), ...newHeroes];
   manifest.validation = { players_per_hero: VALIDATION_PLAYERS_PER_HERO, match_target: VALIDATION_MATCH_TARGET, selected_at: new Date().toISOString() };
   delete manifest.counts.zergggy_matches_with_purchases;
 }
@@ -884,13 +893,6 @@ async function main() {
   await mkdir(OUT, { recursive: true });
   if (MATCHUPS_ARG) {
     await fetchMatchups(MATCHUPS_ARG);
-    return;
-  }
-  if (process.argv.includes('--v2-only')) {
-    const manifest = JSON.parse(await readFile(path.join(OUT, 'manifest.json'), 'utf8'));
-    const heroes = JSON.parse(await readFile(path.join(OUT, 'heroes.json'), 'utf8'));
-    const { fetchV2 } = await import('./fetch-v2.mjs');
-    await fetchV2(heroes, HEROES_ARG ?? V2_HEROES, manifest);
     return;
   }
   if (VALIDATION_ONLY) {
@@ -966,7 +968,12 @@ async function main() {
     await save('manifest.json', manifest);
     return;
   }
-  const manifest = { fetched_at: new Date().toISOString(), min_unix_timestamp: MIN_TS, window_days: WINDOW_DAYS, counts: {} };
+  const manifest = {
+    fetched_at: new Date().toISOString(),
+    min_unix_timestamp: MIN_TS,
+    window_days: Math.round((Date.now() / 1000 - MIN_TS) / 86400),
+    counts: {},
+  };
 
   console.log('1/5 item catalog');
   const items = (await getJson(`${ASSETS}/items/by-type/upgrade`)).map(slimItem);
@@ -1014,9 +1021,6 @@ async function main() {
   manifest.corrupted_fetched_at = new Date().toISOString();
   await fetchImbueTargets(heroes);
   manifest.imbue_targets_fetched_at = new Date().toISOString();
-
-  const { fetchV2 } = await import('./fetch-v2.mjs');
-  await fetchV2(heroes, V2_HEROES, manifest);
 
   await save('manifest.json', manifest);
   console.log('done', manifest.counts);

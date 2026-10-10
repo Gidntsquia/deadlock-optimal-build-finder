@@ -175,15 +175,6 @@ export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob>
       const x = rx + 8 + (i % COLS) * (TILE + GAP),
         ty = y + ROW_HEAD + 8 + Math.floor(i / COLS) * (TILE_H + GAP);
       const [art, flag, plate] = C.slot[b.item.item_slot_type] ?? C.slot.weapon;
-      if (b.spike) {
-        // soft outer ring: 45% tint, 4px wide, outside the tile
-        g.save();
-        g.globalAlpha = 0.45;
-        g.fillStyle = art;
-        roundRect(g, x - 4, ty - 4, TILE + 8, TILE_H + 8, 6);
-        g.fill();
-        g.restore();
-      }
       g.save();
       roundRect(g, x, ty, TILE, TILE_H, 4);
       g.clip();
@@ -216,12 +207,6 @@ export async function renderBuildPng(build: Build, o: PngOptions): Promise<Blob>
       const rn = ROMAN[b.item.item_tier] ?? String(b.item.item_tier);
       g.fillText(rn, x + TILE - 3 - g.measureText(rn).width, ty + 11);
       g.textAlign = 'center';
-      if (b.spike) {
-        // 2px border in the slot colour (the clip keeps the inner half of the 4px stroke)
-        g.strokeStyle = art;
-        g.lineWidth = 4;
-        g.strokeRect(x, ty, TILE, TILE_H);
-      }
       if (o.detailed && b.corrupt) {
         if (corruptFrame) g.drawImage(corruptFrame, x, ty, TILE, TILE);
         // swap order in a corner flag mirroring the tier flag

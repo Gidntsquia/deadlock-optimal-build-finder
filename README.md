@@ -37,7 +37,7 @@ npm run verify               # Runs all the checks and prints the panel agreemen
 
 ## Features 🔬
 
-- A build for each of the 38 heroes, using the last 30 days of Phantom+ games.
+- A build for each hero, using Phantom+ games since the latest patch.
   Heroes that don't have enough high-rank data use all ranks.
 - Heroes with two established ways to play (for example gun Warden and spirit Warden)
   get one build per style, each optimised from the games played that way. The app

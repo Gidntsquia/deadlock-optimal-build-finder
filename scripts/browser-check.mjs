@@ -218,7 +218,7 @@ try {
     );
     check('one details control, closed by default', (await page.$$('.details-btn')).length === 1 && (await page.$$('.details')).length === 0);
     let bad = [];
-    // build pills only show when the hero has more than one build style (checked on Warden below)
+    // build pills only show when the hero has more than one build style (checked on a multi-style hero below)
     const pills = (await page.$$('.style-switch')).length ? ['.style-switch'] : [];
     for (const sel of ['.hero-btn:visible', ...pills, '.row.abilities', '.ap-grid', '.share-btn', '.details-btn']) {
       const r = await page.locator(sel).first().boundingBox();
@@ -242,9 +242,6 @@ try {
   await page.keyboard.press('Enter');
   await page.waitForSelector('.details');
   {
-    // Infernus (v2): the figures sit behind "Show numbers"; open it for the figure checks, close it again for the v2 checks
-    const v2Closed = await page.evaluate(() => !!document.querySelector('.details .v2-numbers:not([open])'));
-    if (v2Closed) await page.click('.details .v2-numbers > summary');
     const text = await page.$eval('.details', (e) => e.innerText);
     const badges = await page.$$eval('.details .item-table tr[data-core]', (e) => e.length);
     const tiles = await page.$$eval('.tiles .tile', (e) => e.length);
@@ -259,78 +256,6 @@ try {
       text.slice(0, 120),
     );
     await snap({ path: shot('details-desktop.png') });
-    if (v2Closed) await page.click('.details .v2-numbers > summary');
-    // v2 section (Infernus): one plain sentence per build row up front, then a closed "Show numbers" toggle
-    const v2 = await page.evaluate(() => {
-      const root = document.querySelector('.details .v2-details');
-      const num = root?.querySelector('.v2-numbers');
-      const ord = root?.querySelector('.v2-order');
-      const block = root?.querySelector('.v2-block');
-      const above = [...(root?.children ?? [])].filter((e) => e !== num).map((e) => e.className);
-      const text = [...(root?.children ?? [])]
-        .filter((e) => e !== num)
-        .map((e) => e.innerText)
-        .join('\n');
-      const d = document.querySelector('.details');
-      return {
-        above,
-        text,
-        numOpen: num?.open,
-        ordOpen: ord?.open,
-        final: block?.querySelectorAll('.v2-final li').length,
-        ringed: block?.querySelectorAll('.v2-final .v2-ring').length,
-        bullets: [...(block?.querySelectorAll('.v2-bullets') ?? [])].map((u) => u.children.length),
-        heads: [...(block?.querySelectorAll('h3') ?? [])].map((h) => h.innerText),
-        phases: block?.querySelector('.v2-phases')?.innerText,
-        firstChild: block?.firstElementChild?.tagName,
-        fits: d.scrollHeight <= d.clientHeight + 1,
-      };
-    });
-    const BANNED = /%|match|win rate|score|phantom|rate\b/i;
-    check(
-      'details v2: summary block (12 icons, ringed Brawl items, one bullet per swap/sell, phase line), both toggles closed, no stats words above them',
-      v2.above.join() === 'v2-block,v2-order' &&
-        !v2.numOpen &&
-        !v2.ordOpen &&
-        v2.final === 12 &&
-        v2.ringed >= 1 &&
-        v2.ringed === v2.bullets[0] &&
-        v2.heads[0] === 'You end with' &&
-        v2.heads[1] === 'Street Brawl picks' &&
-        /^Early to \d+ min · Mid to \d+ min · Late after$/.test(v2.phases) &&
-        !BANNED.test(v2.text.replace(/Street Brawl/g, '')),
-      JSON.stringify(v2).slice(0, 400),
-    );
-    if (page.viewportSize().width >= 900) check('details v2: dialog fits without scrolling with both toggles closed', v2.fits, String(v2.fits));
-    await page.click('.details .v2-order > summary');
-    const full = await page.evaluate(() => {
-      const heads = [...document.querySelectorAll('.details .v2-order h3')].map((h) => h.innerText);
-      const lists = [...document.querySelectorAll('.details .v2-order ol')].map((o) => [...o.children].map((li) => li.querySelector('span')?.innerText));
-      return { heads, lists, badges: [...document.querySelectorAll('.details .v2-order .v2-tag')].map((t) => t.innerText) };
-    });
-    const sameAsBoard = await page.evaluate(() => {
-      const src = (e) => e.querySelector('img')?.getAttribute('src');
-      const board = [...document.querySelectorAll('main .board .row')].map((r) => [...r.querySelectorAll('.tile')].map(src)).filter((r) => r.length);
-      const lists = [...document.querySelectorAll('.details .v2-order ol')].map((o) => [...o.children].map(src));
-      return {
-        ok: board.length === lists.length && board.every((r, i) => JSON.stringify(r) === JSON.stringify(lists[i])),
-        b: board.map((r) => r.length),
-        l: lists.map((r) => r.length),
-        s: [board[0]?.[0], lists[0]?.[0]],
-      };
-    });
-    check(
-      'details v2: Full order has Early / Mid / Late headings, with the Brawl and Sell badges',
-      full.heads.join() === 'Early,Mid,Late' && full.lists.every((l) => l.length > 0) && full.badges.includes('Brawl') && sameAsBoard.ok,
-      JSON.stringify([sameAsBoard, full.badges]),
-    );
-    await page.click('.details .v2-order > summary');
-    await page.click('.details .v2-numbers > summary');
-    check(
-      'details v2: Show numbers opens the table',
-      await page.evaluate(() => !!document.querySelector('.details .v2-numbers .panel-table')?.checkVisibility?.()),
-    );
-    await page.click('.details .v2-numbers > summary');
   }
   await closeDetails();
   await page.waitForFunction(() => document.activeElement?.classList.contains('details-btn'), null, { timeout: 2000 }).catch(() => {});
@@ -646,16 +571,6 @@ try {
     const title = () => page.$eval('.frame-head h1', (e) => e.textContent.split(' - ')[0]);
     const step = async (n) => {
       const before = await title();
-      // wait for the previous slide to finish and the button to be enabled before clicking
-      await page.waitForFunction(
-        (n) => {
-          const el = [...document.querySelectorAll(`button[aria-label="${n}"]`)].find((b) => b.getBoundingClientRect().width > 0);
-          const out = document.querySelector('.hero-out');
-          return !!el && !el.disabled && (!out || getComputedStyle(out).display === 'none') && !!document.querySelector('.board-wrap:not(.stale)');
-        },
-        n,
-        T,
-      );
       await page.locator(`button[aria-label="${n}"]:visible`).click();
       await page.waitForFunction(
         (b) => document.querySelector('.frame-head h1')?.textContent.split(' - ')[0] !== b && document.querySelector('.board-wrap:not(.stale)'),
@@ -703,9 +618,16 @@ try {
     });
     check('arrows: 14 rapid clicks end with exactly one portrait filling the card', card.n === 1 && card.top < 8 && card.inside, JSON.stringify(card));
   }
-  await pickHero('Warden');
   {
-    const pills = await page.$$('.style-pill');
+    // which heroes have a second style depends on the snapshot: take the first of these that has one
+    let pills = [],
+      styleHero = '';
+    for (const name of ['Warden', 'Haze', 'Bebop', 'Shiv', 'Ivy', 'Sinclair', 'Venator', 'Abrams']) {
+      await pickHero(name);
+      pills = await page.$$('.style-pill');
+      styleHero = name;
+      if (pills.length >= 2) break;
+    }
     if (pills.length >= 2) {
       const before = await page.evaluate(() => document.querySelector('.tiles .tile')?.textContent + document.querySelector('.frame-head h1')?.textContent);
       await pills[1].click();
@@ -714,8 +636,8 @@ try {
         before,
         T,
       );
-      check('Warden: second style tab changes the build and adds style= to the URL', new URL(page.url()).searchParams.has('style'), page.url());
-    } else check('Warden: second style tab', false, `${pills.length} style tabs`);
+      check(`${styleHero}: second style tab changes the build and adds style= to the URL`, new URL(page.url()).searchParams.has('style'), page.url());
+    } else check('a hero with a second style tab', false, `${pills.length} style tabs on ${styleHero}`);
   }
 
   // ---- fit sample: a few heroes x every style x both desktop sizes (1440 covers the ability grid too) ----

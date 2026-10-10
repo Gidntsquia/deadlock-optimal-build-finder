@@ -1,7 +1,7 @@
 // Verifies the acceptance criteria that can be checked without a browser.
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
-import { generateBuilds, buildV2, usesV2, V2_PARAMS, litmusCheck } from '../src/generator';
+import { generateBuilds } from '../src/generator';
 import { computeCoreSet, consensusAgreement, panelAgreementAcrossBuilds, validateAgainstPanel } from '../src/validation/heldout';
 
 const read = (p: string) => JSON.parse(readFileSync(`public/data/${p}`, 'utf8'));
@@ -28,13 +28,19 @@ check(
 const vsets: any[] = manifest.validation_sets ?? [];
 // a hero refetched from a patch on (analytics min_unix_timestamp) has had only days to collect games: >=5 each
 const minSetMatches = (h: any) => (read(`analytics/${h.id}.json`).min_unix_timestamp ? 5 : 10);
+// a hero first seen in top-rank games under 7 days before the fetch has no players with enough games yet
+const tooNew = new Set(
+  (manifest.new_heroes ?? []).filter((n: any) => Date.parse(manifest.fetched_at) / 1000 - n.first_game < 7 * 86400).map((n: any) => n.hero_id),
+);
 const short = heroes
-  .filter((h: any) => vsets.filter((v) => v.hero_id === h.id && v.matches >= minSetMatches(h)).length < 3)
+  .filter((h: any) => !tooNew.has(h.id) && vsets.filter((v) => v.hero_id === h.id && v.matches >= minSetMatches(h)).length < 3)
   .map((h: any) => `${h.name} (${vsets.filter((v) => v.hero_id === h.id).length})`);
+const newNames = heroes.filter((h: any) => tooNew.has(h.id)).map((h: any) => h.name);
 check(
-  'every active hero has >=3 validation sets with >=10 matches (>=5 since a patch)',
+  'every active hero has >=3 validation sets with >=10 matches (>=5 since a patch), except one released under 7 days ago',
   short.length === 0,
-  short.length ? `short: ${short.join(', ')}` : `${vsets.length} sets over ${heroes.length} heroes`,
+  (short.length ? `short: ${short.join(', ')}` : `${vsets.length} sets over ${heroes.length} heroes`) +
+    (newNames.length ? `; too new to validate: ${newNames.join(', ')}` : ''),
 );
 for (const v of vsets) {
   const z = read(v.file);
@@ -50,8 +56,7 @@ for (const v of vsets) {
 }
 
 // generator must not reference any held-out player or snapshot
-const gen = (readdirSync('src/generator', { recursive: true }) as string[])
-  .filter((f) => /\.ts$/.test(f))
+const gen = readdirSync('src/generator')
   .map((f) => readFileSync(`src/generator/${f}`, 'utf8'))
   .join('\n');
 const heldoutIds = [...new Set(vsets.map((v) => String(v.account_id)))];
@@ -67,9 +72,6 @@ check(
   'files fetching the snapshot: ' + readers.join(', '),
 );
 
-const v2Of = (hero: any, analytics: any) =>
-  buildV2({ hero, heroes, abilities, items, analytics, data: read(`v2/${hero.id}.json`), modes: read('v2/modes.json') });
-const buildsOf = (hero: any, analytics: any) => (usesV2(hero.id) ? [v2Of(hero, analytics).build] : generateBuilds({ hero, abilities, items, analytics }));
 // every hero generates a build, >=12 items each, <=12 held at once, 3 phases, running totals, 4 real abilities
 const infAbilities = new Set(['Napalm', 'Flame Dash', 'Afterburn', 'Concussive Combustion']);
 for (const hero of heroes) {
@@ -77,7 +79,7 @@ for (const hero of heroes) {
   let ok = true;
   const why: string[] = [];
   try {
-    const builds = buildsOf(hero, analytics);
+    const builds = generateBuilds({ hero, abilities, items, analytics });
     if (builds.length < 1) {
       ok = false;
       why.push('no build');
@@ -153,22 +155,14 @@ for (const hero of heroes) {
 // Infernus's charge buyers max Flame Dash (its charges come at T3) early, so the build must too
 {
   const inf = heroes.find((h: any) => h.id === 1);
-  const builds = buildsOf(inf, read('analytics/1.json'));
+  const builds = generateBuilds({ hero: inf, abilities, items, analytics: read('analytics/1.json') });
   const charge = (b: any) => b.items.some((i: any) => !i.item.is_active_item && parseFloat(i.item.properties.BonusAbilityCharges?.value ?? '0') > 0);
   const dashMax = (b: any) => b.abilityOrder.findIndex((s: any) => s.ability.name === 'Flame Dash' && s.kind === 'tier3') + 1;
-  // v2 reads only post-patch games; its charge-item sequences hold fewer games than MIN_TOP_SEQ_MATCHES, so the build
-  // takes the general order and says so (population.abilitySequenceItem unset). v1 builds must still use the charge buyers' order.
-  const thin = (b: any) => usesV2(inf.id) && !b.population.abilitySequenceItem;
-  const bad = builds.filter((b) => charge(b) && !thin(b) && (!b.population.abilitySequenceItem || dashMax(b) === 0 || dashMax(b) > 10));
+  const bad = builds.filter((b) => charge(b) && (!b.population.abilitySequenceItem || dashMax(b) === 0 || dashMax(b) > 10));
   check(
     'Infernus charge builds max Flame Dash by the 10th ability point',
     builds.some(charge) && bad.length === 0,
-    builds
-      .map(
-        (b) =>
-          `${b.name}: from ${b.population.abilitySequenceItem?.name ?? (thin(b) ? 'all post-patch games (charge-item games too few)' : 'all games')}, Flame Dash maxed at point ${dashMax(b) || '-'}`,
-      )
-      .join('; '),
+    builds.map((b) => `${b.name}: from ${b.population.abilitySequenceItem?.name ?? 'all games'}, Flame Dash maxed at point ${dashMax(b) || '-'}`).join('; '),
   );
 }
 
@@ -182,7 +176,7 @@ const heroAgreement: { hero: string; agreement: number; consensus: number }[] = 
 for (const hero of heroes) {
   const sets = vsets.filter((v) => v.hero_id === hero.id);
   if (!sets.length) continue;
-  const builds = buildsOf(hero, read(`analytics/${hero.id}.json`));
+  const builds = generateBuilds({ hero, abilities, items, analytics: read(`analytics/${hero.id}.json`) });
   const panel = sets.map((set) => ({ set, core: computeCoreSet(read(set.file), items) }));
   let ok = true;
   const why: string[] = [];
@@ -210,9 +204,7 @@ for (const hero of heroes) {
   check(
     `${hero.name}: panel of ${sets.length} (${sets.map((s) => s.player).join(', ')}) agreement in [0,1] + badges`,
     ok,
-    ok
-      ? `agreement ${(across.agreement * 100).toFixed(0)}%${usesV2(hero.id) ? ' (not targeted: the v2 build is not made to match the panel)' : ''} (consensus ${(cons.agreement * 100).toFixed(0)}%)${styleNote}`
-      : why.join('; '),
+    ok ? `agreement ${(across.agreement * 100).toFixed(0)}% (consensus ${(cons.agreement * 100).toFixed(0)}%)${styleNote}` : why.join('; '),
   );
 }
 if (heroAgreement.length) {
@@ -234,179 +226,6 @@ if (heroAgreement.length) {
       .map((h) => `${h.hero} ${(h.consensus * 100).toFixed(0)}%`)
       .join(', ')}). Ceiling from the panel itself: npx tsx scripts/ceiling.ts`,
   );
-}
-
-// v2 (Infernus): the report the Details dialog shows, and the rules the plan fixes
-for (const hero of heroes.filter((h: any) => usesV2(h.id))) {
-  const { build, report: r } = v2Of(hero, read(`analytics/${hero.id}.json`));
-  const d = read(`v2/${hero.id}.json`);
-  check(
-    `v2 ${hero.name}: every dataset starts at the patch (${r.patch.name}, ${r.patch.since})`,
-    [d.standard, d.brawl, d.standard_vs, d.brawl_vs, d.ability_order_stats, d.timelines, d.sell_stats].every(
-      (x: any) => x.min_unix_timestamp === r.patch.since,
-    ),
-    `${r.counts.standard} standard / ${r.counts.brawl} brawl games on the top item`,
-  );
-  console.log(`v2 ${hero.name} role curve (${r.curve.source}, ${r.curve.games} games; fight window starts ${Math.round(r.curve.farmEndS / 60)} min):`);
-  for (const b of r.curve.buckets)
-    console.log(
-      `   ${String(b.startS / 60).padStart(2)}-${String(b.startS / 60 + 5).padStart(2)} min  farm ${b.farm.toFixed(2)}  fight ${b.fight.toFixed(2)}  farm share ${(b.farmShare * 100).toFixed(0)}%`,
-    );
-  check(
-    `v2 ${hero.name}: role curve is from panel games or says it fell back`,
-    r.curve.source === 'panel' ? r.curve.games >= 20 : r.curve.games > 0,
-    `${r.curve.source}, ${r.curve.games} games`,
-  );
-  check(
-    `v2 ${hero.name}: every build item has a role reason`,
-    build.items.every((b) => r.rows.some((x) => x.itemId === b.item.id && x.roleNote)),
-  );
-  check(
-    `v2 ${hero.name}: no standard-only item (souls, clear, lane sustain) got a brawl lift`,
-    r.rows.every((x) => !['souls', 'clearSpeed', 'laneSustain'].includes(x.category) || x.brawlLift === 0),
-  );
-  check(
-    `v2 ${hero.name}: no item with a brawl term is under 1% of the top item's standard games or more than 2.0 pts below average in standard`,
-    r.rows.every((x) => x.brawlLift === 0 || (x.popRel >= V2_PARAMS.minStandardShare && x.stdDelta >= V2_PARAMS.minStdDelta)),
-  );
-  check(
-    `v2 ${hero.name}: counter swaps for 10 enemies, each with sample sizes`,
-    r.enemies.length === 10 && r.enemies.every((e) => e.games > 0 && e.swaps.every((w) => w.games > 0)),
-  );
-  check(
-    `v2 ${hero.name}: colour spend totals and the crossing item per colour`,
-    r.colours.length === 3 && build.items.some((b) => b.spike),
-    r.colours.map((c) => `${c.slot} ${c.total}${c.crossing ? ` crosses at ${c.crossing.name}` : ''}`).join('; '),
-  );
-  const pl = r.placement;
-  console.log(`v2 ${hero.name} order (brawl-lifted: ${pl.lifted.join(', ')}; displaced: ${pl.displaced.join(', ')}):`);
-  for (const x of pl.rows) console.log(`   ${String(x.slot).padStart(2)} ${x.name.padEnd(24)} ${x.source}`);
-  {
-    const held: string[] = [];
-    let peak = 0,
-      sellsOk = true;
-    for (const b of build.items) {
-      if (b.upgradesFrom) {
-        const k = held.indexOf(b.upgradesFrom.name);
-        if (k >= 0) held.splice(k, 1);
-      }
-      for (const o of build.items)
-        if (o.sellFor?.id === b.item.id) {
-          const k = held.indexOf(o.item.name);
-          if (k < 0) sellsOk = false;
-          else held.splice(k, 1);
-        }
-      held.push(b.item.name);
-      peak = Math.max(peak, held.length);
-    }
-    for (const o of build.items) if (o.sellFor && build.items.findIndex((x) => x.item.id === o.sellFor!.id) <= build.items.indexOf(o)) sellsOk = false;
-    check(`v2 ${hero.name}: never more than 12 items held, every sell comes at the buy it funds`, peak <= 12 && sellsOk, `most held ${peak}`);
-    const endSet = [...held].sort().join(', '),
-      finalSet = [...pl.finals].sort().join(', ');
-    console.log(
-      `v2 ${hero.name} final 12: ${pl.finals.join(', ')}\nv2 ${hero.name} standard 12: ${pl.standardFinals.join(', ')}\nv2 ${hero.name} cut on the way: ${pl.cut.join(', ') || 'none'}`,
-    );
-    check(
-      `v2 ${hero.name}: the 12 items held at the end are exactly the final 12`,
-      held.length === 12 && pl.finals.length === 12 && endSet === finalSet,
-      `held ${held.length}`,
-    );
-    check(
-      `v2 ${hero.name}: no final-12 item is sold`,
-      build.items.every((b) => !b.sellFor || !pl.finals.includes(b.item.name)),
-    );
-    check(
-      `v2 ${hero.name}: each lifted item is placed by its tier and price, never before the first standard item of its tier`,
-      pl.rows
-        .filter((x) => x.lifted)
-        .every((x) => {
-          const it = build.items.find((b) => b.item.id === x.itemId)!;
-          const first = Math.min(
-            ...pl.rows.filter((y) => !y.lifted && build.items.find((b) => b.item.id === y.itemId)!.item.item_tier === it.item.item_tier).map((y) => y.time),
-          );
-          return /^placed after/.test(x.source) && x.time >= first;
-        }),
-      pl.rows
-        .filter((x) => x.lifted)
-        .map((x) => `${x.name} -> ${x.took}`)
-        .join('; '),
-    );
-    for (const o of build.items) if (o.sellFor) console.log(`   sell ${o.item.name} when you buy ${o.sellFor.name}`);
-  }
-  {
-    const idx = (n: string) => build.items.findIndex((b) => b.item.name === n) + 1;
-    const liftedRows = pl.rows
-      .filter((x) => x.lifted)
-      .map((x) => build.items.find((b) => b.item.id === x.itemId)!)
-      .sort((x, y) => y.item.cost - x.item.cost)
-      .slice(0, 3);
-    check(
-      `v2 ${hero.name}: the three costliest lifted items do not fill the last three rows together`,
-      !(liftedRows.length === 3 && liftedRows.every((b) => idx(b.item.name) > build.items.length - 3)),
-      liftedRows.map((b) => `${b.item.name} ${idx(b.item.name)}/${build.items.length}`).join(', '),
-    );
-    const timeOf = new Map(pl.rows.map((x) => [x.name, x.time]));
-    check(
-      `v2 ${hero.name}: no T4 before 18:00 and no T1 after 25:00 on the order's times`,
-      build.items.every((b) => !(b.item.item_tier === 4 && timeOf.get(b.item.name)! < 1080) && !(b.item.item_tier === 1 && timeOf.get(b.item.name)! > 1500)),
-    );
-    const early = build.items
-      .filter((b) => b.upgradesFrom)
-      .map((b) => ({ c: b.upgradesFrom!.name, u: b.item.name }))
-      .filter(({ c, u }) => idx(u) - idx(c) <= 1 && timeOf.get(u)! - build.items.find((x) => x.item.name === c)!.avgBuyTimeS > 300);
-    check(
-      `v2 ${hero.name}: no component sits right before its upgrade when its own time is over 5 min earlier`,
-      early.length === 0,
-      early.map((x) => `${x.c} -> ${x.u}`).join(', '),
-    );
-    check(
-      `v2 ${hero.name}: last row is a final-12 buy (nothing bought after the last final)`,
-      pl.finals.includes(build.items[build.items.length - 1].item.name) || build.items[build.items.length - 1].upgradesFrom !== undefined,
-    );
-    const run = build.items.map((b) => b.runningTotal);
-    check(
-      `v2 ${hero.name}: running totals follow the order`,
-      run.every((t, i) => t === (run[i - 1] ?? 0) + build.items[i].paidCost),
-    );
-    // spike tiles recomputed here from the final order and sell points (held at the moment of each buy), against the report
-    const cash: Record<string, number> = { weapon: 0, vitality: 0, spirit: 0 },
-      cross: Record<string, string> = {};
-    for (const b of build.items) {
-      for (const o of build.items) if (o.sellFor?.id === b.item.id) cash[o.item.item_slot_type] -= o.item.cost;
-      const before = cash[b.item.item_slot_type];
-      cash[b.item.item_slot_type] += b.paidCost;
-      if (before < 4800 && cash[b.item.item_slot_type] >= 4800 && !cross[b.item.item_slot_type]) cross[b.item.item_slot_type] = b.item.name;
-    }
-    check(
-      `v2 ${hero.name}: each colour's spike tile matches a recount of what is held at each buy`,
-      r.colours.every((c) => (c.crossing?.name ?? undefined) === cross[c.slot]) &&
-        build.items.filter((b) => b.spike).every((b) => cross[b.spike!.slot] === b.item.name),
-      `crossings: ${r.colours.map((c) => `${c.slot} ${c.crossing?.name ?? 'none'}`).join('; ')}`,
-    );
-    const byClass = new Map(items.filter((i: any) => i.shopable && !i.disabled).map((i: any) => [i.class_name, i]));
-    const missing = build.items.filter((b) => b.item.component_items.some((c) => byClass.has(c)) && !b.upgradesFrom).map((b) => b.item.name);
-    check(
-      `v2 ${hero.name}: every upgrade in the build is bought from its component`,
-      missing.length === 0,
-      missing.length ? `no component: ${missing.join(', ')}` : '',
-    );
-    const compNames = new Set(build.items.flatMap((b) => (b.upgradesFrom ? [b.upgradesFrom.name] : [])));
-    check(
-      `v2 ${hero.name}: no component of a build item is counted as displaced or lifted`,
-      pl.displaced.every((n) => !compNames.has(n)) && pl.lifted.every((n) => !compNames.has(n)),
-      `lifted ${pl.lifted.join(', ')}; displaced ${pl.displaced.join(', ') || 'none'}`,
-    );
-  }
-  const z = r.zergggy;
-  console.log(
-    `v2 ${hero.name} vs Zergggy: ${z.games} games since the patch; ${z.shared.length} items in both (${z.shared.join(', ') || 'none'}); ${z.onlyHis.length} only his; ${z.onlyBuild.length} only this build`,
-  );
-  check(`v2 ${hero.name}: Zergggy comparison present with its game count`, z.games >= 0 && z.games === d.zergggy.games.length);
-  const sw = r.curve.farmEndS / 60;
-  check(`v2 ${hero.name}: fight window starts between 15 and 20 min`, sw >= 15 && sw <= 20, `${sw} min; buckets printed above`);
-  console.log(`v2 ${hero.name} litmus (brawlWeight ${V2_PARAMS.brawlWeight}):`);
-  for (const l of litmusCheck(build, r))
-    check(`v2 ${hero.name} litmus: ${l.name} ${l.want === 'in' ? 'in' : 'out'}`, l.ok, `${l.inBuild ? 'in' : 'out'}; ${l.rule}`);
 }
 
 console.log(`\nsnapshot fetched ${manifest.fetched_at}; ${fails} failure(s)`);

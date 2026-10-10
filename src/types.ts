@@ -134,8 +134,6 @@ export interface HeroAnalytics extends AnalyticsPopulation {
     item_ability_order_stats?: ItemAbilityOrderStats;
     sell_stats?: { players: number; matches: number; items: SellStat[] };
   };
-  /** v2 heroes only (src/generator/pipeline.ts): post-patch standard + Street Brawl data, loaded beside the analytics */
-  v2?: { data: V2Data; modes: V2Modes };
   corrupted?: { since_unix_timestamp: number; min_duration_s: number; items: CorruptedStat[] };
   /** which ability the hero's most favorited published builds put each imbue item on (fetchImbueTargets) */
   imbue_targets?: { builds: number; items: { item_id: number; targets: { ability_id: number; builds: number }[] }[] };
@@ -200,10 +198,7 @@ export interface MatchupStats {
 
 export type Phase = 'early' | 'mid' | 'late';
 
-import type { V2Data, V2Modes, V2Report } from './generator/v2/types';
 export interface BuildItem {
-  /** v2: this tile takes its colour's spend across a spike (docs/build-v2.md) */
-  spike?: { slot: SlotType; threshold: number };
   item: Item;
   phase: Phase;
   order: number;
@@ -235,6 +230,4 @@ export interface Build {
   abilityOrder: AbilityStep[];
   abilityOrderSupport: { matches: number; winRate: number } | null;
   population: BuildPopulation;
-  /** v2 builds only: the reasoning Details shows */
-  v2?: V2Report;
 }
