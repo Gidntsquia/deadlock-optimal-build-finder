@@ -2,28 +2,54 @@
   "hero_id": 69,
   "hero_class_name": "hero_doorman",
   "name": "Monclan The Doorman",
-  "description": "Corrupt at the Broker, in order: Greater Expansion, Vortex Web, Rapid Recharge, Boundless Spirit.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Corrupt at the Broker, in order: Greater Expansion, Tankbuster, Rapid Recharge, Spirit Burn.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
       "description": "",
       "width": 840,
       "height": 175,
-      "item_ids": [3077079169, 2064029594, 1998374645, 3776945997, 3399065363, 3074274290, 1672893796]
+      "item_ids": [
+        3077079169,
+        2064029594,
+        1998374645,
+        3776945997,
+        3399065363,
+        1672893796,
+        3074274290
+      ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 720,
+      "width": 1080,
       "height": 175,
-      "item_ids": [754480263, 968099481, 787198704, 1813726886, 865958998, 7409189]
+      "item_ids": [
+        754480263,
+        3633614685,
+        857669956,
+        968099481,
+        787198704,
+        3585132399,
+        1813726886,
+        7409189,
+        2121044373
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Greater Expansion, Vortex Web, Rapid Recharge, Boundless Spirit.",
-      "width": 960,
+      "description": "Corrupt at the Broker, in order: Greater Expansion, Tankbuster, Rapid Recharge, Spirit Burn.",
+      "width": 840,
       "height": 175,
-      "item_ids": [2121044373, 1152158042, 380806748, 1193964439, 2519598785, 3261353684, 3361811174, 343572757]
+      "item_ids": [
+        1152158042,
+        380806748,
+        1193964439,
+        2519598785,
+        3361811174,
+        3261353684,
+        343572757
+      ]
     }
   ],
   "ability_order": [
@@ -92,5 +118,9 @@
       "kind": "tier3"
     }
   ],
-  "tags": [103496908, 1719512318, 1998374645]
+  "tags": [
+    103496908,
+    1719512318,
+    3776945997
+  ]
 }

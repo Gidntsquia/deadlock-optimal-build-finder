@@ -1,0 +1,123 @@
+{
+  "hero_id": 15,
+  "hero_class_name": "hero_bebop",
+  "name": "Monclan Superior Cooldown Bebop",
+  "description": "Sell later: Melee Lifesteal (when you buy Spirit Resilience), Slowing Hex (when you buy Witchmail), Enchanter's Emblem (when you buy Mystic Reverb).\nCorrupt at the Broker, in order: Veil Walker, Spirit Snatch, Boundless Spirit, Transcendent Cooldown.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "categories": [
+    {
+      "name": "Early Game",
+      "description": "",
+      "width": 720,
+      "height": 175,
+      "item_ids": [
+        2829638276,
+        1998374645,
+        3399065363,
+        465043967,
+        3074274290,
+        1439347412
+      ]
+    },
+    {
+      "name": "Mid Game",
+      "description": "Sell Melee Lifesteal when you buy Spirit Resilience. Sell Slowing Hex when you buy Witchmail. Sell Enchanter's Emblem when you buy Mystic Reverb.",
+      "width": 1200,
+      "height": 175,
+      "item_ids": [
+        1437614329,
+        1813726886,
+        3970837787,
+        968099481,
+        2447176615,
+        865958998,
+        2947183272,
+        7409189,
+        2566692615,
+        3190916303
+      ]
+    },
+    {
+      "name": "Late Game",
+      "description": "Corrupt at the Broker, in order: Veil Walker, Spirit Snatch, Boundless Spirit, Transcendent Cooldown.",
+      "width": 960,
+      "height": 175,
+      "item_ids": [
+        380806748,
+        2121044373,
+        2163598980,
+        3261353684,
+        3028234315,
+        3577481646,
+        2519598785,
+        915014646
+      ]
+    }
+  ],
+  "ability_order": [
+    {
+      "ability_id": 3089858203,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 3089858203,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1928108461,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2521902222,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2521902222,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2521902222,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 3832675871,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 3089858203,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1928108461,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 3089858203,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1928108461,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1928108461,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 3832675871,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 3832675871,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2521902222,
+      "kind": "tier3"
+    }
+  ],
+  "tags": [
+    3089858203,
+    1928108461,
+    3261353684
+  ]
+}

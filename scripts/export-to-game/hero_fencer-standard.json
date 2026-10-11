@@ -1,0 +1,122 @@
+{
+  "hero_id": 77,
+  "hero_class_name": "hero_fencer",
+  "name": "Monclan Apollo",
+  "description": "Sell later: Cold Front (when you buy Compress Cooldown), Dispel Magic (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Lifestrike, Superior Cooldown, Boundless Spirit, Spirit Burn, Point Blank, Greater Expansion, Tankbuster.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "categories": [
+    {
+      "name": "Early Game",
+      "description": "Sell Cold Front when you buy Compress Cooldown.",
+      "width": 720,
+      "height": 175,
+      "item_ids": [
+        1998374645,
+        968099481,
+        2829638276,
+        1437614329,
+        754480263,
+        1976391348
+      ]
+    },
+    {
+      "name": "Mid Game",
+      "description": "Sell Dispel Magic when you buy Spirit Burn.",
+      "width": 1320,
+      "height": 175,
+      "item_ids": [
+        7409189,
+        465043967,
+        2566692615,
+        1342610602,
+        2603935618,
+        26002154,
+        1252627263,
+        3190916303,
+        3731635960,
+        2081037738,
+        2095565695
+      ]
+    },
+    {
+      "name": "Late Game",
+      "description": "Corrupt at the Broker, in order: Lifestrike, Superior Cooldown, Boundless Spirit, Spirit Burn, Point Blank, Greater Expansion, Tankbuster.",
+      "width": 720,
+      "height": 175,
+      "item_ids": [
+        380806748,
+        2519598785,
+        2121044373,
+        3261353684,
+        1193964439,
+        343572757
+      ]
+    }
+  ],
+  "ability_order": [
+    {
+      "ability_id": 147493976,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 147493976,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 725153709,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2006773718,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 147493976,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 494112189,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 147493976,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 2006773718,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2006773718,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2006773718,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 725153709,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 725153709,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 494112189,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 725153709,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 494112189,
+      "kind": "tier2"
+    }
+  ],
+  "tags": [
+    147493976,
+    725153709,
+    2519598785
+  ]
+}

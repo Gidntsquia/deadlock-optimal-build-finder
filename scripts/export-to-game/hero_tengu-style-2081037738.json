@@ -1,0 +1,123 @@
+{
+  "hero_id": 20,
+  "hero_class_name": "hero_tengu",
+  "name": "Monclan Spirit Ivy",
+  "description": "Sell later: Monster Rounds (when you buy Mystic Vulnerability).\nCorrupt at the Broker, in order: Alchemical Fire, Boundless Spirit, Greater Expansion, Rapid Recharge, Superior Duration, Escalating Exposure, Transcendent Cooldown.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "categories": [
+    {
+      "name": "Early Game",
+      "description": "Sell Monster Rounds when you buy Mystic Vulnerability.",
+      "width": 840,
+      "height": 175,
+      "item_ids": [
+        1009965641,
+        1548066885,
+        2356412290,
+        3399065363,
+        3074274290,
+        3776945997,
+        811521119
+      ]
+    },
+    {
+      "name": "Mid Game",
+      "description": "",
+      "width": 960,
+      "height": 175,
+      "item_ids": [
+        754480263,
+        968099481,
+        2603935618,
+        7409189,
+        1932939246,
+        2951612397,
+        380806748,
+        1102081447
+      ]
+    },
+    {
+      "name": "Late Game",
+      "description": "Corrupt at the Broker, in order: Alchemical Fire, Boundless Spirit, Greater Expansion, Rapid Recharge, Superior Duration, Escalating Exposure, Transcendent Cooldown.",
+      "width": 1080,
+      "height": 175,
+      "item_ids": [
+        787198704,
+        2081037738,
+        1193964439,
+        2717651715,
+        3261353684,
+        3005970438,
+        493591231,
+        2519598785,
+        915014646
+      ]
+    }
+  ],
+  "ability_order": [
+    {
+      "ability_id": 3642273386,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 3642273386,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 4111222521,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1531378655,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 3642273386,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 4111222521,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1247583368,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 4111222521,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 3642273386,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1247583368,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 4111222521,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1247583368,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1247583368,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1531378655,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1531378655,
+      "kind": "tier2"
+    }
+  ],
+  "tags": [
+    3642273386,
+    4111222521,
+    2081037738
+  ]
+}

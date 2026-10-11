@@ -2,28 +2,52 @@
   "hero_id": 3,
   "hero_class_name": "hero_hornet",
   "name": "Monclan Active Reload Vindicta",
-  "description": "Sell later: Bullet Resist Shredder (when you buy Spellslinger), Enchanter's Emblem (when you buy Spirit Lifesteal).\nCorrupt at the Broker, in order: Blood Tribute, Spiritual Overflow, Spellslinger, Sharpshooter.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Opening Rounds (when you buy Bullet Lifesteal), Bullet Resist Shredder (when you buy Fleetfoot), Enchanter's Emblem (when you buy Burst Fire), Active Reload (when you buy Blood Tribute).\nCorrupt at the Broker, in order: Blood Tribute, Sharpshooter, Burst Fire.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Bullet Resist Shredder when you buy Spellslinger.",
-      "width": 600,
+      "description": "Sell Opening Rounds when you buy Bullet Lifesteal. Sell Bullet Resist Shredder when you buy Fleetfoot.",
+      "width": 720,
       "height": 175,
-      "item_ids": [3077079169, 2064029594, 2971868509, 3776945997, 3074274290]
+      "item_ids": [
+        3077079169,
+        2064029594,
+        2971868509,
+        3776945997,
+        968099481,
+        3074274290
+      ]
     },
     {
       "name": "Mid Game",
-      "description": "Sell Enchanter's Emblem when you buy Spirit Lifesteal.",
-      "width": 1200,
+      "description": "Sell Enchanter's Emblem when you buy Burst Fire. Sell Active Reload when you buy Blood Tribute.",
+      "width": 1560,
       "height": 175,
-      "item_ids": [787198704, 3970837787, 668299740, 381961617, 4104549924, 3331811235, 499683006, 1409190604, 1414025773, 3403085434]
+      "item_ids": [
+        3399065363,
+        787198704,
+        3970837787,
+        668299740,
+        4104549924,
+        381961617,
+        3331811235,
+        2356412290,
+        1414025773,
+        499683006,
+        1409190604,
+        3403085434,
+        2152872419
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Blood Tribute, Spiritual Overflow, Spellslinger, Sharpshooter.",
-      "width": 600,
+      "description": "Corrupt at the Broker, in order: Blood Tribute, Sharpshooter, Burst Fire.",
+      "width": 240,
       "height": 175,
-      "item_ids": [2152872419, 989206714, 2221211450, 876563814, 2226497419]
+      "item_ids": [
+        2739107182,
+        989206714
+      ]
     }
   ],
   "ability_order": [
@@ -32,20 +56,20 @@
       "kind": "unlock"
     },
     {
-      "ability_id": 2048438176,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 537527508,
-      "kind": "unlock"
-    },
-    {
       "ability_id": 1796564033,
       "kind": "unlock"
     },
     {
-      "ability_id": 2048438176,
-      "kind": "tier2"
+      "ability_id": 1796564033,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 537527508,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 537527508,
+      "kind": "tier1"
     },
     {
       "ability_id": 775377419,
@@ -61,15 +85,19 @@
     },
     {
       "ability_id": 537527508,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 537527508,
       "kind": "tier2"
     },
     {
-      "ability_id": 1796564033,
+      "ability_id": 537527508,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 2048438176,
       "kind": "tier1"
+    },
+    {
+      "ability_id": 2048438176,
+      "kind": "tier2"
     },
     {
       "ability_id": 1796564033,
@@ -81,12 +109,12 @@
     },
     {
       "ability_id": 775377419,
-      "kind": "tier3"
-    },
-    {
-      "ability_id": 2048438176,
       "kind": "tier3"
     }
   ],
-  "tags": [2048438176, 537527508, 381961617]
+  "tags": [
+    2048438176,
+    1796564033,
+    3776945997
+  ]
 }

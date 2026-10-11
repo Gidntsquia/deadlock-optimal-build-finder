@@ -2,28 +2,53 @@
   "hero_id": 81,
   "hero_class_name": "hero_unicorn",
   "name": "Monclan Celeste",
-  "description": "Sell later: Suppressor (when you buy Superior Cooldown), Spirit Shielding (when you buy Witchmail), Healbane (when you buy Mystic Vulnerability).\nCorrupt at the Broker, in order: Torment Pulse, Greater Expansion, Radiant Regeneration, Tankbuster.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Suppressor (when you buy Spirit Lifesteal), Spirit Shielding (when you buy Mystic Vulnerability).\nCorrupt at the Broker, in order: Stamina Mastery, Torment Pulse, Greater Expansion, Radiant Regeneration.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
       "description": "",
-      "width": 600,
+      "width": 720,
       "height": 175,
-      "item_ids": [2829638276, 3077079169, 1439347412, 1998374645, 2947183272]
+      "item_ids": [
+        2829638276,
+        3077079169,
+        1439347412,
+        1998374645,
+        754480263,
+        2947183272
+      ]
     },
     {
       "name": "Mid Game",
-      "description": "Sell Suppressor when you buy Superior Cooldown. Sell Spirit Shielding when you buy Witchmail. Sell Healbane when you buy Mystic Vulnerability.",
+      "description": "Sell Suppressor when you buy Spirit Lifesteal. Sell Spirit Shielding when you buy Mystic Vulnerability.",
       "width": 1320,
       "height": 175,
-      "item_ids": [754480263, 1672893796, 1925087134, 2566692615, 112198670, 2059712766, 2603935618, 4139877411, 395944548, 2064029594, 1193964439]
+      "item_ids": [
+        1672893796,
+        1925087134,
+        2566692615,
+        112198670,
+        2059712766,
+        2603935618,
+        4139877411,
+        395944548,
+        2064029594,
+        334300056,
+        1193964439
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Torment Pulse, Greater Expansion, Radiant Regeneration, Tankbuster.",
-      "width": 720,
+      "description": "Corrupt at the Broker, in order: Stamina Mastery, Torment Pulse, Greater Expansion, Radiant Regeneration.",
+      "width": 600,
       "height": 175,
-      "item_ids": [2121044373, 876563814, 3261353684, 3028234315, 2081037738, 3005970438]
+      "item_ids": [
+        2121044373,
+        3261353684,
+        876563814,
+        2081037738,
+        3005970438
+      ]
     }
   ],
   "ability_order": [
@@ -88,5 +113,9 @@
       "kind": "tier3"
     }
   ],
-  "tags": [3443575800, 1950738949, 2829638276]
+  "tags": [
+    3443575800,
+    1950738949,
+    2947183272
+  ]
 }

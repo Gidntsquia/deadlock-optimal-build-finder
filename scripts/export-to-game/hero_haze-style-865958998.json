@@ -1,0 +1,124 @@
+{
+  "hero_id": 13,
+  "hero_class_name": "hero_haze",
+  "name": "Monclan Veil Walker Haze",
+  "description": "Sell later: Active Reload (when you buy Siphon Bullets), Swift Striker (when you buy Silencer), Enduring Speed (when you buy Inhibitor), Ricochet (when you buy Spellslinger), Siphon Bullets (when you buy Unstoppable).\nCorrupt at the Broker, in order: Burst Fire.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "categories": [
+    {
+      "name": "Early Game",
+      "description": "Sell Active Reload when you buy Siphon Bullets. Sell Swift Striker when you buy Silencer.",
+      "width": 600,
+      "height": 175,
+      "item_ids": [
+        968099481,
+        381961617,
+        668299740,
+        4104549924,
+        865958998
+      ]
+    },
+    {
+      "name": "Mid Game",
+      "description": "Sell Enduring Speed when you buy Inhibitor. Sell Ricochet when you buy Spellslinger.",
+      "width": 960,
+      "height": 175,
+      "item_ids": [
+        3399065363,
+        3403085434,
+        2447176615,
+        2971868509,
+        1292979587,
+        811521119,
+        2480592370,
+        2739107182
+      ]
+    },
+    {
+      "name": "Late Game",
+      "description": "Sell Siphon Bullets when you buy Unstoppable. Corrupt at the Broker, in order: Burst Fire.",
+      "width": 960,
+      "height": 175,
+      "item_ids": [
+        1763073141,
+        710436191,
+        2533252781,
+        1282141666,
+        1113837674,
+        2037039379,
+        2221211450,
+        3357231760
+      ]
+    }
+  ],
+  "ability_order": [
+    {
+      "ability_id": 1080948381,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1080948381,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2948410412,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2414191464,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1080948381,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2948410412,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 731943444,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2948410412,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2948410412,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 2414191464,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2414191464,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2414191464,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1080948381,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 731943444,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 731943444,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 731943444,
+      "kind": "tier3"
+    }
+  ],
+  "tags": [
+    1080948381,
+    2948410412,
+    865958998
+  ]
+}

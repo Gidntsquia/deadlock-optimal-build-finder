@@ -2,28 +2,54 @@
   "hero_id": 35,
   "hero_class_name": "hero_viscous",
   "name": "Monclan Spirit Viscous",
-  "description": "Sell later: Healing Rite (when you buy Phantom Strike), Sprint Boots (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Diviner's Kevlar, Spirit Burn.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Trophy Collector (when you buy Phantom Strike), Enchanter's Emblem (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Greater Expansion, Spirit Snatch, Diviner's Kevlar, Spirit Burn, Transcendent Cooldown, Phantom Strike.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Healing Rite when you buy Phantom Strike. Sell Sprint Boots when you buy Spirit Burn.",
-      "width": 720,
+      "description": "Sell Trophy Collector when you buy Phantom Strike.",
+      "width": 960,
       "height": 175,
-      "item_ids": [1998374645, 4139877411, 1710079648, 3399065363, 1150006784, 3970837787]
+      "item_ids": [
+        1998374645,
+        1009965641,
+        4139877411,
+        1150006784,
+        3399065363,
+        3074274290,
+        968099481,
+        754480263
+      ]
     },
     {
       "name": "Mid Game",
-      "description": "",
-      "width": 960,
+      "description": "Sell Enchanter's Emblem when you buy Spirit Burn.",
+      "width": 840,
       "height": 175,
-      "item_ids": [754480263, 1672893796, 968099481, 7409189, 3270001687, 380806748, 2121044373, 2951612397]
+      "item_ids": [
+        3970837787,
+        7409189,
+        3270001687,
+        380806748,
+        2121044373,
+        2951612397,
+        3190916303
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Diviner's Kevlar, Spirit Burn.",
+      "description": "Corrupt at the Broker, in order: Greater Expansion, Spirit Snatch, Diviner's Kevlar, Spirit Burn, Transcendent Cooldown, Phantom Strike.",
       "width": 960,
       "height": 175,
-      "item_ids": [3261353684, 1193964439, 2820116164, 2717651715, 1371725689, 2519598785, 343572757, 915014646]
+      "item_ids": [
+        3261353684,
+        2820116164,
+        1193964439,
+        2717651715,
+        1371725689,
+        2519598785,
+        343572757,
+        915014646
+      ]
     }
   ],
   "ability_order": [
@@ -88,5 +114,9 @@
       "kind": "tier2"
     }
   ],
-  "tags": [3247040238, 3788152387, 2951612397]
+  "tags": [
+    3247040238,
+    3788152387,
+    2951612397
+  ]
 }

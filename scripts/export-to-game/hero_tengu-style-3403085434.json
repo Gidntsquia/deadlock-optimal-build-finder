@@ -1,0 +1,122 @@
+{
+  "hero_id": 20,
+  "hero_class_name": "hero_tengu",
+  "name": "Monclan Fleetfoot Ivy",
+  "description": "Sell later: Monster Rounds (when you buy Spirit Resilience), Extra Health (when you buy Siphon Bullets), Healbane (when you buy Superior Cooldown), Siphon Bullets (when you buy Inhibitor), Inhibitor (when you buy Crippling Headshot).\nCorrupt at the Broker, in order: Greater Expansion, Capacitor, Headhunter.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "categories": [
+    {
+      "name": "Early Game",
+      "description": "Sell Monster Rounds when you buy Spirit Resilience. Sell Extra Health when you buy Siphon Bullets.",
+      "width": 720,
+      "height": 175,
+      "item_ids": [
+        1548066885,
+        1009965641,
+        2356412290,
+        3633614685,
+        2829638276,
+        811521119
+      ]
+    },
+    {
+      "name": "Mid Game",
+      "description": "Sell Healbane when you buy Superior Cooldown.",
+      "width": 1200,
+      "height": 175,
+      "item_ids": [
+        381961617,
+        4139877411,
+        2010028405,
+        3403085434,
+        2971868509,
+        2603935618,
+        2566692615,
+        710436191,
+        334300056,
+        754480263
+      ]
+    },
+    {
+      "name": "Late Game",
+      "description": "Sell Siphon Bullets when you buy Inhibitor. Sell Inhibitor when you buy Crippling Headshot. Corrupt at the Broker, in order: Greater Expansion, Capacitor, Headhunter.",
+      "width": 840,
+      "height": 175,
+      "item_ids": [
+        4053935515,
+        2163598980,
+        1282141666,
+        1193964439,
+        3261353684,
+        2037039379,
+        3884003354
+      ]
+    }
+  ],
+  "ability_order": [
+    {
+      "ability_id": 1531378655,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 3642273386,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 3642273386,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 4111222521,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 3642273386,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1247583368,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1247583368,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1531378655,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1531378655,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1531378655,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1247583368,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1247583368,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 4111222521,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 4111222521,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 4111222521,
+      "kind": "tier3"
+    }
+  ],
+  "tags": [
+    1531378655,
+    3642273386,
+    2356412290
+  ]
+}

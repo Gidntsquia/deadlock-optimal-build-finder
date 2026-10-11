@@ -2,28 +2,54 @@
   "hero_id": 65,
   "hero_class_name": "hero_priest",
   "name": "Monclan Venator",
-  "description": "Sell later: Restorative Shot (when you buy Extra Charge), Close Quarters (when you buy Ballistic Enchantment), Monster Rounds (when you buy Spirit Resilience), Battle Vest (when you buy Ricochet), Swift Striker (when you buy Siphon Bullets).\nCorrupt at the Broker, in order: Ricochet, Berserker, Hollow Point.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Restorative Shot (when you buy Siphon Bullets), Swift Striker (when you buy Rapid Recharge), Battle Vest (when you buy Silencer), Siphon Bullets (when you buy Ricochet).\nCorrupt at the Broker, in order: Hollow Point, Weighted Shots, Ricochet.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Restorative Shot when you buy Extra Charge. Sell Close Quarters when you buy Ballistic Enchantment. Sell Monster Rounds when you buy Spirit Resilience. Sell Battle Vest when you buy Ricochet.",
-      "width": 720,
+      "description": "Sell Restorative Shot when you buy Siphon Bullets. Sell Swift Striker when you buy Rapid Recharge.",
+      "width": 840,
       "height": 175,
-      "item_ids": [3862866912, 1342610602, 1009965641, 2407033488, 1770441818, 1235347618]
+      "item_ids": [
+        3862866912,
+        1009965641,
+        668299740,
+        3633614685,
+        1548066885,
+        4104549924,
+        709540378
+      ]
     },
     {
       "name": "Mid Game",
-      "description": "Sell Swift Striker when you buy Siphon Bullets.",
-      "width": 1080,
+      "description": "Sell Battle Vest when you buy Silencer.",
+      "width": 1320,
       "height": 175,
-      "item_ids": [4104549924, 2447176615, 3403085434, 499683006, 2678489038, 1414319208, 3776945997, 3294954488, 2163598980]
+      "item_ids": [
+        1235347618,
+        2356412290,
+        3585132399,
+        3399065363,
+        2447176615,
+        393974127,
+        2678489038,
+        3791587546,
+        3403085434,
+        499683006,
+        2163598980
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Ricochet, Berserker, Hollow Point.",
-      "width": 480,
+      "description": "Sell Siphon Bullets when you buy Ricochet. Corrupt at the Broker, in order: Hollow Point, Weighted Shots, Ricochet.",
+      "width": 600,
       "height": 175,
-      "item_ids": [787198704, 1055679805, 2480592370, 1282141666]
+      "item_ids": [
+        1282141666,
+        787198704,
+        1113837674,
+        2480592370,
+        1055679805
+      ]
     }
   ],
   "ability_order": [
@@ -80,13 +106,21 @@
       "kind": "tier1"
     },
     {
-      "ability_id": 1764146857,
-      "kind": "tier3"
+      "ability_id": 11154161,
+      "kind": "tier2"
     },
     {
       "ability_id": 11154161,
-      "kind": "tier2"
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1764146857,
+      "kind": "tier3"
     }
   ],
-  "tags": [1764146857, 911307831, 1235347618]
+  "tags": [
+    1764146857,
+    911307831,
+    3862866912
+  ]
 }

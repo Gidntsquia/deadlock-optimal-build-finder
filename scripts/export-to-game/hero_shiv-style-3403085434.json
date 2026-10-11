@@ -1,0 +1,118 @@
+{
+  "hero_id": 19,
+  "hero_class_name": "hero_shiv",
+  "name": "Monclan Weapon Shiv",
+  "description": "Sell later: Restorative Shot (when you buy Spirit Resilience), Close Quarters (when you buy Berserker), Bullet Resist Shredder (when you buy Debuff Reducer), Battle Vest (when you buy Lucky Shot), Express Shot (when you buy Plated Armor).\nCorrupt at the Broker, in order: Radiant Regeneration, Dispel Magic, Spirit Resilience, Berserker, Hunter's Aura, Heroic Aura.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "categories": [
+    {
+      "name": "Early Game",
+      "description": "Sell Restorative Shot when you buy Spirit Resilience. Sell Close Quarters when you buy Berserker. Sell Bullet Resist Shredder when you buy Debuff Reducer. Sell Battle Vest when you buy Lucky Shot.",
+      "width": 600,
+      "height": 175,
+      "item_ids": [
+        3862866912,
+        1342610602,
+        1439347412,
+        2971868509,
+        1235347618
+      ]
+    },
+    {
+      "name": "Mid Game",
+      "description": "Sell Express Shot when you buy Plated Armor.",
+      "width": 840,
+      "height": 175,
+      "item_ids": [
+        2947183272,
+        2481177645,
+        2603935618,
+        3731635960,
+        3403085434,
+        3077079169,
+        690458959
+      ]
+    },
+    {
+      "name": "Late Game",
+      "description": "Corrupt at the Broker, in order: Radiant Regeneration, Dispel Magic, Spirit Resilience, Berserker, Hunter's Aura, Heroic Aura.",
+      "width": 840,
+      "height": 175,
+      "item_ids": [
+        1414025773,
+        2108215830,
+        2163598980,
+        1414319208,
+        1047818222,
+        1396247347,
+        3491236900
+      ]
+    }
+  ],
+  "ability_order": [
+    {
+      "ability_id": 2460791803,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2460791803,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1458044103,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1537272748,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2460791803,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1458044103,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1835738020,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2460791803,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1835738020,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1835738020,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1537272748,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1537272748,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1537272748,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1835738020,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1458044103,
+      "kind": "tier2"
+    }
+  ],
+  "tags": [
+    2460791803,
+    1458044103,
+    2947183272
+  ]
+}

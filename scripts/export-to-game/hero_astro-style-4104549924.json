@@ -1,0 +1,122 @@
+{
+  "hero_id": 14,
+  "hero_class_name": "hero_astro",
+  "name": "Monclan Weapon Holliday",
+  "description": "Sell later: Restorative Shot (when you buy Extended Magazine), Quicksilver Reload (when you buy Extra Stamina), Bullet Resist Shredder (when you buy Dispel Magic), Swift Striker (when you buy Glass Cannon).\nCorrupt at the Broker, in order: Glass Cannon, Dispel Magic, Fortitude, Stamina Mastery, Sharpshooter, Headhunter, Rapid Recharge.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "categories": [
+    {
+      "name": "Early Game",
+      "description": "Sell Restorative Shot when you buy Extended Magazine.",
+      "width": 720,
+      "height": 175,
+      "item_ids": [
+        3862866912,
+        2010028405,
+        3776945997,
+        3633614685,
+        4053935515,
+        1235347618
+      ]
+    },
+    {
+      "name": "Mid Game",
+      "description": "Sell Quicksilver Reload when you buy Extra Stamina. Sell Bullet Resist Shredder when you buy Dispel Magic. Sell Swift Striker when you buy Glass Cannon.",
+      "width": 1800,
+      "height": 175,
+      "item_ids": [
+        3077079169,
+        3331811235,
+        84321454,
+        668299740,
+        968099481,
+        1763073141,
+        2971868509,
+        1548066885,
+        4104549924,
+        787198704,
+        4139877411,
+        2152872419,
+        3585132399,
+        2356412290,
+        3731635960
+      ]
+    },
+    {
+      "name": "Late Game",
+      "description": "Corrupt at the Broker, in order: Glass Cannon, Dispel Magic, Fortitude, Stamina Mastery, Sharpshooter, Headhunter, Rapid Recharge.",
+      "width": 240,
+      "height": 175,
+      "item_ids": [
+        334300056,
+        365620721
+      ]
+    }
+  ],
+  "ability_order": [
+    {
+      "ability_id": 1235098866,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1235098866,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 4179229681,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2240607294,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1235098866,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 3190606822,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1235098866,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 2240607294,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 3190606822,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 3190606822,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 3190606822,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 2240607294,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2240607294,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 4179229681,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 4179229681,
+      "kind": "tier2"
+    }
+  ],
+  "tags": [
+    1235098866,
+    4179229681,
+    4104549924
+  ]
+}

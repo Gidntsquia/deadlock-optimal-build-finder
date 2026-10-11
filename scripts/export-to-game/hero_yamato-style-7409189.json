@@ -1,0 +1,122 @@
+{
+  "hero_id": 27,
+  "hero_class_name": "hero_yamato",
+  "name": "Monclan Improved Spirit Yamato",
+  "description": "Sell later: Restorative Shot (when you buy Hunter's Aura), Mystic Shot (when you buy Compress Cooldown), Healbane (when you buy Mystic Reverb).\nCorrupt at the Broker, in order: Torment Pulse, Lifestrike, Spirit Snatch, Tankbuster, Boundless Spirit, Radiant Regeneration, Mystic Reverb, Superior Cooldown.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "categories": [
+    {
+      "name": "Early Game",
+      "description": "Sell Restorative Shot when you buy Hunter's Aura. Sell Mystic Shot when you buy Compress Cooldown.",
+      "width": 720,
+      "height": 175,
+      "item_ids": [
+        3862866912,
+        1437614329,
+        465043967,
+        2829638276,
+        98582110,
+        395867183
+      ]
+    },
+    {
+      "name": "Mid Game",
+      "description": "Sell Healbane when you buy Mystic Reverb.",
+      "width": 1440,
+      "height": 175,
+      "item_ids": [
+        1439347412,
+        968099481,
+        1998374645,
+        1763073141,
+        2603935618,
+        2947183272,
+        2566692615,
+        3190916303,
+        7409189,
+        1252627263,
+        395944548,
+        2481177645
+      ]
+    },
+    {
+      "name": "Late Game",
+      "description": "Corrupt at the Broker, in order: Torment Pulse, Lifestrike, Spirit Snatch, Tankbuster, Boundless Spirit, Radiant Regeneration, Mystic Reverb, Superior Cooldown.",
+      "width": 600,
+      "height": 175,
+      "item_ids": [
+        380806748,
+        2121044373,
+        3577481646,
+        3261353684,
+        2519598785
+      ]
+    }
+  ],
+  "ability_order": [
+    {
+      "ability_id": 2366960452,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2566573207,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2566573207,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 3255651252,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2566573207,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 3319782965,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2566573207,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 2366960452,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2366960452,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2366960452,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 3319782965,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 3319782965,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 3319782965,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 3255651252,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 3255651252,
+      "kind": "tier2"
+    }
+  ],
+  "tags": [
+    2366960452,
+    2566573207,
+    7409189
+  ]
+}

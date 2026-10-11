@@ -2,28 +2,54 @@
   "hero_id": 50,
   "hero_class_name": "hero_synth",
   "name": "Monclan Pocket",
-  "description": "Sell later: Extra Regen (when you buy Duration Extender), Enchanter's Emblem (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Majestic Leap, Greater Expansion, Spirit Burn, Tankbuster, Transcendent Cooldown.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Extra Regen (when you buy Mystic Expansion), Cold Front (when you buy Duration Extender), Enchanter's Emblem (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Majestic Leap, Greater Expansion, Tankbuster, Dispel Magic, Spirit Burn, Transcendent Cooldown.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Extra Regen when you buy Duration Extender.",
-      "width": 600,
+      "description": "Sell Extra Regen when you buy Mystic Expansion. Sell Cold Front when you buy Duration Extender.",
+      "width": 720,
       "height": 175,
-      "item_ids": [2829638276, 1998374645, 1009965641, 1976391348, 709540378]
+      "item_ids": [
+        2829638276,
+        1998374645,
+        1009965641,
+        1976391348,
+        1235347618,
+        709540378
+      ]
     },
     {
       "name": "Mid Game",
       "description": "Sell Enchanter's Emblem when you buy Spirit Burn.",
-      "width": 1440,
+      "width": 1560,
       "height": 175,
-      "item_ids": [668299740, 968099481, 4104549924, 3970837787, 2081037738, 3731635960, 380806748, 600033864, 754480263, 7409189, 2121044373, 3261353684]
+      "item_ids": [
+        668299740,
+        3970837787,
+        4104549924,
+        968099481,
+        2081037738,
+        3731635960,
+        380806748,
+        600033864,
+        2121044373,
+        754480263,
+        7409189,
+        2951612397,
+        3261353684
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Majestic Leap, Greater Expansion, Spirit Burn, Tankbuster, Transcendent Cooldown.",
-      "width": 720,
+      "description": "Corrupt at the Broker, in order: Majestic Leap, Greater Expansion, Tankbuster, Dispel Magic, Spirit Burn, Transcendent Cooldown.",
+      "width": 480,
       "height": 175,
-      "item_ids": [2951612397, 343572757, 2717651715, 1193964439, 2519598785, 915014646]
+      "item_ids": [
+        2717651715,
+        343572757,
+        1193964439,
+        915014646
+      ]
     }
   ],
   "ability_order": [
@@ -64,15 +90,15 @@
       "kind": "tier3"
     },
     {
-      "ability_id": 2954330093,
+      "ability_id": 938149308,
       "kind": "tier1"
     },
     {
-      "ability_id": 2954330093,
+      "ability_id": 938149308,
       "kind": "tier2"
     },
     {
-      "ability_id": 2954330093,
+      "ability_id": 938149308,
       "kind": "tier3"
     },
     {
@@ -80,17 +106,21 @@
       "kind": "tier3"
     },
     {
-      "ability_id": 938149308,
+      "ability_id": 2954330093,
       "kind": "tier1"
     },
     {
-      "ability_id": 938149308,
+      "ability_id": 2954330093,
       "kind": "tier2"
     },
     {
-      "ability_id": 938149308,
+      "ability_id": 2954330093,
       "kind": "tier3"
     }
   ],
-  "tags": [1976701714, 3747867012, 343572757]
+  "tags": [
+    1976701714,
+    3747867012,
+    343572757
+  ]
 }

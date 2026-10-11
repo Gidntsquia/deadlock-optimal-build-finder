@@ -1,0 +1,122 @@
+{
+  "hero_id": 25,
+  "hero_class_name": "hero_warden",
+  "name": "Monclan Warden",
+  "description": "Sell later: Monster Rounds (when you buy Extra Spirit), Swift Striker (when you buy Spirit Lifesteal), Mercurial Magnum (when you buy Siphon Bullets).\nCorrupt at the Broker, in order: Spiritual Overflow.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "categories": [
+    {
+      "name": "Early Game",
+      "description": "Sell Monster Rounds when you buy Extra Spirit. Sell Swift Striker when you buy Spirit Lifesteal.",
+      "width": 960,
+      "height": 175,
+      "item_ids": [
+        3077079169,
+        2829638276,
+        1009965641,
+        2064029594,
+        1548066885,
+        668299740,
+        4104549924,
+        2356412290
+      ]
+    },
+    {
+      "name": "Mid Game",
+      "description": "Sell Mercurial Magnum when you buy Siphon Bullets.",
+      "width": 1200,
+      "height": 175,
+      "item_ids": [
+        1235347618,
+        84321454,
+        3399065363,
+        2447176615,
+        3585132399,
+        2971868509,
+        3403085434,
+        2163598980,
+        3919289022,
+        968099481
+      ]
+    },
+    {
+      "name": "Late Game",
+      "description": "Corrupt at the Broker, in order: Spiritual Overflow.",
+      "width": 600,
+      "height": 175,
+      "item_ids": [
+        876563814,
+        7409189,
+        2226497419,
+        1282141666,
+        2519598785
+      ]
+    }
+  ],
+  "ability_order": [
+    {
+      "ability_id": 2656490109,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2656490109,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2751689917,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1656913918,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2656490109,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2702908623,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2656490109,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1656913918,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1656913918,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1656913918,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 2751689917,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2751689917,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2751689917,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 2702908623,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2702908623,
+      "kind": "tier2"
+    }
+  ],
+  "tags": [
+    2656490109,
+    2751689917,
+    3919289022
+  ]
+}

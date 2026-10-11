@@ -1,31 +1,53 @@
 {
   "hero_id": 13,
   "hero_class_name": "hero_haze",
-  "name": "Monclan Weapon Haze",
-  "description": "Sell later: Extra Regen (when you buy Burst Fire), Active Reload (when you buy Ricochet), Battle Vest (when you buy Siphon Bullets), Slowing Hex (when you buy Silencer).\nCorrupt at the Broker, in order: Burst Fire, Ricochet, Siphon Bullets, Surge of Power.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "name": "Monclan Haze",
+  "description": "Sell later: Active Reload (when you buy Ricochet), Swift Striker (when you buy Spirit Resilience), Bullet Resist Shredder (when you buy Lucky Shot), Ricochet (when you buy Siphon Bullets).\nCorrupt at the Broker, in order: Burst Fire.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Extra Regen when you buy Burst Fire. Sell Active Reload when you buy Ricochet.",
+      "description": "Sell Active Reload when you buy Ricochet. Sell Swift Striker when you buy Spirit Resilience.",
       "width": 720,
       "height": 175,
-      "item_ids": [968099481, 2829638276, 668299740, 381961617, 4104549924, 3633614685]
+      "item_ids": [
+        968099481,
+        668299740,
+        381961617,
+        4104549924,
+        3633614685,
+        1548066885
+      ]
     },
     {
       "name": "Mid Game",
-      "description": "Sell Battle Vest when you buy Siphon Bullets. Sell Slowing Hex when you buy Silencer.",
+      "description": "Sell Bullet Resist Shredder when you buy Lucky Shot. Sell Ricochet when you buy Siphon Bullets.",
       "width": 1440,
       "height": 175,
       "item_ids": [
-        1235347618, 1548066885, 3399065363, 1813726886, 2971868509, 1292979587, 499683006, 2447176615, 3585132399, 1770441818, 2739107182, 2480592370
+        2356412290,
+        3399065363,
+        1813726886,
+        1770441818,
+        499683006,
+        2447176615,
+        3585132399,
+        1292979587,
+        2971868509,
+        811521119,
+        2739107182,
+        2480592370
       ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Burst Fire, Ricochet, Siphon Bullets, Surge of Power.",
-      "width": 240,
+      "description": "Corrupt at the Broker, in order: Burst Fire.",
+      "width": 360,
       "height": 175,
-      "item_ids": [1282141666, 1113837674]
+      "item_ids": [
+        2163598980,
+        1396247347,
+        1282141666
+      ]
     }
   ],
   "ability_order": [
@@ -88,11 +110,11 @@
     {
       "ability_id": 731943444,
       "kind": "tier2"
-    },
-    {
-      "ability_id": 731943444,
-      "kind": "tier3"
     }
   ],
-  "tags": [1080948381, 2948410412, 4104549924]
+  "tags": [
+    1080948381,
+    2948410412,
+    4104549924
+  ]
 }

@@ -2,28 +2,54 @@
   "hero_id": 67,
   "hero_class_name": "hero_bookworm",
   "name": "Monclan Paige",
-  "description": "Corrupt at the Broker, in order: Greater Expansion, Superior Duration, Divine Barrier, Transcendent Cooldown.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Corrupt at the Broker, in order: Greater Expansion, Divine Barrier, Superior Duration, Transcendent Cooldown, Rapid Recharge.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
       "description": "",
       "width": 720,
       "height": 175,
-      "item_ids": [3077079169, 2064029594, 1672893796, 3399065363, 3074274290, 857669956]
+      "item_ids": [
+        3077079169,
+        2064029594,
+        1672893796,
+        3399065363,
+        3074274290,
+        857669956
+      ]
     },
     {
       "name": "Mid Game",
       "description": "",
       "width": 1200,
       "height": 175,
-      "item_ids": [3776945997, 4139877411, 1813726886, 754480263, 968099481, 1150006784, 1254091416, 2603935618, 7409189, 380806748]
+      "item_ids": [
+        3776945997,
+        754480263,
+        1813726886,
+        4139877411,
+        968099481,
+        1150006784,
+        1254091416,
+        2603935618,
+        7409189,
+        380806748
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Greater Expansion, Superior Duration, Divine Barrier, Transcendent Cooldown.",
+      "description": "Corrupt at the Broker, in order: Greater Expansion, Divine Barrier, Superior Duration, Transcendent Cooldown, Rapid Recharge.",
       "width": 840,
       "height": 175,
-      "item_ids": [787198704, 2951612397, 3261353684, 1193964439, 1662311306, 2717651715, 915014646]
+      "item_ids": [
+        787198704,
+        2951612397,
+        3261353684,
+        1662311306,
+        1193964439,
+        2717651715,
+        915014646
+      ]
     }
   ],
   "ability_order": [
@@ -88,5 +114,9 @@
       "kind": "tier2"
     }
   ],
-  "tags": [3553292912, 3054993162, 3077079169]
+  "tags": [
+    3553292912,
+    3054993162,
+    3077079169
+  ]
 }

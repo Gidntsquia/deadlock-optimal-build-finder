@@ -2,28 +2,54 @@
   "hero_id": 14,
   "hero_class_name": "hero_astro",
   "name": "Monclan Spirit Holliday",
-  "description": "Sell later: Headshot Booster (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Spirit Burn, Stamina Mastery.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Trophy Collector (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Dispel Magic, Stamina Mastery, Headhunter, Rapid Recharge.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Headshot Booster when you buy Spirit Burn.",
-      "width": 720,
+      "description": "Sell Trophy Collector when you buy Spirit Burn.",
+      "width": 840,
       "height": 175,
-      "item_ids": [2010028405, 3776945997, 968099481, 3399065363, 3074274290, 787198704]
+      "item_ids": [
+        2010028405,
+        3776945997,
+        968099481,
+        3399065363,
+        465043967,
+        3074274290,
+        787198704
+      ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 960,
+      "width": 1200,
       "height": 175,
-      "item_ids": [395867183, 7409189, 4139877411, 1763073141, 1998374645, 865958998, 334300056, 2951612397]
+      "item_ids": [
+        7409189,
+        395867183,
+        1763073141,
+        4139877411,
+        1998374645,
+        4053935515,
+        334300056,
+        3190916303,
+        3731635960,
+        2951612397
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Spirit Burn, Stamina Mastery.",
-      "width": 840,
+      "description": "Corrupt at the Broker, in order: Dispel Magic, Stamina Mastery, Headhunter, Rapid Recharge.",
+      "width": 720,
       "height": 175,
-      "item_ids": [380806748, 2121044373, 2717651715, 2081037738, 3261353684, 2519598785, 343572757]
+      "item_ids": [
+        380806748,
+        2121044373,
+        2717651715,
+        3261353684,
+        2519598785,
+        343572757
+      ]
     }
   ],
   "ability_order": [
@@ -88,5 +114,9 @@
       "kind": "tier2"
     }
   ],
-  "tags": [1235098866, 4179229681, 787198704]
+  "tags": [
+    1235098866,
+    4179229681,
+    3776945997
+  ]
 }

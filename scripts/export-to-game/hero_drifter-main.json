@@ -1,29 +1,55 @@
 {
   "hero_id": 64,
   "hero_class_name": "hero_drifter",
-  "name": "Monclan Vitality Drifter",
-  "description": "Sell later: Melee Lifesteal (when you buy Hunter's Aura), Stalker (when you buy Duration Extender), Extra Spirit (when you buy Warp Stone), Healbane (when you buy Counterspell), Slowing Hex (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Spirit Snatch, Arctic Blast.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "name": "Monclan Spirit Drifter",
+  "description": "Sell later: Stalker (when you buy Fleetfoot), Close Quarters (when you buy Hunter's Aura), Extra Spirit (when you buy Duration Extender), Healbane (when you buy Spirit Burn).\nCorrupt at the Broker, in order: Spirit Snatch, Lifestrike, Crushing Fists, Veil Walker.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Melee Lifesteal when you buy Hunter's Aura. Sell Stalker when you buy Duration Extender.",
+      "description": "Sell Stalker when you buy Fleetfoot. Sell Close Quarters when you buy Hunter's Aura.",
       "width": 720,
       "height": 175,
-      "item_ids": [1437614329, 98582110, 465043967, 1998374645, 3399065363, 3074274290]
+      "item_ids": [
+        1437614329,
+        98582110,
+        1998374645,
+        465043967,
+        1342610602,
+        3074274290
+      ]
     },
     {
       "name": "Mid Game",
-      "description": "Sell Extra Spirit when you buy Warp Stone. Sell Healbane when you buy Counterspell. Sell Slowing Hex when you buy Spirit Burn.",
-      "width": 1200,
+      "description": "Sell Extra Spirit when you buy Duration Extender. Sell Healbane when you buy Spirit Burn.",
+      "width": 1560,
       "height": 175,
-      "item_ids": [1976391348, 968099481, 3190916303, 2603935618, 1813726886, 26002154, 865958998, 3403085434, 2481177645, 2121044373]
+      "item_ids": [
+        3399065363,
+        968099481,
+        2971868509,
+        3633614685,
+        3190916303,
+        2603935618,
+        865958998,
+        26002154,
+        3403085434,
+        3585132399,
+        1252627263,
+        2481177645,
+        2121044373
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Spirit Snatch, Arctic Blast.",
-      "width": 720,
+      "description": "Corrupt at the Broker, in order: Spirit Snatch, Lifestrike, Crushing Fists, Veil Walker.",
+      "width": 480,
       "height": 175,
-      "item_ids": [2951612397, 3270001687, 1414025773, 2717651715, 343572757, 3812615317]
+      "item_ids": [
+        2951612397,
+        2717651715,
+        800008313,
+        343572757
+      ]
     }
   ],
   "ability_order": [
@@ -76,17 +102,21 @@
       "kind": "tier2"
     },
     {
-      "ability_id": 1033019133,
-      "kind": "tier3"
-    },
-    {
       "ability_id": 1168182161,
       "kind": "tier1"
     },
     {
       "ability_id": 1168182161,
       "kind": "tier2"
+    },
+    {
+      "ability_id": 1168182161,
+      "kind": "tier3"
     }
   ],
-  "tags": [3120550633, 1264175662, 98582110]
+  "tags": [
+    3120550633,
+    1264175662,
+    3190916303
+  ]
 }

@@ -2,28 +2,52 @@
   "hero_id": 6,
   "hero_class_name": "hero_atlas",
   "name": "Monclan Spirit Abrams",
-  "description": "Sell later: Monster Rounds (when you buy Compress Cooldown), Close Quarters (when you buy Spirit Resilience), Restorative Locket (when you buy Phantom Strike), Healbane (when you buy Witchmail).\nCorrupt at the Broker, in order: Spirit Snatch, Spirit Resilience.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Monster Rounds (when you buy Torment Pulse), Close Quarters (when you buy Compress Cooldown), Arcane Surge (when you buy Dispel Magic).\nCorrupt at the Broker, in order: Spirit Snatch, Torment Pulse, Dispel Magic, Superior Duration.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Monster Rounds when you buy Compress Cooldown. Sell Close Quarters when you buy Spirit Resilience.",
+      "description": "Sell Monster Rounds when you buy Torment Pulse. Sell Close Quarters when you buy Compress Cooldown. Sell Arcane Surge when you buy Dispel Magic.",
       "width": 720,
       "height": 175,
-      "item_ids": [2829638276, 1009965641, 1342610602, 4139877411, 1150006784, 465043967]
+      "item_ids": [
+        2829638276,
+        1009965641,
+        1342610602,
+        4139877411,
+        1150006784,
+        465043967
+      ]
     },
     {
       "name": "Mid Game",
-      "description": "Sell Restorative Locket when you buy Phantom Strike. Sell Healbane when you buy Witchmail.",
-      "width": 1200,
+      "description": "",
+      "width": 1440,
       "height": 175,
-      "item_ids": [968099481, 26002154, 754480263, 2566692615, 2951612397, 2059712766, 2603935618, 3190916303, 3731635960, 380806748]
+      "item_ids": [
+        26002154,
+        754480263,
+        968099481,
+        2566692615,
+        3970837787,
+        2059712766,
+        2951612397,
+        2603935618,
+        3190916303,
+        395944548,
+        380806748,
+        3731635960
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Spirit Snatch, Spirit Resilience.",
-      "width": 720,
+      "description": "Corrupt at the Broker, in order: Spirit Snatch, Torment Pulse, Dispel Magic, Superior Duration.",
+      "width": 360,
       "height": 175,
-      "item_ids": [2717651715, 2163598980, 3261353684, 1371725689, 3028234315, 1193964439]
+      "item_ids": [
+        2717651715,
+        3261353684,
+        1193964439
+      ]
     }
   ],
   "ability_order": [
@@ -88,5 +112,9 @@
       "kind": "tier2"
     }
   ],
-  "tags": [715762406, 2824119765, 1150006784]
+  "tags": [
+    715762406,
+    2824119765,
+    2717651715
+  ]
 }

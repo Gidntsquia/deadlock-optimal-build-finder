@@ -1,0 +1,123 @@
+{
+  "hero_id": 35,
+  "hero_class_name": "hero_viscous",
+  "name": "Monclan Melee Charge Viscous",
+  "description": "Sell later: Monster Rounds (when you buy Compress Cooldown), Extra Regen (when you buy Ballistic Enchantment).\nCorrupt at the Broker, in order: Greater Expansion, Spirit Snatch, Lifestrike, Crushing Fists, Express Shot, Rapid Recharge, Ballistic Enchantment.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "categories": [
+    {
+      "name": "Early Game",
+      "description": "Sell Monster Rounds when you buy Compress Cooldown. Sell Extra Regen when you buy Ballistic Enchantment.",
+      "width": 1080,
+      "height": 175,
+      "item_ids": [
+        1009965641,
+        1342610602,
+        1998374645,
+        2829638276,
+        3077079169,
+        1437614329,
+        3399065363,
+        3074274290,
+        465043967
+      ]
+    },
+    {
+      "name": "Mid Game",
+      "description": "",
+      "width": 960,
+      "height": 175,
+      "item_ids": [
+        3776945997,
+        690458959,
+        754480263,
+        26002154,
+        1252627263,
+        3190916303,
+        1763073141,
+        2095565695
+      ]
+    },
+    {
+      "name": "Late Game",
+      "description": "Corrupt at the Broker, in order: Greater Expansion, Spirit Snatch, Lifestrike, Crushing Fists, Express Shot, Rapid Recharge, Ballistic Enchantment.",
+      "width": 840,
+      "height": 175,
+      "item_ids": [
+        787198704,
+        380806748,
+        3294954488,
+        2121044373,
+        800008313,
+        1193964439,
+        3261353684
+      ]
+    }
+  ],
+  "ability_order": [
+    {
+      "ability_id": 3247040238,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 3247040238,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 3788152387,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1020817390,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 3247040238,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 4206531918,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 3247040238,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1020817390,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 3788152387,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 3788152387,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 3788152387,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1020817390,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1020817390,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 4206531918,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 4206531918,
+      "kind": "tier2"
+    }
+  ],
+  "tags": [
+    3247040238,
+    3788152387,
+    3190916303
+  ]
+}

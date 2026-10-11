@@ -1,29 +1,56 @@
 {
   "hero_id": 27,
   "hero_class_name": "hero_yamato",
-  "name": "Monclan Spirit Yamato",
-  "description": "Sell later: Restorative Shot (when you buy Mystic Vulnerability), Melee Lifesteal (when you buy Compress Cooldown), Stalker (when you buy Mystic Reverb).\nCorrupt at the Broker, in order: Spirit Snatch, Boundless Spirit.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "name": "Monclan Yamato",
+  "description": "Sell later: Restorative Shot (when you buy Hunter's Aura), Stalker (when you buy Melee Charge), Mystic Shot (when you buy Extra Health), Close Quarters (when you buy Berserker), Healbane (when you buy Refresher).\nCorrupt at the Broker, in order: Lifestrike, Spirit Snatch, Berserker, Radiant Regeneration, Crushing Fists, Refresher.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Restorative Shot when you buy Mystic Vulnerability. Sell Melee Lifesteal when you buy Compress Cooldown. Sell Stalker when you buy Mystic Reverb.",
-      "width": 840,
+      "description": "Sell Restorative Shot when you buy Hunter's Aura. Sell Stalker when you buy Melee Charge. Sell Mystic Shot when you buy Extra Health.",
+      "width": 720,
       "height": 175,
-      "item_ids": [3862866912, 1437614329, 465043967, 98582110, 2829638276, 968099481, 395867183]
+      "item_ids": [
+        3862866912,
+        1437614329,
+        98582110,
+        465043967,
+        1439347412,
+        395867183
+      ]
     },
     {
       "name": "Mid Game",
-      "description": "",
-      "width": 960,
+      "description": "Sell Close Quarters when you buy Berserker. Sell Healbane when you buy Refresher.",
+      "width": 1440,
       "height": 175,
-      "item_ids": [2603935618, 2059712766, 7409189, 3190916303, 1998374645, 2566692615, 395944548, 2481177645]
+      "item_ids": [
+        2829638276,
+        1342610602,
+        2947183272,
+        2971868509,
+        2566692615,
+        1763073141,
+        1252627263,
+        2603935618,
+        3190916303,
+        3077079169,
+        2481177645,
+        26002154
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Spirit Snatch, Boundless Spirit.",
+      "description": "Corrupt at the Broker, in order: Lifestrike, Spirit Snatch, Berserker, Radiant Regeneration, Crushing Fists, Refresher.",
       "width": 720,
       "height": 175,
-      "item_ids": [2081037738, 380806748, 2121044373, 3577481646, 2519598785, 3261353684]
+      "item_ids": [
+        3633614685,
+        690458959,
+        1414319208,
+        2407781327,
+        800008313,
+        677738769
+      ]
     }
   ],
   "ability_order": [
@@ -48,20 +75,8 @@
       "kind": "tier2"
     },
     {
-      "ability_id": 3255651252,
-      "kind": "tier1"
-    },
-    {
       "ability_id": 3319782965,
       "kind": "unlock"
-    },
-    {
-      "ability_id": 3255651252,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 3255651252,
-      "kind": "tier3"
     },
     {
       "ability_id": 2566573207,
@@ -86,7 +101,23 @@
     {
       "ability_id": 3319782965,
       "kind": "tier2"
+    },
+    {
+      "ability_id": 3319782965,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 3255651252,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 3255651252,
+      "kind": "tier2"
     }
   ],
-  "tags": [2366960452, 2566573207, 465043967]
+  "tags": [
+    2366960452,
+    2566573207,
+    2481177645
+  ]
 }

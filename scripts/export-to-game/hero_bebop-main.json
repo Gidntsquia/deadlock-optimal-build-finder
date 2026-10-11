@@ -2,37 +2,62 @@
   "hero_id": 15,
   "hero_class_name": "hero_bebop",
   "name": "Monclan Weapon Bebop",
-  "description": "Sell later: Stalker (when you buy Siphon Bullets).\nCorrupt at the Broker, in order: Veil Walker.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Mystic Burst (when you buy Tesla Bullets), Stalker (when you buy Hunter's Aura), Slowing Hex (when you buy Counterspell), Hunter's Aura (when you buy Spirit Resilience).\nCorrupt at the Broker, in order: Burst Fire, Headhunter, Veil Walker, Fortitude, Spirit Snatch.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Stalker when you buy Siphon Bullets.",
-      "width": 720,
+      "description": "Sell Mystic Burst when you buy Tesla Bullets. Sell Stalker when you buy Hunter's Aura.",
+      "width": 840,
       "height": 175,
-      "item_ids": [2010028405, 2829638276, 465043967, 98582110, 3074274290, 3399065363]
+      "item_ids": [
+        2010028405,
+        2829638276,
+        1998374645,
+        465043967,
+        98582110,
+        3074274290,
+        3399065363
+      ]
     },
     {
       "name": "Mid Game",
-      "description": "",
-      "width": 960,
+      "description": "Sell Slowing Hex when you buy Counterspell. Sell Hunter's Aura when you buy Spirit Resilience.",
+      "width": 1440,
       "height": 175,
-      "item_ids": [4053935515, 668299740, 1813726886, 865958998, 2566692615, 3403085434, 2447176615, 3190916303]
+      "item_ids": [
+        668299740,
+        4053935515,
+        3633614685,
+        1813726886,
+        865958998,
+        3585132399,
+        2566692615,
+        3403085434,
+        2447176615,
+        3190916303,
+        811521119,
+        2481177645
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Veil Walker.",
+      "description": "Corrupt at the Broker, in order: Burst Fire, Headhunter, Veil Walker, Fortitude, Spirit Snatch.",
       "width": 360,
       "height": 175,
-      "item_ids": [1414025773, 2163598980, 1282141666]
+      "item_ids": [
+        2739107182,
+        1414025773,
+        2163598980
+      ]
     }
   ],
   "ability_order": [
     {
-      "ability_id": 2521902222,
+      "ability_id": 3089858203,
       "kind": "unlock"
     },
     {
-      "ability_id": 2521902222,
+      "ability_id": 3089858203,
       "kind": "tier1"
     },
     {
@@ -40,16 +65,16 @@
       "kind": "unlock"
     },
     {
-      "ability_id": 3089858203,
+      "ability_id": 2521902222,
       "kind": "unlock"
     },
     {
       "ability_id": 2521902222,
-      "kind": "tier2"
+      "kind": "tier1"
     },
     {
-      "ability_id": 3089858203,
-      "kind": "tier1"
+      "ability_id": 2521902222,
+      "kind": "tier2"
     },
     {
       "ability_id": 3832675871,
@@ -76,17 +101,21 @@
       "kind": "tier3"
     },
     {
-      "ability_id": 2521902222,
-      "kind": "tier3"
-    },
-    {
       "ability_id": 3832675871,
       "kind": "tier1"
     },
     {
       "ability_id": 3832675871,
       "kind": "tier2"
+    },
+    {
+      "ability_id": 2521902222,
+      "kind": "tier3"
     }
   ],
-  "tags": [2521902222, 1928108461, 465043967]
+  "tags": [
+    3089858203,
+    1928108461,
+    465043967
+  ]
 }

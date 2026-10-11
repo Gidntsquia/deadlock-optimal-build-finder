@@ -2,91 +2,125 @@
   "hero_id": 52,
   "hero_class_name": "hero_mirage",
   "name": "Monclan Mirage",
-  "description": "Sell later: Mystic Regeneration (when you buy Ricochet), Monster Rounds (when you buy Spirit Lifesteal), Suppressor (when you buy Inhibitor).\nCorrupt at the Broker, in order: Spiritual Overflow, Ricochet, Inhibitor.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Mystic Regeneration (when you buy Toxic Bullets), Suppressor (when you buy Ricochet), Healbane (when you buy Spirit Lifesteal), Ricochet (when you buy Inhibitor).\nCorrupt at the Broker, in order: Spiritual Overflow, Toxic Bullets.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Mystic Regeneration when you buy Ricochet. Sell Monster Rounds when you buy Spirit Lifesteal. Sell Suppressor when you buy Inhibitor.",
-      "width": 720,
+      "description": "Sell Mystic Regeneration when you buy Toxic Bullets. Sell Suppressor when you buy Ricochet. Sell Healbane when you buy Spirit Lifesteal.",
+      "width": 600,
       "height": 175,
-      "item_ids": [1439347412, 1009965641, 2010028405, 1925087134, 2603935618, 968099481]
+      "item_ids": [
+        1439347412,
+        1009965641,
+        2010028405,
+        1925087134,
+        2603935618
+      ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1200,
+      "width": 1440,
       "height": 175,
-      "item_ids": [4053935515, 4139877411, 380806748, 3977876567, 1548066885, 3731635960, 2081037738, 7409189, 2356412290, 3696726732]
+      "item_ids": [
+        968099481,
+        4053935515,
+        380806748,
+        4139877411,
+        3977876567,
+        1763073141,
+        1548066885,
+        2081037738,
+        3731635960,
+        3696726732,
+        2356412290,
+        7409189
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Spiritual Overflow, Ricochet, Inhibitor.",
+      "description": "Sell Ricochet when you buy Inhibitor. Corrupt at the Broker, in order: Spiritual Overflow, Toxic Bullets.",
       "width": 720,
       "height": 175,
-      "item_ids": [2480592370, 3261353684, 3005970438, 876563814, 2226497419, 2037039379]
+      "item_ids": [
+        2480592370,
+        3005970438,
+        3261353684,
+        876563814,
+        2226497419,
+        2037039379
+      ]
     }
   ],
   "ability_order": [
     {
-      "ability_id": 2221949202,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 2221949202,
-      "kind": "tier1"
-    },
-    {
       "ability_id": 3733594387,
       "kind": "unlock"
-    },
-    {
-      "ability_id": 1336069669,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 2221949202,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 2604653402,
-      "kind": "unlock"
-    },
-    {
-      "ability_id": 2221949202,
-      "kind": "tier3"
-    },
-    {
-      "ability_id": 1336069669,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 1336069669,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1336069669,
-      "kind": "tier3"
-    },
-    {
-      "ability_id": 2604653402,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 2604653402,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 2604653402,
-      "kind": "tier3"
     },
     {
       "ability_id": 3733594387,
       "kind": "tier1"
     },
     {
+      "ability_id": 2221949202,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 1336069669,
+      "kind": "unlock"
+    },
+    {
       "ability_id": 3733594387,
       "kind": "tier2"
+    },
+    {
+      "ability_id": 2221949202,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2604653402,
+      "kind": "unlock"
+    },
+    {
+      "ability_id": 2221949202,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1336069669,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 1336069669,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2604653402,
+      "kind": "tier1"
+    },
+    {
+      "ability_id": 2221949202,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 3733594387,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 1336069669,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 2604653402,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 2604653402,
+      "kind": "tier3"
     }
   ],
-  "tags": [2221949202, 3733594387, 3696726732]
+  "tags": [
+    3733594387,
+    2221949202,
+    3696726732
+  ]
 }

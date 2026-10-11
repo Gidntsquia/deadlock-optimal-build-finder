@@ -2,28 +2,52 @@
   "hero_id": 4,
   "hero_class_name": "hero_ghost",
   "name": "Monclan Weapon Lady Geist",
-  "description": "Sell later: Mystic Burst (when you buy Warp Stone).\nCorrupt at the Broker, in order: Spellslinger, Radiant Regeneration.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Mystic Burst (when you buy Dispel Magic), Recharging Rush (when you buy Spellslinger), Berserker (when you buy Warp Stone), Spellslinger (when you buy Frenzy).\nCorrupt at the Broker, in order: Radiant Regeneration, Cultist Sacrifice, Warp Stone.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Mystic Burst when you buy Warp Stone.",
+      "description": "Sell Mystic Burst when you buy Dispel Magic.",
       "width": 720,
       "height": 175,
-      "item_ids": [2829638276, 1009965641, 1998374645, 1439347412, 2947183272, 709540378]
+      "item_ids": [
+        1009965641,
+        2829638276,
+        1998374645,
+        1439347412,
+        2947183272,
+        968099481
+      ]
     },
     {
       "name": "Mid Game",
-      "description": "",
-      "width": 960,
+      "description": "Sell Recharging Rush when you buy Spellslinger. Sell Berserker when you buy Warp Stone.",
+      "width": 1320,
       "height": 175,
-      "item_ids": [4139877411, 3977876567, 2971868509, 2566692615, 1763073141, 3403085434, 1414319208, 2163598980]
+      "item_ids": [
+        709540378,
+        4139877411,
+        2971868509,
+        3977876567,
+        2566692615,
+        1292979587,
+        3403085434,
+        1763073141,
+        2603935618,
+        2163598980,
+        1414319208
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Spellslinger, Radiant Regeneration.",
-      "width": 360,
+      "description": "Sell Spellslinger when you buy Frenzy. Corrupt at the Broker, in order: Radiant Regeneration, Cultist Sacrifice, Warp Stone.",
+      "width": 480,
       "height": 175,
-      "item_ids": [876563814, 2221211450, 3270001687]
+      "item_ids": [
+        3731635960,
+        2221211450,
+        3270001687,
+        339443430
+      ]
     }
   ],
   "ability_order": [
@@ -88,5 +112,9 @@
       "kind": "tier3"
     }
   ],
-  "tags": [715325746, 218284420, 1414319208]
+  "tags": [
+    715325746,
+    218284420,
+    2221211450
+  ]
 }

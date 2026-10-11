@@ -2,28 +2,54 @@
   "hero_id": 7,
   "hero_class_name": "hero_wraith",
   "name": "Monclan Wraith",
-  "description": "Sell later: Monster Rounds (when you buy Improved Spirit), Opening Rounds (when you buy Spirit Lifesteal), Extra Health (when you buy Debuff Reducer).\nCorrupt at the Broker, in order: Ricochet, Tesla Bullets, Mercurial Magnum, Surge of Power, Spiritual Overflow.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "description": "Sell later: Monster Rounds (when you buy Spirit Lifesteal), Extra Health (when you buy Spirit Shredder).\nCorrupt at the Broker, in order: Capacitor, Spirit Rend.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Monster Rounds when you buy Improved Spirit. Sell Opening Rounds when you buy Spirit Lifesteal. Sell Extra Health when you buy Debuff Reducer.",
-      "width": 840,
+      "description": "Sell Monster Rounds when you buy Spirit Lifesteal. Sell Extra Health when you buy Spirit Shredder.",
+      "width": 720,
       "height": 175,
-      "item_ids": [1009965641, 2829638276, 84321454, 3077079169, 2064029594, 3633614685, 668299740]
+      "item_ids": [
+        1009965641,
+        2829638276,
+        84321454,
+        3633614685,
+        668299740,
+        968099481
+      ]
     },
     {
       "name": "Mid Game",
       "description": "",
-      "width": 1320,
+      "width": 1200,
       "height": 175,
-      "item_ids": [968099481, 811521119, 1763073141, 3399065363, 4104549924, 1292979587, 2566692615, 2447176615, 3731635960, 2480592370, 7409189]
+      "item_ids": [
+        811521119,
+        3399065363,
+        4104549924,
+        1763073141,
+        1292979587,
+        2566692615,
+        2447176615,
+        3731635960,
+        7409189,
+        2480592370
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Ricochet, Tesla Bullets, Mercurial Magnum, Surge of Power, Spiritual Overflow.",
-      "width": 600,
+      "description": "Corrupt at the Broker, in order: Capacitor, Spirit Rend.",
+      "width": 840,
       "height": 175,
-      "item_ids": [3919289022, 876563814, 2226497419, 1047818222, 2519598785]
+      "item_ids": [
+        3919289022,
+        710436191,
+        876563814,
+        1144549437,
+        4075861416,
+        2226497419,
+        2519598785
+      ]
     }
   ],
   "ability_order": [
@@ -48,11 +74,23 @@
       "kind": "tier2"
     },
     {
+      "ability_id": 1842576017,
+      "kind": "tier1"
+    },
+    {
       "ability_id": 2981692841,
       "kind": "unlock"
     },
     {
-      "ability_id": 2981692841,
+      "ability_id": 1842576017,
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1842576017,
+      "kind": "tier3"
+    },
+    {
+      "ability_id": 4147641675,
       "kind": "tier1"
     },
     {
@@ -60,28 +98,16 @@
       "kind": "tier3"
     },
     {
-      "ability_id": 1842576017,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 4147641675,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 1842576017,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1842576017,
-      "kind": "tier3"
-    },
-    {
       "ability_id": 4147641675,
       "kind": "tier2"
     },
     {
       "ability_id": 4147641675,
       "kind": "tier3"
+    },
+    {
+      "ability_id": 2981692841,
+      "kind": "tier1"
     },
     {
       "ability_id": 2981692841,
@@ -92,5 +118,9 @@
       "kind": "tier3"
     }
   ],
-  "tags": [1999680326, 1842576017, 3919289022]
+  "tags": [
+    1999680326,
+    1842576017,
+    84321454
+  ]
 }

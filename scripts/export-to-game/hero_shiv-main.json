@@ -1,29 +1,53 @@
 {
   "hero_id": 19,
   "hero_class_name": "hero_shiv",
-  "name": "Monclan Spirit Shiv",
-  "description": "Sell later: Extra Charge (when you buy Compress Cooldown), Spirit Strike (when you buy Counterspell), Suppressor (when you buy Debuff Reducer), Enchanter's Emblem (when you buy Spirit Resilience).\nCorrupt at the Broker, in order: Spirit Resilience, Torment Pulse, Radiant Regeneration.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
+  "name": "Monclan Shiv",
+  "description": "Sell later: Restorative Shot (when you buy Compress Cooldown), Extra Charge (when you buy Express Shot), Close Quarters (when you buy Counterspell), Bullet Resist Shredder (when you buy Spirit Resilience), Express Shot (when you buy Debuff Reducer).\nCorrupt at the Broker, in order: Torment Pulse, Radiant Regeneration, Dispel Magic, Spirit Resilience, Hunter's Aura, Escalating Exposure.\n\nGenerated from aggregate high-rank match stats: items and abilities are scored by usage rate and win rate, then assembled into a buy order.\n\nCreated with Claude's help via github.com/GidntSquia/deadlock-optimal-build-finder.",
   "categories": [
     {
       "name": "Early Game",
-      "description": "Sell Extra Charge when you buy Compress Cooldown. Sell Spirit Strike when you buy Counterspell.",
-      "width": 600,
+      "description": "Sell Restorative Shot when you buy Compress Cooldown. Sell Extra Charge when you buy Express Shot. Sell Close Quarters when you buy Counterspell.",
+      "width": 840,
       "height": 175,
-      "item_ids": [2829638276, 3776945997, 1439347412, 465043967, 2947183272]
+      "item_ids": [
+        3862866912,
+        2829638276,
+        3776945997,
+        1342610602,
+        1439347412,
+        465043967,
+        2947183272
+      ]
     },
     {
       "name": "Mid Game",
-      "description": "Sell Suppressor when you buy Debuff Reducer. Sell Enchanter's Emblem when you buy Spirit Resilience.",
+      "description": "Sell Bullet Resist Shredder when you buy Spirit Resilience. Sell Express Shot when you buy Debuff Reducer.",
       "width": 1080,
       "height": 175,
-      "item_ids": [1925087134, 2603935618, 2059712766, 2566692615, 3970837787, 3144988365, 2081037738, 3731635960, 395944548]
+      "item_ids": [
+        2971868509,
+        2603935618,
+        2566692615,
+        2481177645,
+        2081037738,
+        3731635960,
+        395944548,
+        380806748,
+        690458959
+      ]
     },
     {
       "name": "Late Game",
-      "description": "Corrupt at the Broker, in order: Spirit Resilience, Torment Pulse, Radiant Regeneration.",
-      "width": 720,
+      "description": "Corrupt at the Broker, in order: Torment Pulse, Radiant Regeneration, Dispel Magic, Spirit Resilience, Hunter's Aura, Escalating Exposure.",
+      "width": 600,
       "height": 175,
-      "item_ids": [380806748, 1414025773, 1047818222, 2163598980, 3261353684, 3005970438]
+      "item_ids": [
+        1414025773,
+        2163598980,
+        1047818222,
+        3261353684,
+        3005970438
+      ]
     }
   ],
   "ability_order": [
@@ -48,6 +72,10 @@
       "kind": "tier2"
     },
     {
+      "ability_id": 1458044103,
+      "kind": "tier1"
+    },
+    {
       "ability_id": 1835738020,
       "kind": "unlock"
     },
@@ -56,19 +84,7 @@
       "kind": "tier3"
     },
     {
-      "ability_id": 1537272748,
-      "kind": "tier1"
-    },
-    {
       "ability_id": 1835738020,
-      "kind": "tier1"
-    },
-    {
-      "ability_id": 1835738020,
-      "kind": "tier2"
-    },
-    {
-      "ability_id": 1458044103,
       "kind": "tier1"
     },
     {
@@ -81,12 +97,24 @@
     },
     {
       "ability_id": 1835738020,
-      "kind": "tier3"
+      "kind": "tier2"
+    },
+    {
+      "ability_id": 1537272748,
+      "kind": "tier1"
     },
     {
       "ability_id": 1537272748,
       "kind": "tier2"
+    },
+    {
+      "ability_id": 1537272748,
+      "kind": "tier3"
     }
   ],
-  "tags": [2460791803, 1458044103, 2947183272]
+  "tags": [
+    2460791803,
+    1458044103,
+    2947183272
+  ]
 }
